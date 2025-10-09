@@ -3,9 +3,9 @@
 /public/build
 /public/hot
 /public/storage
-/public/assets
+/public/assets/
 /storage/*.key
-/storage/pail
+/storage/
 /vendor
 .env
 .env.backup
