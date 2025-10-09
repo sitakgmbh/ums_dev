@@ -22,13 +22,30 @@
 
 @php
     $darkMode = session('darkmode_enabled', false);
-
-    $layoutConfig = json_encode([
-        'darkMode' => $darkMode,
-    ]);
 @endphp
 
-<body class="loading" data-layout="detached" data-layout-config='{{ $layoutConfig }}'>
+<script>
+    (function() {
+        var dark = @json($darkMode);
+
+        if (dark) {
+            document.documentElement.setAttribute("data-bs-theme", "dark");
+            document.documentElement.classList.add("dark-mode");
+        } else {
+            document.documentElement.setAttribute("data-bs-theme", "light");
+            document.documentElement.classList.remove("dark-mode");
+        }
+    })();
+
+    document.addEventListener("livewire:init", () => {
+        Livewire.on("redirect", (url) => {
+            window.location.href = url;
+        });
+    });
+</script>
+
+
+<body class="loading" data-layout="detached" data-layout-mode="{{ $darkMode ? 'dark' : 'light' }}">
     <div class="wrapper">
         @livewire('layout.topbar')
         @livewire('layout.sidebar')

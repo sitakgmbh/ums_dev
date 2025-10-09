@@ -7,28 +7,23 @@ use Livewire\Attributes\On;
 
 abstract class BaseModal extends Component
 {
-    public string $title = '';
-    public string $size = 'md';
+    public string $title = "";
+    public string $size = "md";
     public bool $backdrop = false;
 
-    public string $position = 'centered';    // centered | top | bottom | right | ''
+    public string $position = "centered";
     public bool $scrollable = true;
-    public string $headerBg = '';
-    public string $headerText = '';
+    public string $headerBg = "";
+    public string $headerText = "";
 
+    // Modal-ID automatisch aus Klassennamen.
+	protected function getModalId(): string
+	{
+		return static::getName(); 
+		// ergibt "components.modals.eroeffnungen.wiedereintritt"
+	}
 
-    /**
-     * Modal-ID automatisch aus Klassennamen.
-     */
-    protected function getModalId(): string
-    {
-        return str(class_basename(static::class))
-            ->kebab()
-            ->append('-modal')
-            ->value();
-    }
-
-    #[On('open-modal')]
+    #[On("open-modal")]
     public function handleOpen(string $modal, array $payload = []): void
     {
         if ($modal !== $this->getModalId()) 
@@ -43,13 +38,7 @@ abstract class BaseModal extends Component
 		}
     }
 
-    /**
-     * Wird im Kind-Modal ueberschrieben, um Payload zu verarbeiten.
-     */
-
-	/**
-	 * Kann false zurückgeben, wenn kein Modal geöffnet werden soll
-	 */
+	// Kann false zurückgeben, wenn kein Modal geöffnet werden soll
 	protected function openWith(array $payload): bool
 	{
 		return true;
@@ -58,15 +47,15 @@ abstract class BaseModal extends Component
     public function openModal(): void
     {
         $this->dispatch(
-            'show-bs-modal',
+            "show-bs-modal",
             id: $this->getModalId(),
-            backdrop: $this->backdrop ? 'static' : true,
+            backdrop: $this->backdrop ? "static" : true,
             keyboard: $this->backdrop ? false : true
         );
     }
 
     public function closeModal(): void
     {
-        $this->dispatch('hide-bs-modal', id: $this->getModalId());
+        $this->dispatch("hide-bs-modal", id: $this->getModalId());
     }
 }

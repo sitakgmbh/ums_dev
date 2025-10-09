@@ -8,6 +8,6 @@ class Sidebar extends Component
 {
     public function render()
     {
-        return view('livewire.layout.sidebar');
+        return view("livewire.layout.sidebar");
     }
 }

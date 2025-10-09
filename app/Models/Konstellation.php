@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Konstellation extends Model
 {
-    protected $table = 'konstellationen';
+    protected $table = "konstellationen";
 
     protected $fillable = [
-        'arbeitsort_id',
-        'unternehmenseinheit_id',
-        'abteilung_id',
-        'funktion_id',
-        'enabled',
+        "arbeitsort_id",
+        "unternehmenseinheit_id",
+        "abteilung_id",
+        "funktion_id",
+        "enabled",
     ];
 
     public function arbeitsort()

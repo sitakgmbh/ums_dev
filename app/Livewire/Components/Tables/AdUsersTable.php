@@ -15,38 +15,33 @@ class AdUsersTable extends BaseTable
 	protected function getColumns(): array
 	{
 		return [
-			'username'     => ['label' => 'Benutzername',     'sortable' => true,  'searchable' => true],
-			'display_name' => ['label' => 'Anzeigename',      'sortable' => true,  'searchable' => true],
-			'firstname'    => ['label' => 'Vorname',          'sortable' => true,  'searchable' => true],
-			'lastname'     => ['label' => 'Nachname',         'sortable' => true,  'searchable' => true],
-			'email'        => ['label' => 'E-Mail',           'sortable' => true,  'searchable' => true],
-			'is_enabled'   => ['label' => 'Status',            'sortable' => true,  'searchable' => false],
-			'is_existing'  => ['label' => 'AD-Objekt',            'sortable' => true,  'searchable' => false],
-			'last_synced_at'   => ['label' => 'Zuletzt synchronisiert', 'sortable' => true,  'searchable' => false],
-			'actions'      => ['label' => 'Aktionen',         'sortable' => false, 'searchable' => false, 'class' => 'shrink'],
+			"username"       => ["label" => "Benutzername", "sortable" => true, "searchable" => true],
+			"display_name"   => ["label" => "Anzeigename", "sortable" => true, "searchable" => true],
+			"firstname"      => ["label" => "Vorname", "sortable" => true, "searchable" => true],
+			"lastname"       => ["label" => "Nachname", "sortable" => true, "searchable" => true],
+			"email"          => ["label" => "E-Mail", "sortable" => true, "searchable" => true],
+			"is_enabled"     => ["label" => "Status", "sortable" => true, "searchable" => false],
+			"last_synced_at" => ["label" => "Zuletzt synchronisiert", "sortable" => true, "searchable" => false],
+			"actions"        => ["label" => "Aktionen", "sortable" => false, "searchable" => false, "class" => "shrink"],
 		];
 	}
 
 	protected function defaultSortField(): string
 	{
-		return 'username';
+		return "username";
 	}
 
 	protected function defaultSortDirection(): string
 	{
-		return 'asc';
+		return "asc";
 	}
 
     protected function getColumnBadges(): array
     {
         return [
-            'is_enabled' => [
-                true  => ['label' => 'Aktiviert', 'class' => 'success'],
-                false => ['label' => 'Deaktiviert', 'class' => 'danger'],
-            ],
-            'is_existing' => [
-                true  => ['label' => 'Vorhanden', 'class' => 'success'],
-                false => ['label' => 'Gelöscht', 'class' => 'danger'],
+            "is_enabled" => [
+                true  => ["label" => "Aktiviert", "class" => "success"],
+                false => ["label" => "Deaktiviert", "class" => "secondary"],
             ],
         ];
     }
@@ -54,13 +49,27 @@ class AdUsersTable extends BaseTable
 	protected function getColumnButtons(): array
 	{
 		return [
-			'actions' => [
+			"actions" => [
 				[
-					'url'  => fn($row) => route('admin.ad-users.show', $row->id),
-					'icon' => 'mdi mdi-eye',
-					'title' => 'Details',
+					"url"  => fn($row) => route("admin.ad-users.show", $row->id),
+					"icon" => "mdi mdi-eye",
+					"title" => "Details",
 				],
 			],
 		];
 	}
+
+	protected function getTableActions(): array
+	{
+		return [
+			[
+				"method" => "exportCsv",
+				"icon"   => "mdi mdi-tray-arrow-down",
+				"iconClass" => "text-secondary",
+				"class"  => "btn-outline-light",
+				"title"  => "Tabelle als CSV-Datei exportieren",
+			],
+		];
+	}
+
 }

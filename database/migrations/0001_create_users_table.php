@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id(); // bigint(20) unsigned, Primärschlüssel
             $table->string('username')->index();    // varchar(255), Index
             $table->string('auth_type')->default('local'); // varchar(255)
+			$table->foreignId('ad_sid')->nullable()->constrained('ad_users')->nullOnDelete();
             $table->string('firstname')->nullable(); // varchar(255)
             $table->string('lastname')->nullable();  // varchar(255)
             $table->string('email')->unique();       // varchar(255), Unique Index

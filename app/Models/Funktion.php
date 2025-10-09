@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Funktion extends Model
 {
-    protected $table = 'funktionen';
+    protected $table = "funktionen";
 
-    protected $fillable = ['name', 'enabled'];
+    protected $fillable = [
+		"name",
+		"enabled"
+	];
 
     public function konstellationen()
     {

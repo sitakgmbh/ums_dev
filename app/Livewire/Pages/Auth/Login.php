@@ -14,7 +14,7 @@ class Login extends Component
 
     public function login(): void
     {
-        $this->validate(); // Regeln aus LoginForm
+        $this->validate();
 
         $this->form->authenticate();
 
@@ -24,7 +24,6 @@ class Login extends Component
 
         session([
             'darkmode_enabled'  => (bool) $user->getSetting('darkmode_enabled', false),
-            'sidebar_collapsed' => (bool) $user->getSetting('sidebar_collapsed', false),
         ]);
 
         $this->redirectIntended(route('dashboard'));

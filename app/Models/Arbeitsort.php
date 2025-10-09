@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Arbeitsort extends Model
 {
-    protected $table = 'arbeitsorte';
+    protected $table = "arbeitsorte";
 
-    protected $fillable = ['name', 'enabled'];
+    protected $fillable = [
+		"name",
+		"enabled"
+	];
 
     public function konstellationen()
     {

@@ -7,7 +7,7 @@ use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
-#[Layout('layouts.app')]
+#[Layout("layouts.app")]
 class Create extends Component
 {
     public UserForm $form;
@@ -19,30 +19,30 @@ class Create extends Component
 
     public function save()
     {
-        $this->form->validate(); // validiert die Form-Properties
+        $this->form->validate();
 
         $user = User::create([
-            'username'   => $this->form->username,
-            'firstname'  => $this->form->firstname,
-            'lastname'   => $this->form->lastname,
-            'email'      => $this->form->email,
-            'auth_type'  => 'local',
-            'is_enabled' => $this->form->is_enabled,
-            'password'   => bcrypt($this->form->password),
+            "username"   => $this->form->username,
+            "firstname"  => $this->form->firstname,
+            "lastname"   => $this->form->lastname,
+            "email"      => $this->form->email,
+            "auth_type"  => "local",
+            "is_enabled" => $this->form->is_enabled,
+            "password"   => bcrypt($this->form->password),
         ]);
 
         $user->assignRole($this->form->role);
 
-        session()->flash('success', 'Benutzer erfolgreich angelegt.');
-        return redirect()->route('admin.users.index');
+        session()->flash("success", "Benutzer erfolgreich angelegt.");
+        return redirect()->route("admin.users.index");
     }
 
     public function render()
     {
-        return view('livewire.pages.admin.users.create', [
-            'roles' => $this->form->roles(),
+        return view("livewire.pages.admin.users.create", [
+            "roles" => $this->form->roles(),
         ])->layoutData([
-            'pageTitle' => 'Benutzer erstellen',
+            "pageTitle" => "Benutzer erstellen",
         ]);
     }
 }

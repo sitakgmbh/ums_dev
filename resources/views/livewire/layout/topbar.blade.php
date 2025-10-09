@@ -41,12 +41,12 @@
 
         <ul class="topbar-menu d-flex align-items-center gap-3">
 
-            <!-- Theme Mode -->
-            <li class="d-none d-sm-inline-block">
-                <div class="nav-link" id="light-dark-mode" data-bs-toggle="tooltip" data-bs-placement="left" title="Theme Mode">
-                    <i class="ri-moon-line font-22"></i>
-                </div>
-            </li>
+			<!-- Theme Mode -->
+			<li class="d-none d-sm-inline-block">
+				<div class="nav-link cursor-pointer" wire:click="toggle">
+					<i class="ri-moon-line font-22"></i>
+				</div>
+			</li>
 
             <!-- Fullscreen -->
             <li class="d-none d-md-inline-block">

@@ -15,11 +15,34 @@ return [
                     'url' => '/eroeffnungen',
                     'icon' => 'mdi mdi-account-plus',
                 ],
+                [
+                    'label' => 'Mutationen',
+                    'url' => '/mutationen',
+                    'icon' => 'mdi mdi-account-edit',
+                ],
             ],
         ],
         [
             'title' => 'Admin',
             'items' => [
+                [
+                    'label' => 'Verarbeitung',
+                    'icon'  => 'mdi mdi-hammer-screwdriver',
+                    'children' => [
+                        [
+                            'label' => 'Eröffnungen',
+                            'url'   => '/admin/eroeffnungen',
+                        ],
+                        [
+                            'label' => 'Mutationen',
+                            'url'   => '/admin/mutationen',
+                        ],
+                        [
+                            'label' => 'Austritte',
+                            'url'   => '/admin/austritte',
+                        ],
+                    ],
+                ],
                 [
                     'label' => 'Active Directory Benutzer',
                     'url' => '/admin/ad-users',
@@ -28,7 +51,7 @@ return [
                 [
                     'label' => 'Systemsteuerung',
                     'url' => '/admin',
-                    'icon' => 'mdi mdi-hammer-screwdriver',
+                    'icon' => 'mdi mdi-apps',
                 ],
             ],
         ],

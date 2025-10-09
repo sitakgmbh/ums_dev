@@ -1,22 +1,19 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Body Element
+document.addEventListener("livewire:init", () => {
     const body = document.body;
 
-    // Lies die Config vom data-layout-config Attribut
-    const configRaw = body.getAttribute("data-layout-config");
-    let config = {};
-    try {
-        config = JSON.parse(configRaw);
-    } catch (e) {
-        console.error("Konnte data-layout-config nicht parsen:", e);
+    function applyTheme(dark) {
+        if (dark) {
+            body.setAttribute("data-layout-mode", "dark");
+            document.documentElement.setAttribute("data-bs-theme", "dark");
+            document.documentElement.classList.add("dark-mode");
+        } else {
+            body.setAttribute("data-layout-mode", "light");
+            document.documentElement.setAttribute("data-bs-theme", "light");
+            body.classList.remove("dark-mode");
+        }
     }
 
-    // Darkmode anwenden
-    if (config.darkMode) {
-        body.setAttribute("data-layout-mode", "dark");
-        document.documentElement.setAttribute("data-bs-theme", "dark");
-    } else {
-        body.setAttribute("data-layout-mode", "light");
-        document.documentElement.setAttribute("data-bs-theme", "light");
-    }
+    Livewire.on("theme-changed", (event) => {
+        applyTheme(event.dark);
+    });
 });

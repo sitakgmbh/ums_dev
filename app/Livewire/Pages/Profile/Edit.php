@@ -11,7 +11,7 @@ class Edit extends Component
 
     public function mount(): void
     {
-        // immer den eingeloggten User laden
+        // Angemeldeten Benutzer laden
         $this->form->setUser();
     }
 
@@ -22,22 +22,22 @@ class Edit extends Component
         $user = $this->form->user;
 
         $user->update([
-            'firstname' => $this->form->firstname,
-            'lastname'  => $this->form->lastname,
-            'email'     => $this->form->email,
-            'password'  => $this->form->password
+            "firstname" => $this->form->firstname,
+            "lastname"  => $this->form->lastname,
+            "email"     => $this->form->email,
+            "password"  => $this->form->password
                 ? bcrypt($this->form->password)
                 : $user->password,
         ]);
 
-        session()->flash('success', 'Profil erfolgreich aktualisiert.');
+        session()->flash("success", "Profil erfolgreich aktualisiert.");
     }
 
     public function render()
     {
-        return view('livewire.pages.profile.edit')
-            ->layout('layouts.app', [
-                'pageTitle' => 'Profil bearbeiten',
+        return view("livewire.pages.profile.edit")
+            ->layout("layouts.app", [
+                "pageTitle" => "Profil bearbeiten",
             ]);
     }
 }

@@ -16,7 +16,7 @@ use App\Livewire\Pages\Admin\AdUsers\Index as AdUsersIndex;
 use App\Livewire\Pages\Admin\AdUsers\Show as AdUsersShow;
 use App\Livewire\Pages\Admin\MailTest;
 use App\Livewire\Pages\Admin\Tools\Index as ToolsIndex;
-use App\Livewire\Pages\Admin\Tools\ArtisanCommands;
+use App\Livewire\Pages\Admin\Tools\TaskScheduler;
 use App\Livewire\Pages\Admin\Tools\MailTest as ToolsMailTest;
 use App\Livewire\Pages\Admin\AdminDashboard;
 
@@ -46,8 +46,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 	Route::prefix('eroeffnungen')->name('eroeffnungen.')->group(function () {
 		Route::get('/', \App\Livewire\Pages\Eroeffnungen\Index::class)->name('index');
 		Route::get('/create', \App\Livewire\Pages\Eroeffnungen\Create::class)->name('create');
-		Route::get('/{eroeffnung}/edit', \App\Livewire\Pages\Eroeffnungen\Edit::class)->name('edit');
 		Route::get('/{eroeffnung}', \App\Livewire\Pages\Eroeffnungen\Show::class)->name('show');
+		Route::get('/{eroeffnung}/edit', \App\Livewire\Pages\Eroeffnungen\Edit::class)->name('edit');
+	});
+
+	Route::prefix('mutationen')->name('mutationen.')->group(function () {
+		Route::get('/', \App\Livewire\Pages\Mutationen\Index::class)->name('index');
+		Route::get('/create', \App\Livewire\Pages\Mutationen\Create::class)->name('create');
+		Route::get('/{mutation}', \App\Livewire\Pages\Mutationen\Show::class)->name('show');
+		Route::get('/{mutation}/edit', \App\Livewire\Pages\Mutationen\Edit::class)->name('edit');
 	});
 
     // >>> Admin Bereich <<<
@@ -83,8 +90,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Admin Tools
         Route::prefix('tools')->name('admin.tools.')->group(function () {
             Route::get('/', ToolsIndex::class)->name('index');
-            Route::get('/artisan', ArtisanCommands::class)->name('artisan');
+            Route::get('/task-scheduler', TaskScheduler::class)->name('task-scheduler');
             Route::get('/mail-test', ToolsMailTest::class)->name('mail-test');
         });
+
+		Route::prefix('eroeffnungen')->name('admin.eroeffnungen.')->group(function () {
+			Route::get('/', \App\Livewire\Pages\Admin\Eroeffnungen\Index::class)->name('index');
+			Route::get('/{eroeffnung}/verarbeitung', \App\Livewire\Pages\Admin\Eroeffnungen\Verarbeitung::class)->name('verarbeitung');
+		});
+
+		Route::prefix('mutationen')->name('admin.mutationen.')->group(function () {
+			Route::get('/', \App\Livewire\Pages\Admin\Mutationen\Index::class)->name('index');
+			Route::get('/{mutation}/verarbeitung', \App\Livewire\Pages\Admin\Mutationen\Verarbeitung::class)->name('verarbeitung');
+		});
+
+		Route::prefix('austritte')->name('admin.austritte.')->group(function () {
+			Route::get('/', \App\Livewire\Pages\Admin\Austritte\Index::class)->name('index');
+			Route::get('/{austritt}/verarbeitung', \App\Livewire\Pages\Admin\Austritte\Verarbeitung::class)->name('verarbeitung');
+		});
+		
+		Route::get('/changelog', \App\Livewire\Pages\Admin\Changelog::class)->name('admin.changelog');
+		Route::get('/server-info', \App\Livewire\Pages\Admin\ServerInfo::class)->name('admin.server-info');
     });
 });

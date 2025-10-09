@@ -13,28 +13,27 @@ class UserSettings extends Component
     {
         $user = Auth::user();
 
-        $this->darkmode_enabled  = (bool) $user->getSetting('darkmode_enabled', false);
+        $this->darkmode_enabled  = (bool) $user->getSetting("darkmode_enabled", false);
     }
 
     public function save()
     {
         $user = Auth::user();
 
-        $user->setSetting('darkmode_enabled', $this->darkmode_enabled);
+        $user->setSetting("darkmode_enabled", $this->darkmode_enabled);
 
-        // Session-Werte ebenfalls aktualisieren
         session([
-            'darkmode_enabled'  => $this->darkmode_enabled,
+            "darkmode_enabled"  => $this->darkmode_enabled,
         ]);
 
-        session()->flash('success', 'Deine Einstellungen wurden gespeichert.');
+        session()->flash("success", "Deine Einstellungen wurden gespeichert.");
     }
 
     public function render()
     {
-        return view('livewire.pages.profile.user-settings')
-            ->layout('layouts.app', [
-                'pageTitle' => 'Benutzereinstellungen',
+        return view("livewire.pages.profile.user-settings")
+            ->layout("layouts.app", [
+                "pageTitle" => "Benutzereinstellungen",
             ]);
     }
 }

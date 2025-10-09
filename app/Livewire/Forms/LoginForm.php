@@ -13,39 +13,34 @@ use Livewire\Form;
 
 class LoginForm extends Form
 {
-    #[Validate('required|string')]
-    public string $username = '';
+    #[Validate("required|string")]
+    public string $username = "";
 
-    #[Validate('required|string')]
-    public string $password = '';
+    #[Validate("required|string")]
+    public string $password = "";
 
-    #[Validate('boolean')]
+    #[Validate("boolean")]
     public bool $remember = false;
 
-    /**
-     * Versuche, den Benutzer zu authentifizieren.
-     */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt([
-            'username' => $this->username,
-            'password' => $this->password,
+            "username" => $this->username,
+            "password" => $this->password,
         ], $this->remember)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'form.username' => trans('auth.failed'),
+                "form.username" => trans("auth.failed"),
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
     }
 
-    /**
-     * Rate-Limiting prüfen.
-     */
+    // Rate-Limiting prüfen
     protected function ensureIsNotRateLimited(): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
@@ -57,18 +52,16 @@ class LoginForm extends Form
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'form.username' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
+            "form.username" => trans("auth.throttle", [
+                "seconds" => $seconds,
+                "minutes" => ceil($seconds / 60),
             ]),
         ]);
     }
 
-    /**
-     * Generiere einen eindeutigen Schlüssel für Rate-Limiting.
-     */
+    // Generiert einen eindeutigen Schlüssel für das Rate-Limiting
     protected function throttleKey(): string
     {
-        return Str::lower($this->username) . '|' . request()->ip();
+        return Str::lower($this->username) . "|" . request()->ip();
     }
 }

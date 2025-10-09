@@ -6,7 +6,7 @@ use App\Models\AdUser;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
-#[Layout('layouts.app')]
+#[Layout("layouts.app")]
 class Show extends Component
 {
     public AdUser $adUser;
@@ -18,9 +18,9 @@ class Show extends Component
 
     public function render()
     {
-        return view('livewire.pages.admin.ad-users.show')
+        return view("livewire.pages.admin.ad-users.show")
             ->layoutData([
-                'pageTitle' => 'AD-Benutzer: ' . ($this->adUser->display_name ?? $this->adUser->username),
+                "pageTitle" => "AD-Benutzer " . ($this->adUser->display_name ?? $this->adUser->username),
             ]);
     }
 }

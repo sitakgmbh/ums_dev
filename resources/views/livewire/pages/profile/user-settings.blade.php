@@ -10,12 +10,10 @@
                                id="darkmodeSwitch"
                                wire:model="darkmode_enabled">
                         <label for="darkmodeSwitch" class="form-check-label fw-semibold">
-                            Dark Mode bei Login
+                            Dark Mode
                         </label>
                     </div>
-                    <small class="text-muted d-block">
-                        Aktiviert beim Login den Dark Mode
-                    </small>
+                    <small class="text-muted d-block">Aktiviere ein dunkles Farbschema für die gesamte Anwendung. Kann auch über die Topbar gesteuert werden.</small>
                 </div>
             </div>
         </div>

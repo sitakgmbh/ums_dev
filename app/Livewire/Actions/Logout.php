@@ -7,7 +7,7 @@ use Livewire\Component;
 
 class Logout extends Component
 {
-    protected $listeners = ['perform-logout' => 'logout'];
+    protected $listeners = ["perform-logout" => "logout"];
 
     public function logout()
     {
@@ -15,13 +15,11 @@ class Logout extends Component
         session()->invalidate();
         session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route("login");
     }
 
 	public function render()
 	{
-		return view('livewire.actions.logout');
+		return view("livewire.actions.logout");
 	}
-
-
 }

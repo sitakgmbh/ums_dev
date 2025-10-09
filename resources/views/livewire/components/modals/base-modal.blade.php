@@ -1,5 +1,4 @@
 @php
-    // Position-Klassen abbilden
     $positionClass = match($position) {
         'top'     => 'modal-top',
         'bottom'  => 'modal-bottom',

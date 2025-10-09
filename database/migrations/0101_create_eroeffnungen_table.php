@@ -12,16 +12,16 @@ return new class extends Migration
             $table->id();
 
             // --- Basis-Infos ---
-			$table->foreignId('owner')->nullable()->constrained('users')->nullOnDelete();
+			$table->foreignId('owner_id')->nullable()->constrained('ad_users')->nullOnDelete();
             $table->string('vorname');
             $table->string('nachname');
             $table->date('vertragsbeginn');
             $table->boolean('wiedereintritt')->default(false);
 
             // --- Antragsteller/Bezug ---
-            $table->foreignId('antragsteller_id')->constrained('ad_users')->nullOnDelete();
-            $table->foreignId('bezugsperson_id')->constrained('ad_users')->nullOnDelete();
-            $table->foreignId('vorlage_benutzer_id')->nullable()->constrained('ad_users')->nullOnDelete();
+			$table->foreignId('antragsteller_id')->nullable()->constrained('ad_users')->nullOnDelete();
+			$table->foreignId('bezugsperson_id')->nullable()->constrained('ad_users')->nullOnDelete();
+			$table->foreignId('vorlage_benutzer_id')->nullable()->constrained('ad_users')->nullOnDelete();
 
             // --- SAP-Zuordnungen ---
             $table->boolean('neue_konstellation')->default(false);
@@ -37,7 +37,7 @@ return new class extends Migration
 
             // --- Account-Daten ---
             $table->string('benutzername')->nullable();
-            $table->string('email');
+            $table->string('email')->nullable();
             $table->string('mailendung')->nullable();
             $table->json('ad_gruppen')->nullable();
             $table->string('passwort')->nullable();
@@ -76,7 +76,9 @@ return new class extends Migration
             $table->tinyInteger('status_info')->default(1);
 
             // --- Meta ---
-            $table->text('kommentar')->nullable();
+			$table->boolean('vorab_lizenzierung')->default(false);
+			$table->json('kalender_berechtigungen')->nullable();
+			$table->text('kommentar')->nullable();
             $table->string('ticket_nr')->nullable();
             $table->boolean('archiviert')->default(false);
 

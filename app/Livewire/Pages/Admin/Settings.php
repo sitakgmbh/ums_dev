@@ -6,39 +6,64 @@ use Livewire\Component;
 use App\Models\Setting;
 use Livewire\Attributes\Layout;
 
-#[Layout('layouts.app')]
+#[Layout("layouts.app")]
 class Settings extends Component
 {
-    public bool $debug_mode = false;
+    public array $settings = [];
 
-    public function mount()
+    protected array $groupMap = [
+        "debug_mode"          => "Allgemein",
+        "azure_tenant_id"     => "Microsoft Graph",
+        "azure_client_id"     => "Microsoft Graph",
+        "azure_client_secret" => "Microsoft Graph",
+    ];
+
+    public function mount(): void
     {
-        $this->debug_mode       = Setting::getValue('debug_mode', false);
+        $keys = array_keys($this->groupMap);
+
+        $this->settings = Setting::query()
+            ->whereIn("key", $keys)
+            ->get()
+            ->map(function ($s) {
+                return [
+                    "key"         => $s->key,
+                    "value"       => $s->type === "password" ? ($s->value ?? "") : $s->value,
+                    "type"        => $s->type,
+                    "name"        => $s->name,
+                    "description" => $s->description,
+                    "group"       => $this->groupMap[$s->key] ?? "Sonstiges",
+                ];
+            })
+            ->groupBy("group")
+            ->toArray();
     }
 
-    public function save()
+    public function save(): void
     {
-        // Cache leeren für alle Keys
-        foreach ([
-            'debug_mode','mail_mailer','mail_host','mail_port',
-            'mail_username','mail_password','mail_encryption',
-            'mail_from_address','mail_from_name'
-        ] as $key) {
-            \Cache::forget("setting_{$key}");
+        foreach ($this->settings as $group => $items) 
+		{
+            foreach ($items as $s) {
+                \Cache::forget("setting_{$s["key"]}");
+
+                Setting::updateOrCreate(
+                    ["key" => $s["key"]],
+                    [
+                        "value" => $s["value"],
+                        "type"  => $s["type"],
+                    ]
+                );
+            }
         }
 
-        Setting::updateOrCreate(['key' => 'debug_mode'], [
-            'value' => $this->debug_mode, 'type' => 'bool'
-        ]);
-
-        session()->flash('success', 'Einstellungen gespeichert.');
+        session()->flash("success", "Einstellungen gespeichert.");
     }
 
     public function render()
     {
-        return view('livewire.pages.admin.settings')
+        return view("livewire.pages.admin.settings")
             ->layoutData([
-                'pageTitle' => 'Einstellungen',
+                "pageTitle" => "Einstellungen",
             ]);
     }
 }

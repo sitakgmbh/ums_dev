@@ -1,19 +1,34 @@
-<div class="d-inline-flex align-items-center gap-2">
+<div class="d-inline-flex align-items-center gap-0">
     @foreach ($buttons as $btn)
         @php
+            // Sichtbarkeit prüfen
+            $visible = $btn['showIf'] ?? true;
+            if (is_callable($visible)) {
+                $visible = $visible($row);
+            }
+
+            if (! $visible) {
+                continue;
+            }
+
             $idParam = $btn['idParam'] ?? 'id';
             $idValue = data_get($row, $idParam);
             $method  = $btn['method'] ?? null;
             $url     = $btn['url'] ?? null;
             $icon    = $btn['icon'] ?? 'mdi mdi-help';
             $attrs   = $btn['attrs'] ?? [];
+            $title   = $btn['title'] ?? null;
         @endphp
 
         {{-- Livewire-Methode --}}
         @if($method)
             <a href="javascript:void(0)"
                wire:click="{{ $method }}({{ $idValue }})"
-               class="action-icon">
+               class="action-icon"
+               @if($title) title="{{ $title }}" @endif
+               @foreach($attrs as $attr => $val)
+                   {{ $attr }}="{{ $val }}"
+               @endforeach>
 
                 {{-- Normales Icon --}}
                 <i class="{{ $icon }}"
@@ -32,6 +47,7 @@
         @elseif($url)
             <a href="{{ is_callable($url) ? $url($row) : $url }}"
                class="action-icon"
+               @if($title) title="{{ $title }}" @endif
                @foreach($attrs as $attr => $val)
                    {{ $attr }}="{{ $val }}"
                @endforeach>

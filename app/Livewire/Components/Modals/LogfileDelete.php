@@ -12,27 +12,27 @@ class LogfileDelete extends BaseModal
 
     protected function openWith(array $payload): bool
     {
-        $this->filename = $payload['filename'] ?? null;
+        $this->filename = $payload["filename"] ?? null;
 
         if (! $this->filename || ! File::exists(storage_path("logs/{$this->filename}"))) 
 		{
-            $this->dispatch('open-modal', modal: 'alert-modal', payload: [
-                'message'  => 'Das Logfile konnte nicht gefunden werden.',
-                'headline' => 'Fehler',
-                'color'    => 'bg-danger',
-                'icon'     => 'ri-close-circle-line',
+            $this->dispatch("open-modal", modal: "alert-modal", payload: [
+                "message"  => "Das Logfile konnte nicht gefunden werden.",
+                "headline" => "Fehler",
+                "color"    => "bg-danger",
+                "icon"     => "ri-close-circle-line",
             ]);
 			
             return false;
         }
 
         $this->title      = "Logfile löschen";
-        $this->size       = 'md';
+        $this->size       = "md";
         $this->backdrop   = true;
-        $this->position   = 'centered';
+        $this->position   = "centered";
         $this->scrollable = true;
-        $this->headerBg   = 'bg-danger';
-        $this->headerText = 'text-white';
+        $this->headerBg   = "bg-danger";
+        $this->headerText = "text-white";
 
         return true;
     }
@@ -48,12 +48,12 @@ class LogfileDelete extends BaseModal
 
 		if (! File::exists($path)) 
 		{
-			$this->closeModal(); // erst dieses Modal schließen
-			$this->dispatch('open-modal', modal: 'alert-modal', payload: [
-				'message'  => "Das Logfile {$this->filename} konnte nicht gefunden werden.",
-				'headline' => 'Fehler',
-				'color'    => 'bg-danger',
-				'icon'     => 'ri-close-circle-line',
+			$this->closeModal();
+			$this->dispatch("open-modal", modal: "alert-modal", payload: [
+				"message"  => "Das Logfile {$this->filename} konnte nicht gefunden werden.",
+				"headline" => "Fehler",
+				"color"    => "bg-danger",
+				"icon"     => "ri-close-circle-line",
 			]);
 			
 			return;
@@ -61,22 +61,17 @@ class LogfileDelete extends BaseModal
 
 		File::delete($path);
 
-
-		// Logging
 		$user     = auth()->user();
-		$username = $user?->username ?? $user?->name ?? 'unbekannt';
-		$fullname = $user?->fullname ?? trim(($user?->firstname . ' ' . $user?->lastname)) ?? $username;
+		$username = $user?->username ?? $user?->name ?? "unbekannt";
+		$fullname = $user?->fullname ?? trim(($user?->firstname . " " . $user?->lastname)) ?? $username;
 
-		Logger::db('system', 'info', "Logfile {$this->filename} gelöscht durch {$username}", [
-			'username' => $username,
-			'fullname' => $fullname,
-			'file'     => $this->filename,
+		Logger::db("system", "info", "Logfile {$this->filename} gelöscht durch {$username}", [
+			"username" => $username,
+			"fullname" => $fullname,
+			"file"     => $this->filename,
 		]);
 
-
-		// Event statt session()->flash()
-		$this->dispatch('logfile-deleted', filename: $this->filename);
-
+		$this->dispatch("logfile-deleted", filename: $this->filename);
 		$this->closeModal();
 	}
 

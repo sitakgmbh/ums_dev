@@ -12,15 +12,15 @@ class AuthController extends Controller
     /**
      * @OA\Post(
      *     path="/api/login",
-     *     summary="Benutzer-Login",
-     *     description="Ermöglicht lokalen Benutzern und LDAP-Benutzern den API-Login. Nur Admins erhalten ein Token.",
+     *     summary="Login",
+     *     description="Bearer-Token anfordern",
      *     tags={"Auth"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"username","password"},
-     *             @OA\Property(property="username", type="string", example="mmustermann"),
-     *             @OA\Property(property="password", type="string", example="Passwort123!")
+     *             @OA\Property(property="username", type="string", example="user1"),
+     *             @OA\Property(property="password", type="string", example="Password!")
      *         )
      *     ),
      *     @OA\Response(
@@ -38,30 +38,51 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
+            "username" => ["required", "string"],
+            "password" => ["required", "string"],
         ]);
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Ungültige Anmeldedaten'], 401);
+            return response()->json(["message" => "Ungültige Anmeldedaten"], 401);
         }
 
-        /** @var User $user */
         $user = Auth::user();
 
-        if (!$user->hasRole('admin')) 
+        if (!$user->hasRole("admin")) 
 		{
-            return response()->json(['message' => 'Keine Berechtigung'], 403);
+            return response()->json(["message" => "Keine Berechtigung"], 403);
         }
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        $token = $user->createToken("api-token")->plainTextToken;
 
         return response()->json([
-            'access_token' => $token,
-            'token_type'   => 'Bearer',
+            "access_token" => $token,
+            "token_type"   => "Bearer",
         ]);
     }
-	
+
+    /**
+     * @OA\Get(
+     *     path="/api/me",
+     *     summary="Me",
+     *     description="Gibt den aktuell authentifizierten Benutzer zurück",
+     *     tags={"Auth"},
+	 *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Erfolg",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="username", type="string", example="user1"),
+     *             @OA\Property(property="email", type="string", example="user1@example.com"),
+     *             @OA\Property(property="roles", type="array",
+     *                 @OA\Items(type="string", example="admin")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthentifiziert")
+     * )
+     */
     public function me(Request $request)
     {
         return response()->json($request->user());

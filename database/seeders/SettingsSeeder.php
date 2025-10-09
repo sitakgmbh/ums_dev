@@ -14,19 +14,64 @@ class SettingsSeeder extends Seeder
                 'key'         => 'debug_mode',
                 'value'       => false,
                 'type'        => 'bool',
-                'name'        => 'Debug Modus',
-                'description' => 'Aktiviert Debug-Ausgaben und detaillierte Fehlermeldungen. Nur in Entwicklungsumgebungen verwenden.',
+                'name'        => 'Debug-Modus',
+                'description' => 'Aktiviert erweiterte Protokollierung. Im Debug-Modus werden zusätzliche Details in den Logdateien gespeichert, um die Analyse und Fehlersuche zu erleichtern. Sollte nur in Entwicklungs- oder Testumgebungen verwendet werden.',
             ],
+			[
+				'key'         => 'azure_tenant_id',
+				'value'       => '',
+				'type'        => 'string',
+				'name'        => 'Tenant ID',
+				'description' => 'Microsoft Azure Tenant ID',
+			],
+			[
+				'key'         => 'azure_client_id',
+				'value'       => '',
+				'type'        => 'string',
+				'name'        => 'Client ID',
+				'description' => 'Microsoft Azure Application Client ID',
+			],
+			[
+				'key'         => 'azure_client_secret',
+				'value'       => '',
+				'type'        => 'password',
+				'name'        => 'Client Secret',
+				'description' => 'Microsoft Azure Application Client Secret',
+			],
+			[
+				'key'         => 'otobo_url',
+				'value'       => '',
+				'type'        => 'string',
+				'name'        => 'Webservice URL',
+				'description' => 'Die OTOBO Webservice URL',
+			],
+			[
+				'key'         => 'otobo_username',
+				'value'       => '',
+				'type'        => 'string',
+				'name'        => 'Benutzername',
+				'description' => 'OTOBO Webservice Benutzername',
+			],
+			[
+				'key'         => 'otobo_password',
+				'value'       => '',
+				'type'        => 'password',
+				'name'        => 'Passwort',
+				'description' => 'OTOBO Webservice Passwort',
+			],
         ];
 
-		foreach ($settings as $data) {
-			$setting = Setting::firstOrNew(['key' => $data['key']]);
-			$setting->type = $data['type'];
-			$setting->name = $data['name'];
-			$setting->description = $data['description'];
-			$setting->value = $data['value'];
-			$setting->save();
+		foreach ($settings as $data) 
+		{
+			Setting::updateOrCreate(
+				['key' => $data['key']],
+				[
+					'type' => $data['type'],
+					'name' => $data['name'],
+					'description' => $data['description'],
+					'value' => Setting::where('key', $data['key'])->exists() ? Setting::where('key', $data['key'])->first()->value : $data['value'], // nur erstellen wenn noch nicht vorhanden
+				]
+			);
 		}
-
     }
 }

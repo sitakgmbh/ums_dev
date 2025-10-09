@@ -1,0 +1,26 @@
+@extends('livewire.components.modals.base-modal')
+
+@section('body')
+    @if($entry)
+        <div class="alert alert-info">
+            {{ $infoText }}
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label">Benutzername</label>
+            <input type="text" class="form-control"
+                   wire:model="username"
+                   @if($usernameReadonly) readonly @endif>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label">E-Mail</label>
+            <input type="text" class="form-control" wire:model="email">
+        </div>
+    @endif
+@endsection
+
+@section('footer')
+    <button type="button" class="btn btn-secondary" wire:click="closeModal">Abbrechen</button>
+    <button type="button" class="btn btn-primary" wire:click="confirm">Benutzer erstellen</button>
+@endsection

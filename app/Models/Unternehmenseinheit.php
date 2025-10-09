@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Unternehmenseinheit extends Model
 {
-    protected $table = 'unternehmenseinheiten';
+    protected $table = "unternehmenseinheiten";
 
-    protected $fillable = ['name', 'enabled'];
+    protected $fillable = [
+		"name",
+		"enabled"
+	];
 
     public function abteilungen()
     {

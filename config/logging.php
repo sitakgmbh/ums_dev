@@ -80,8 +80,9 @@ return [
 			'level' => 'info',
 			'formatter' => Monolog\Formatter\LineFormatter::class,
 			'formatter_with' => [
-				'format' => "[%datetime%] %level_name%: %message%\n",
+				'format' => "[%datetime%] %level_name%: %message% %context%\n",
 				'dateFormat' => 'Y-m-d H:i:s',
+				'ignoreEmptyContextAndExtra' => true,
 			],
 		],
 
@@ -91,24 +92,23 @@ return [
 			'level' => 'debug',
 			'formatter' => Monolog\Formatter\LineFormatter::class,
 			'formatter_with' => [
-				'format' => "[%datetime%] %level_name%: %message%\n",
+				'format' => "[%datetime%] %level_name%: %message% %context%\n",
 				'dateFormat' => 'Y-m-d H:i:s',
+				'ignoreEmptyContextAndExtra' => true,
 			],
 		],
-		
 
-    'ldaplog' => [
-        'driver' => 'single',
-        'path' => storage_path('logs/ldap.log'),
-        'level' => 'debug',
-        'formatter' => Monolog\Formatter\LineFormatter::class,
-        'formatter_with' => [
-            'format' => "[%datetime%] %level_name%: %message%\n",
-            'dateFormat' => 'Y-m-d H:i:s',
-        ],
-    ],
-
-
+		'ldaplog' => [
+			'driver' => 'single',
+			'path' => storage_path('logs/ldap.log'),
+			'level' => 'debug',
+			'formatter' => Monolog\Formatter\LineFormatter::class,
+			'formatter_with' => [
+				'format' => "[%datetime%] %level_name%: %message% %context%\n",
+				'dateFormat' => 'Y-m-d H:i:s',
+				'ignoreEmptyContextAndExtra' => true,
+			],
+		],
     ],
 
 ];

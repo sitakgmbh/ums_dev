@@ -6,7 +6,7 @@
     @forelse ($files as $index => $file)
         <div class="card mb-4 shadow-sm">
             {{-- Header --}}
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+			<div class="card-header bg-primary text-white py-1 d-flex justify-content-between align-items-center">
                 <div><strong>{{ $file['name'] }}</strong></div>
                 <div class="small text-white">
                     Letzte Änderung: {{ $file['updated'] }}
@@ -38,7 +38,7 @@
 					{{-- Delete --}}
 					<button 
 						type="button"
-						wire:click="$dispatch('open-modal', { modal: 'logfile-delete-modal', payload: { filename: @js($file['name']) } })"
+						wire:click="$dispatch('open-modal', { modal: 'components.modals.logfile-delete', payload: { filename: @js($file['name']) } })"
 						class="btn btn-sm btn-danger">
 						<i class="mdi mdi-delete"></i> Löschen
 					</button>

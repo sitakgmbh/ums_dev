@@ -14,48 +14,48 @@ class UsersTable extends BaseTable
         return User::class;
     }
 
-    protected function getColumns(): array
-    {
-        return [
-			'auth_type'  => [ 'label' => 'Typ',     'sortable' => true ],
-			'username'  => [ 'label' => 'Benutzername', 'sortable' => true, 'searchable' => true ],
-			'firstname'  => [ 'label' => 'Vorname', 'sortable' => true, 'searchable' => true ],
-            'lastname'   => [ 'label' => 'Nachname', 'sortable' => true, 'searchable' => true ],
-            'email'      => [ 'label' => 'E-Mail',  'sortable' => true, 'searchable' => true ],
-            'role'       => [ 'label' => 'Rolle',   'sortable' => true ],
-            'is_enabled' => [ 'label' => 'Status',  'sortable' => true ],
-			'created_at'  => [ 'label' => 'Erstellt', 'sortable' => true, 'searchable' => true ],
-            'actions'    => [ 'label' => 'Aktionen','sortable' => false, 'class' => 'shrink' ],
-        ];
-    }
+	protected function getColumns(): array
+	{
+		return [
+			"auth_type"   => ["label" => "Typ", "sortable" => true],
+			"username"    => ["label" => "Benutzername", "sortable" => true, "searchable" => true],
+			"firstname"   => ["label" => "Vorname", "sortable" => true, "searchable" => true],
+			"lastname"    => ["label" => "Nachname", "sortable" => true, "searchable" => true],
+			"email"       => ["label" => "E-Mail", "sortable" => true, "searchable" => true],
+			"role"        => ["label" => "Rolle", "sortable" => true],
+			"is_enabled"  => ["label" => "Status", "sortable" => true],
+			"created_at"  => ["label" => "Erstellt", "sortable" => true, "searchable" => true],
+			"actions"     => ["label" => "Aktionen", "sortable" => false, "class" => "shrink"],
+		];
+	}
 
 	protected function defaultSortField(): string
 	{
-		return 'username';
+		return "username";
 	}
 
 	protected function defaultSortDirection(): string
 	{
-		return 'asc';
+		return "asc";
 	}
 
-    protected array $searchable = ['username', 'firstname', 'lastname', 'email', 'created_at'];
+    protected array $searchable = ["username", "firstname", "lastname", "email", "created_at"];
 
     protected function getColumnBadges(): array
     {
         return [
-            'auth_type' => [
-                'local' => ['label' => 'Local', 'class' => 'secondary'],
-                'ldap'  => ['label' => 'LDAP',  'class' => 'info'],
+            "auth_type" => [
+                "local" => ["label" => "Local", "class" => "secondary"],
+                "ldap"  => ["label" => "LDAP",  "class" => "info"],
             ],
-            'is_enabled' => [
-                true  => ['label' => 'Aktiviert', 'class' => 'success'],
-                false => ['label' => 'Deaktiviert', 'class' => 'danger'],
-                null  => ['label' => 'nicht verfügbar', 'class' => 'light text-dark'],
+            "is_enabled" => [
+                true  => ["label" => "Aktiviert", "class" => "success"],
+                false => ["label" => "Deaktiviert", "class" => "danger"],
+                null  => ["label" => "nicht verfügbar", "class" => "light text-dark"],
             ],
-            'role' => [
-                'admin' => ['label' => 'Admin', 'class' => 'dark'],
-                'user'  => ['label' => 'User',  'class' => 'secondary'],
+            "role" => [
+                "admin" => ["label" => "Admin", "class" => "dark"],
+                "user"  => ["label" => "User",  "class" => "secondary"],
             ],
         ];
     }
@@ -66,32 +66,23 @@ class UsersTable extends BaseTable
 		{
 			return [
 				...parent::transformRecord($record),
-				'role' => $record->roles->pluck('name')->first() ?? '—',
+				"role" => $record->roles->pluck("name")->first() ?? "—",
 			];
 		}
 
 		return parent::transformRecord($record);
 	}
 
-
-		/** Eager Loading für Rollen */
 	protected function applyFilters(\Illuminate\Database\Eloquent\Builder $query): void
 	{
-		$query->with('roles'); // Rollen mitladen
+		$query->with("roles");
 
-		// Debug-Ausgabe
-		logger()->debug('applyFilters UsersTable', [
-			'sql' => $query->toSql(),
-			'bindings' => $query->getBindings(),
-		]);
-
-		// nach dem Laden ergänzen wir die erste Rolle
 		$query->addSelect([
-			'role' => \DB::table('model_has_roles')
-				->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
-				->whereColumn('model_has_roles.model_id', 'users.id')
+			"role" => \DB::table("model_has_roles")
+				->join("roles", "roles.id", "=", "model_has_roles.role_id")
+				->whereColumn("model_has_roles.model_id", "users.id")
 				->limit(1)
-				->select('roles.name'),
+				->select("roles.name"),
 		]);
 	}
 
@@ -99,15 +90,15 @@ class UsersTable extends BaseTable
     protected function getColumnButtons(): array
     {
         return [
-            'actions' => [
+            "actions" => [
                 [
-                    'url'   => fn($row) => route('admin.users.edit', $row->id),
-                    'icon'  => 'mdi mdi-square-edit-outline',
+                    "url"   => fn($row) => route("admin.users.edit", $row->id),
+                    "icon"  => "mdi mdi-square-edit-outline",
                 ],
                 [
-                    'method'  => 'openDeleteModal',
-                    'idParam' => 'id',
-                    'icon'    => 'mdi mdi-delete',
+                    "method"  => "openDeleteModal",
+                    "idParam" => "id",
+                    "icon"    => "mdi mdi-delete",
                 ],
             ],
         ];
@@ -115,6 +106,19 @@ class UsersTable extends BaseTable
 
     public function openDeleteModal(int $id): void
     {
-        $this->dispatch('open-modal', 'user-delete-modal', ['id' => $id]);
+        $this->dispatch("open-modal", "user-delete-modal", ["id" => $id]);
     }
+
+	protected function getTableActions(): array
+	{
+		return [
+			[
+				"method" => "exportCsv",
+				"icon"   => "mdi mdi-tray-arrow-down",
+				"iconClass" => "text-secondary",
+				"class"  => "btn-outline-light",
+				"title"  => "Tabelle als CSV-Datei exportieren",
+			],
+		];
+	}
 }

@@ -12,27 +12,27 @@ class UserDelete extends BaseModal
 
     protected function openWith(array $payload): bool
     {
-        $id = $payload['id'] ?? null;
+        $id = $payload["id"] ?? null;
 
-        // Wichtig: KEIN findOrFail(), nur find()
         if (! $id || ! ($this->user = User::find($id))) 
 		{
-            $this->dispatch('open-modal', modal: 'alert-modal', payload: [
-                'message'  => "Der Benutzer konnte nicht gefunden werden (ID: {$id}).",
-                'headline' => 'Fehler',
-                'color'    => 'bg-danger',
-                'icon'     => 'ri-close-circle-line',
+            $this->dispatch("open-modal", modal: "alert-modal", payload: [
+                "message"  => "Der Benutzer konnte nicht gefunden werden (ID: {$id}).",
+                "headline" => "Fehler",
+                "color"    => "bg-danger",
+                "icon"     => "ri-close-circle-line",
             ]);
+			
             return false;
         }
 
         $this->title      = "Benutzer löschen";
-        $this->size       = 'md';
+        $this->size       = "md";
         $this->backdrop   = true;
-        $this->position   = 'centered';
+        $this->position   = "centered";
         $this->scrollable = true;
-        $this->headerBg   = 'bg-danger';
-        $this->headerText = 'text-white';
+        $this->headerBg   = "bg-danger";
+        $this->headerText = "text-white";
 
         return true;
     }
@@ -41,11 +41,11 @@ class UserDelete extends BaseModal
     {
         if (! $this->user || ! User::find($this->user->id)) 
 		{
-            $this->dispatch('open-modal', modal: 'alert-modal', payload: [
-                'message'  => 'Der Benutzer ist nicht mehr vorhanden.',
-                'headline' => 'Fehler',
-                'color'    => 'bg-danger',
-                'icon'     => 'ri-close-circle-line',
+            $this->dispatch("open-modal", modal: "alert-modal", payload: [
+                "message"  => "Der Benutzer ist nicht mehr vorhanden.",
+                "headline" => "Fehler",
+                "color"    => "bg-danger",
+                "icon"     => "ri-close-circle-line",
             ]);
             return;
         }
@@ -57,17 +57,15 @@ class UserDelete extends BaseModal
         $this->user->delete();
 
         $actor     = auth()->user();
-        $actorName = $actor?->username ?? $actor?->name ?? 'unbekannt';
-
-        Logger::db('system', 'warning', "Benutzer {$fullname} (ID {$id}) wurde gelöscht durch {$actorName}");
+        $actorName = $actor?->username ?? $actor?->name ?? "unbekannt";
 
         $this->closeModal();
-        $this->dispatch('notify', message: "{$fullname} wurde erfolgreich gelöscht.", type: 'danger');
-        $this->dispatch('user-deleted', id: $id);
+        $this->dispatch("notify", message: "{$fullname} wurde erfolgreich gelöscht.", type: "danger");
+        $this->dispatch("user-deleted", id: $id);
     }
 
     public function render()
     {
-        return view('livewire.components.modals.user-delete');
+        return view("livewire.components.modals.user-delete");
     }
 }

@@ -19,10 +19,10 @@ class TestMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Testmail')
-            ->view('mails.test')
+        return $this->subject("Testmail")
+            ->view("mails.test")
             ->with([
-                'toAddress' => $this->toAddress,
+                "toAddress" => $this->toAddress,
             ]);
     }
 }
