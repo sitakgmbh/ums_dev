@@ -51,9 +51,7 @@ class AuthController extends Controller
 		try 
 		{
 			$connection = Container::getDefaultConnection();
-			$ldapUser = $connection->query()
-				->where('samaccountname', '=', $username)
-				->first();
+			$ldapUser = LdapUser::where('samaccountname', '=', $username)->first();
 
 			if (! $ldapUser) 
 			{
