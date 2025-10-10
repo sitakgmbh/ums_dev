@@ -1,35 +1,35 @@
 <?php
 
-namespace App\Mail\Eroeffnungen;
+namespace App\Mail\Mutationen;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Eroeffnung;
+use App\Models\Mutation;
 
 class AuftragRaumbeschriftung extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public Eroeffnung $eroeffnung;
+    public Mutation $mutation;
 
-    public function __construct(Eroeffnung $eroeffnung)
+    public function __construct(Mutation $mutation)
     {
-        $this->eroeffnung = $eroeffnung;
+        $this->mutation = $mutation;
     }
 
     public function build()
     {
         $subject = sprintf(
             "Auftrag Raumbeschriftung %s %s",
-            $this->eroeffnung->vorname,
-            $this->eroeffnung->nachname
+            $this->mutation->vorname,
+            $this->mutation->nachname
         );
 
         return $this->subject($subject)
-            ->view("mails.eroeffnungen.auftrag-raumbeschriftung")
+            ->view("mails.mutationen.auftrag-raumbeschriftung")
             ->with([
-                "eroeffnung" => $this->eroeffnung,
+                "mutation" => $this->mutation,
             ]);
     }
 }

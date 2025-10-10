@@ -1,23 +1,23 @@
 <?php
 
-namespace App\Mail\Eroeffnungen;
+namespace App\Mail\Mutationen;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Eroeffnung;
+use App\Models\Mutation;
 
 class AuftragGarderobe extends Mailable
 {
     use Queueable, SerializesModels;
-    public Eroeffnung $eroeffnung;
+    public Mutation $mutation;
 
-    public function __construct(Eroeffnung $eroeffnung) { $this->eroeffnung = $eroeffnung; }
+    public function __construct(Mutation $mutation) { $this->mutation = $mutation; }
 
     public function build()
     {
-        return $this->subject("Auftrag Garderobe {$this->eroeffnung->vorname} {$this->eroeffnung->nachname}")
-            ->view("mails.eroeffnungen.auftrag-garderobe")
-            ->with(["eroeffnung" => $this->eroeffnung]);
+        return $this->subject("Auftrag Garderobe {$this->mutation->vorname} {$this->mutation->nachname}")
+            ->view("mails.mutationen.auftrag-garderobe")
+            ->with(["mutation" => $this->mutation]);
     }
 }
