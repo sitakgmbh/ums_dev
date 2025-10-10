@@ -199,7 +199,7 @@ class LogsTable extends BaseTable
 
 	public function setToday(): void
 	{
-		$this->dateFrom = now()->format("Y-m-d\TH:i");
+		$this->dateFrom = now()->startOfDay()->format('Y-m-d\TH:i');
 		$this->dateTo = now()->format("Y-m-d\TH:i");
 	}
 

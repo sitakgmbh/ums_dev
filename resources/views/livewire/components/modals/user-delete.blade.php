@@ -11,5 +11,5 @@
 
 @section('footer')
     <button type="button" class="btn btn-secondary" wire:click="closeModal">Abbrechen</button>
-	<x-action-button action="confirm" class="btn-danger">Löschen</x-action-button>
+	<x-action-button action="delete" class="btn-danger">Löschen</x-action-button>
 @endsection

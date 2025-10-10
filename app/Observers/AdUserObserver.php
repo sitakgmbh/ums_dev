@@ -10,7 +10,9 @@ class AdUserObserver
 {
     public function created(AdUser $user): void
     {
-        $actor = Auth::user();
+        return;
+		
+		$actor = Auth::user();
         $actorUsername = $actor?->username ?? "system";
         $actorFullname = $actor?->name ?? ($actor?->firstname." ".$actor?->lastname);
 
@@ -25,7 +27,9 @@ class AdUserObserver
 
     public function updated(AdUser $user): void
     {
-        $actor = Auth::user();
+        return;
+		
+		$actor = Auth::user();
         $actorUsername = $actor?->username ?? "system";
         $actorFullname = $actor?->name ?? ($actor?->firstname." ".$actor?->lastname);
 
@@ -41,7 +45,9 @@ class AdUserObserver
 
     public function deleted(AdUser $user): void
     {
-        $actor = Auth::user();
+        return;
+		
+		$actor = Auth::user();
         $actorUsername = $actor?->username ?? "system";
         $actorFullname = $actor?->name ?? ($actor?->firstname." ".$actor?->lastname);
 

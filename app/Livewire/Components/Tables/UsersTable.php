@@ -50,7 +50,7 @@ class UsersTable extends BaseTable
             ],
             "is_enabled" => [
                 true  => ["label" => "Aktiviert", "class" => "success"],
-                false => ["label" => "Deaktiviert", "class" => "danger"],
+                false => ["label" => "Deaktiviert", "class" => "secondary"],
                 null  => ["label" => "nicht verfügbar", "class" => "light text-dark"],
             ],
             "role" => [
@@ -104,10 +104,10 @@ class UsersTable extends BaseTable
         ];
     }
 
-    public function openDeleteModal(int $id): void
-    {
-        $this->dispatch("open-modal", "user-delete-modal", ["id" => $id]);
-    }
+	public function openDeleteModal(int $id): void
+	{
+		$this->dispatch("open-modal", "components.modals.user-delete", ["id" => $id]);
+	}
 
 	protected function getTableActions(): array
 	{
