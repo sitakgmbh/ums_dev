@@ -4,8 +4,9 @@ namespace App\Livewire\Components\Modals\Eroeffnungen;
 
 use App\Livewire\Components\Modals\BaseModal;
 use App\Models\Eroeffnung;
-use App\Mail\InfoMail as InfoMailMailable;
+use App\Mail\Eroeffnungen\InfoMail as InfoMailMailable;
 use Illuminate\Support\Facades\Mail;
+use App\Support\SafeMail;
 
 class InfoMail extends BaseModal
 {
@@ -37,8 +38,8 @@ class InfoMail extends BaseModal
 
         try 
 		{
-            $recipients = config("eroeffnung_tasks.eroeffnung.mail.info.to", []);
-            $cc         = config("eroeffnung_tasks.eroeffnung.mail.info.cc", []);
+            $recipients = config("ums.eroeffnung.mail.info.to", []);
+            $cc         = config("ums.eroeffnung.mail.info.cc", []);
 
             if (empty($recipients) && empty($cc)) 
 			{
@@ -46,9 +47,7 @@ class InfoMail extends BaseModal
                 return;
             }
 
-            Mail::to($recipients)
-                ->cc($cc)
-                ->send(new InfoMailMailable($this->entry));
+            SafeMail::send(new InfoMailMailable($this->entry), $recipients, $cc);
 
             $this->entry->update(["status_info" => 2]);
             $this->dispatch("info-updated");

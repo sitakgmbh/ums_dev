@@ -108,22 +108,31 @@
 
                 <ul class="list-group">
                     @foreach($activeTasks as $task)
-                        @php
-                            $status = $entry->{$task['field']};
-                            $disabled = false;
+						@php
+							$status = $entry->{$task['field']};
+							$disabled = false;
 
-                            if ($task['field'] !== 'status_info') {
-                                // erledigte Stati sperren
-                                $disabled = in_array($status, [2, 3], true);
-                            }
+							// 🔹 1. Nur AD darf immer ausgeführt werden
+							if ($task['field'] !== 'status_ad') {
+								// Wenn AD noch nicht abgeschlossen → alles andere sperren
+								if ($entry->status_ad != 2) {
+									$disabled = true;
+								}
+							}
 
-                            // alle sperren, wenn kein Besitzer/Admin
-                            if (! $canEdit) {
-                                $disabled = true;
-                            }
+							// 🔹 2. Erledigte Stati sperren (außer Info-Mail)
+							if ($task['field'] !== 'status_info') {
+								$disabled = $disabled || in_array($status, [2, 3], true);
+							}
 
-                            $itemClass = $disabled ? 'list-group-item disabled text-muted' : 'list-group-item';
-                        @endphp
+							// 🔹 3. Kein Edit-Recht → alles sperren
+							if (! $canEdit) {
+								$disabled = true;
+							}
+
+							$itemClass = $disabled ? 'list-group-item disabled text-muted' : 'list-group-item';
+						@endphp
+
 
                         <li class="{{ $itemClass }} d-flex justify-content-between align-items-center">
                             <div>
@@ -142,19 +151,6 @@
                         </li>
                     @endforeach
                 </ul>
-
-                {{-- Modal-Container --}}
-                @livewire('components.modals.eroeffnungen.pep')
-                @livewire('components.modals.eroeffnungen.kis')
-                @livewire('components.modals.eroeffnungen.ad')
-                @livewire('components.modals.eroeffnungen.telefonie')
-                @livewire('components.modals.eroeffnungen.auftraege')
-                @livewire('components.modals.eroeffnungen.info-mail')
-                @livewire('components.modals.eroeffnungen.besitzer')
-				@livewire('components.modals.eroeffnungen.archivieren')
-				@livewire('components.modals.eroeffnungen.delete')
-                <livewire:components.modals.alert-modal />
-
             </div>
         </div>
     </div>
@@ -304,3 +300,15 @@
         }
     }
 </script>
+
+@section('modals')
+    <livewire:components.modals.eroeffnungen.pep />
+    <livewire:components.modals.eroeffnungen.kis />
+    <livewire:components.modals.eroeffnungen.ad />
+    <livewire:components.modals.eroeffnungen.telefonie />
+    <livewire:components.modals.eroeffnungen.auftraege />
+    <livewire:components.modals.eroeffnungen.info-mail />
+    <livewire:components.modals.eroeffnungen.besitzer />
+    <livewire:components.modals.eroeffnungen.archivieren />
+    <livewire:components.modals.eroeffnungen.delete />
+@endsection

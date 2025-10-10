@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Forms;
 
+/**
+ * Formular Eröffnung mit Validierung und Logik
+ */
 use Livewire\Form;
 use Illuminate\Support\Str;
 use App\Models\Eroeffnung;
@@ -14,10 +17,13 @@ use App\Models\Anrede;
 use App\Models\Titel;
 use App\Models\SapRolle;
 use App\Utils\DateHelper;
+use App\Livewire\Traits\EroeffnungDropdownHandlers;
 
 class EroeffnungForm extends Form
 {
-    public bool $isCreate = true;
+    use EroeffnungDropdownHandlers;
+	
+	public bool $isCreate = true;
     public bool $isReadonly = false;
 
     public ?int $arbeitsort_id = null;
@@ -224,8 +230,9 @@ class EroeffnungForm extends Form
 				};
 			}
 
-			// Headset wenn Tischtelefon oder UC Standard
-			if ($this->tel_tischtel || $this->tel_ucstd) {
+			// Headset nötig wenn Tischtelefon oder UC Standard ausgewählt
+			if ($this->tel_tischtel || $this->tel_ucstd) 
+			{
 				$rules["tel_headset"][] = "required";
 			}
 		}
@@ -302,241 +309,135 @@ class EroeffnungForm extends Form
 		return $data;
 	}
 
-    public function loadArbeitsorte(bool $all = false): void
-    {
-        $this->arbeitsorte = Arbeitsort::query()
-            ->when(!$all, fn($q) => $q->where("enabled", true))
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
-
-    public function loadAlleArbeitsorte(): void
-    {
-        $this->arbeitsorte = Arbeitsort::orderBy("name")->get(["id", "name"])->toArray();
-    }
-
-    public function loadUnternehmenseinheiten(bool $all = false): void
-    {
-        if ($all || $this->neue_konstellation) 
-		{
-            $this->unternehmenseinheiten = Unternehmenseinheit::orderBy("name")->get(["id", "name"])->toArray();
-            return;
-        }
-
-        if (!$this->arbeitsort_id) 
-		{
-            $this->unternehmenseinheiten = [];
-            return;
-        }
-
-        $this->unternehmenseinheiten = Unternehmenseinheit::whereHas("konstellationen", function ($q) {
-                $q->where("arbeitsort_id", $this->arbeitsort_id);
-            })
-            ->where("enabled", true)
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
-
-    public function loadAlleUnternehmenseinheiten(): void
-    {
-        $this->unternehmenseinheiten = Unternehmenseinheit::orderBy("name")->get(["id", "name"])->toArray();
-    }
-
-    public function loadAbteilungen(bool $all = false): void
-    {
-        if ($all || $this->neue_konstellation) 
-		{
-            $this->abteilungen = Abteilung::orderBy("name")->get(["id", "name"])->toArray();
-            return;
-        }
-
-        if (!$this->arbeitsort_id || !$this->unternehmenseinheit_id) 
-		{
-            $this->abteilungen = [];
-            return;
-        }
-
-        $this->abteilungen = Abteilung::whereHas("konstellationen", function ($q) {
-                $q->where("arbeitsort_id", $this->arbeitsort_id)
-                  ->where("unternehmenseinheit_id", $this->unternehmenseinheit_id);
-            })
-            ->where("enabled", true)
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
-
-    public function loadAlleAbteilungen(): void
-    {
-        $this->abteilungen = Abteilung::orderBy("name")->get(["id", "name"])->toArray();
-    }
-
-    public function loadFunktionen(bool $all = false): void
-    {
-        if ($all || $this->neue_konstellation) 
-		{
-            $this->funktionen = Funktion::orderBy("name")->get(["id", "name"])->toArray();
-            return;
-        }
-
-        if (!$this->arbeitsort_id || !$this->unternehmenseinheit_id || !$this->abteilung_id) 
-		{
-            $this->funktionen = [];
-            return;
-        }
-
-        $this->funktionen = Funktion::whereHas("konstellationen", function ($q) {
-                $q->where("arbeitsort_id", $this->arbeitsort_id)
-                  ->where("unternehmenseinheit_id", $this->unternehmenseinheit_id)
-                  ->where("abteilung_id", $this->abteilung_id);
-            })
-            ->where("enabled", true)
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
-
-    public function loadAlleFunktionen(): void
-    {
-        $this->funktionen = Funktion::orderBy("name")->get(["id", "name"])->toArray();
-    }
-
-    public function loadAnreden(): void
-    {
-        $this->anreden = Anrede::where("enabled", true)
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
-
-    public function loadTitel(): void
-    {
-        $this->titel = Titel::where("enabled", true)
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
-
-    public function loadMailendungen(): void
-    {
-        $this->mailendungen = [
-            ["id" => "waldhaus.ch", "name" => "waldhaus.ch"],
-            ["id" => "kliniken-gr.ch", "name" => "kliniken-gr.ch"],
-            ["id" => "example.org", "name" => "example.org"],
-        ];
-    }
-
-	public function loadAdusers(?int $abteilungId = null): void
+	public function loadArbeitsorte(?Eroeffnung $eroeffnung = null): void
 	{
-		$query = AdUser::query()
-			->with("funktion")
-			->orderBy("display_name");
-
-		if ($this->filter_mitarbeiter && $abteilungId) 
-		{
-			$query->where("abteilung_id", $abteilungId);
-		}
-
-		$this->adusers = $query->get()->map(function ($user) {
-			return [
-				"id" => $user->id,
-				"display_name" => $user->funktion
-					? $user->display_name . " (" . $user->funktion->name . ")"
-					: $user->display_name,
-			];
-		})->toArray();
+		$this->loadDropdown(
+			\App\Models\Arbeitsort::class,
+			$eroeffnung?->arbeitsort_id,
+			'arbeitsorte'
+		);
 	}
 
-
-
-	public function loadAdusersKalender(): void
+	public function loadUnternehmenseinheiten(?Eroeffnung $eroeffnung = null): void
 	{
-		$this->adusersKalender = AdUser::query()
-			->with("funktion")
-			->orderBy("display_name")
-			->get()
-			->map(fn($user) => [
-				"id" => $user->id,
-				"display_name" => Str::limit(
-					$user->funktion
-						? $user->display_name . " (" . $user->funktion->name . ")"
-						: $user->display_name,
-					40 // maximale Länge, danach "..."
-				),
-			])
-			->toArray();
+		$this->loadDropdown(
+			\App\Models\Unternehmenseinheit::class,
+			$eroeffnung?->unternehmenseinheit_id,
+			'unternehmenseinheiten',
+			scope: fn($q) => $this->arbeitsort_id
+				? $q->whereHas('konstellationen', fn($s) =>
+					$s->where('arbeitsort_id', $this->arbeitsort_id))
+				: $q
+		);
 	}
 
-	public function loadSapRollen(): void
+	public function loadAbteilungen(?Eroeffnung $eroeffnung = null): void
 	{
-		$this->sapRollen = SapRolle::where("enabled", true)
-			->orderBy("label")
-			->get(["id", "label"])
-			->toArray();
+		$this->loadDropdown(
+			\App\Models\Abteilung::class,
+			[$eroeffnung?->abteilung_id, $eroeffnung?->abteilung2_id],
+			'abteilungen',
+			scope: fn($q) => ($this->arbeitsort_id && $this->unternehmenseinheit_id)
+				? $q->whereHas('konstellationen', fn($s) =>
+					$s->where('arbeitsort_id', $this->arbeitsort_id)
+					  ->where('unternehmenseinheit_id', $this->unternehmenseinheit_id))
+				: $q
+		);
+	}
+
+	public function loadFunktionen(?Eroeffnung $eroeffnung = null): void
+	{
+		$this->loadDropdown(
+			\App\Models\Funktion::class,
+			$eroeffnung?->funktion_id,
+			'funktionen',
+			scope: fn($q) => ($this->arbeitsort_id && $this->unternehmenseinheit_id && $this->abteilung_id)
+				? $q->whereHas('konstellationen', fn($s) =>
+					$s->where('arbeitsort_id', $this->arbeitsort_id)
+					  ->where('unternehmenseinheit_id', $this->unternehmenseinheit_id)
+					  ->where('abteilung_id', $this->abteilung_id))
+				: $q
+		);
+	}
+
+	public function loadAnreden(?Eroeffnung $eroeffnung = null): void
+	{
+		$this->loadDropdown(
+			\App\Models\Anrede::class,
+			$eroeffnung?->anrede_id,
+			'anreden'
+		);
+	}
+
+	public function loadTitel(?Eroeffnung $eroeffnung = null): void
+	{
+		$this->loadDropdown(
+			\App\Models\Titel::class,
+			$eroeffnung?->titel_id,
+			'titel'
+		);
+	}
+
+	public function loadMailendungen(): void
+	{
+		$this->mailendungen = [
+			["id" => "pdgr.ch", "name" => "pdgr.ch"],
+			["id" => "mentalva.ch", "name" => "mentalva.ch"],
+			["id" => "arbes.ch", "name" => "arbes.ch"],
+		];
+	}
+
+	public function loadAdusers(?Eroeffnung $eroeffnung = null): void
+	{
+		$extraIds = $eroeffnung
+			? [$eroeffnung->bezugsperson_id, $eroeffnung->vorlage_benutzer_id]
+			: [];
+		$this->loadAdUserDropdown($extraIds, 'adusers');
+	}
+
+	public function loadAdusersKalender(?Eroeffnung $eroeffnung = null): void
+	{
+		$ids = $eroeffnung?->kalender_berechtigungen ?? [];
+		$this->loadAdUserDropdown($ids, 'adusersKalender');
+	}
+
+	public function loadSapRollen(?Eroeffnung $eroeffnung = null): void
+	{
+		$this->loadDropdown(
+			\App\Models\SapRolle::class,
+			$eroeffnung?->sap_rolle_id,
+			'sapRollen',
+			labelField: 'label'
+		);
 	}
 
 	public function updatedFormNeueKonstellation(bool $value): void
 	{
-		if ($value) 
-		{
-			$this->form->loadAlleArbeitsorte();
-			$this->form->loadAlleUnternehmenseinheiten();
-			$this->form->loadAlleAbteilungen();
-			$this->form->loadAlleFunktionen();
-		} 
-		else 
-		{
-			$this->form->loadArbeitsorte();
+		// Dropdowns neu laden (Trait regelt, ob gefiltert oder nicht)
+		$this->form->loadArbeitsorte();
+		$this->form->loadUnternehmenseinheiten();
+		$this->form->loadAbteilungen();
+		$this->form->loadFunktionen();
 
-			if ($this->form->arbeitsort_id && !collect($this->form->arbeitsorte)->pluck("id")->contains($this->form->arbeitsort_id)) {
-				$this->form->arbeitsort_id = null;
-			}
-
-			$this->form->loadUnternehmenseinheiten();
-			
-			if ($this->form->unternehmenseinheit_id && !collect($this->form->unternehmenseinheiten)->pluck("id")->contains($this->form->unternehmenseinheit_id)) 
-			{
-				$this->form->unternehmenseinheit_id = null;
-			}
-
-			$this->form->loadAbteilungen();
-			
-			if ($this->form->abteilung_id && !collect($this->form->abteilungen)->pluck("id")->contains($this->form->abteilung_id)) 
-			{
-				$this->form->abteilung_id = null;
-			}
-
-			$this->form->loadFunktionen();
-			
-			if ($this->form->funktion_id && !collect($this->form->funktionen)->pluck("id")->contains($this->form->funktion_id)) 
-			{
-				$this->form->funktion_id = null;
-			}
+		// Alle Select2-Dropdowns aktualisieren
+		foreach ([
+			'arbeitsort_id' => $this->form->arbeitsorte,
+			'unternehmenseinheit_id' => $this->form->unternehmenseinheiten,
+			'abteilung_id' => $this->form->abteilungen,
+			'funktion_id' => $this->form->funktionen,
+			'abteilung2_id' => $this->form->abteilungen,
+		] as $id => $options) {
+			$this->dispatch('select2-options', id: $id, options: $options, value: $this->form->{$id});
 		}
 
-		// Kaskade aktualisieren
-		$this->dispatch("select2-options", id: "arbeitsort_id", options: $this->form->arbeitsorte, value: $this->form->arbeitsort_id);
-		$this->dispatch("select2-options", id: "unternehmenseinheit_id", options: $this->form->unternehmenseinheiten, value: $this->form->unternehmenseinheit_id);
-		$this->dispatch("select2-options", id: "abteilung_id", options: $this->form->abteilungen, value: $this->form->abteilung_id);
-		$this->dispatch("select2-options", id: "funktion_id", options: $this->form->funktionen, value: $this->form->funktion_id);
-		$this->dispatch("select2-options", id: "abteilung2_id", options: $this->form->abteilungen, value: $this->form->abteilung2_id);
-
-		// Mitarbeiter nach Filter-Status aktualisieren
-		if ($this->form->filter_mitarbeiter && !$this->form->abteilung_id) 
+		// Mitarbeiterliste aktualisieren
+		$this->form->loadAdusers();
+		
+		foreach (['bezugsperson_id', 'vorlage_benutzer_id'] as $id) 
 		{
-			$this->form->adusers = [];
-		} 
-		else 
-		{
-			$this->form->loadAdusers($this->form->filter_mitarbeiter ? $this->form->abteilung_id : null);
+			$this->dispatch('select2-options', id: $id, options: $this->form->adusers, value: $this->form->{$id});
 		}
-
-		$this->dispatch("select2-options", id: "bezugsperson_id", options: $this->form->adusers, value: $this->form->bezugsperson_id);
-		$this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
 	}
-
 
     public function updatedHasAbteilung2($value): void
     {
@@ -561,15 +462,17 @@ class EroeffnungForm extends Form
 	{
 		$current = (int) $this->{$field};
 
-		if ($active) {
-			// Wenn noch nicht erledigt (0), auf "in Bearbeitung" (1) setzen
-			if ($current === 0) {
+		if ($active) 
+		{
+			if ($current === 0) // Wenn noch nicht erledigt (0), auf "in Bearbeitung" (1) setzen
+			{
 				$this->{$field} = 1;
 			}
-			// wenn bereits 1 oder 2, unverändert lassen
-		} else {
-			// Deaktiviert -> sicher auf 0
-			$this->{$field} = 0;
+			
+		} 
+		else // wenn bereits 1 oder 2, unverändert lassen 
+		{
+			$this->{$field} = 0; // Deaktiviert -> sicher auf 0
 		}
 	}
 

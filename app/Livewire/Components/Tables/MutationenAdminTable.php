@@ -58,7 +58,7 @@ class MutationenAdminTable extends BaseTable
             ],
             "owner.display_name" => [ "label" => "Besitzer", "sortable" => true ],
             "vertragsbeginn"     => [ "label" => "Eintrittsdatum", "sortable" => true ],
-            "bezugsperson.display_name"   => [ "label" => "Bezugsperson", "sortable" => true ],
+            "antragsteller.display_name"   => [ "label" => "Antragsteller", "sortable" => true ],
             "vorlageBenutzer.display_name"=> [ "label" => "Berechtigungen", "sortable" => true ],
             "actions" => [ "label" => "Aktionen", "sortable" => false, "class" => "shrink" ],
         ];
@@ -78,23 +78,28 @@ class MutationenAdminTable extends BaseTable
 
     protected function applyFilters(Builder $query): void
     {
-        if ($this->onlyMine && auth()->check()) {
+        if ($this->onlyMine && auth()->check()) 
+		{
             $adUserId = auth()->user()->adUser?->id;
 
-            if ($adUserId) {
+            if ($adUserId) 
+			{
                 $query->where("mutationen.owner_id", $adUserId);
             }
         }
 
-        if (! $this->showArchived) {
+        if (! $this->showArchived) 
+		{
             $query->where("mutationen.archiviert", false);
         }
 
-        if ($this->onlyUnassigned) {
+        if ($this->onlyUnassigned) 
+		{
             $query->whereNull("mutationen.owner_id");
         }
 
-        if ($this->search) {
+        if ($this->search) 
+		{
             $search = strtolower($this->search);
 
             $query->where(function ($q) use ($search) {
@@ -190,17 +195,20 @@ class MutationenAdminTable extends BaseTable
                 if ($row->status_sap)     $badges[] = $createBadge($row->status_sap, "mdi-hospital-building", "SAP");
                 if ($row->status_auftrag) $badges[] = $createBadge($row->status_auftrag, "mdi-clipboard-text", "Aufträge");
 
-                if ($row->archiviert) {
+                if ($row->archiviert) 
+				{
                     $badges[] = "<span class='badge bg-light text-dark p-1' title='Archiviert'>Archiv</span>";
                 }
 
-                if (!empty($row->kommentar)) {
+                if (!empty($row->kommentar)) 
+				{
                     $badges[] = "<span title='" . e($row->kommentar) . "'>
                                     <i class='mdi mdi-comment text-info'></i>
                                  </span>";
                 }
 
-                if ($row->is_lei) {
+                if ($row->is_lei) 
+				{
                     $badges[] = "<span title='Leistungserbringer'>
                                     <i class='mdi mdi-doctor text-info'></i>
                                  </span>";

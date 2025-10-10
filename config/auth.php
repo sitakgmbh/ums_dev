@@ -38,7 +38,7 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'ldap_or_local',
+            'provider' => 'local_users',
         ],
 
 		'api' => [
@@ -70,8 +70,8 @@ return [
 			'model' => App\Models\User::class,
 		],
 
-		'ldap_or_local' => [
-			'driver' => 'ldap_or_local',
+		'local_users' => [
+			'driver' => 'local',
 			'model' => App\Models\User::class,
 		],
 	],

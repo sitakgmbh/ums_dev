@@ -191,7 +191,7 @@
                                     <select class="form-select" id="inputSapRolle" wire:model="form.sap_rolle_id" @disabled($form->isReadonly)>
                                         <option value="">Bitte auswählen</option>
                                         @foreach($form->sapRollen as $rolle)
-                                            <option value="{{ $rolle['id'] }}">{{ $rolle['label'] }}</option>
+                                            <option value="{{ $rolle['id'] }}">{{ $rolle['name'] }}</option>
                                         @endforeach
                                     </select>
                                 </div>

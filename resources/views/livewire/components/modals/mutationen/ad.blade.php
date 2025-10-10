@@ -23,17 +23,17 @@
             <label class="form-check-label" for="radioOverwrite">Berechtigungen überschreiben</label>
         </div>
 
-{{-- Gruppenliste --}}
-@if(!empty($groups))
-    <div class="mt-3">
-        <strong>Gruppen aus Antrag:</strong>
-        <ul class="mt-1 mb-0 ps-0" style="list-style-position: inside;">
-            @foreach($groups as $group)
-                <li>{{ $group }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+		{{-- Gruppenliste --}}
+		@if(!empty($groups))
+			<div class="mt-3">
+				<strong>Gruppen aus Antrag:</strong>
+				<ul class="mt-1 mb-0 ps-0" style="list-style-position: inside;">
+					@foreach($groups as $group)
+						<li>{{ $group }}</li>
+					@endforeach
+				</ul>
+			</div>
+		@endif
 
     @endif
 @endsection

@@ -41,6 +41,13 @@
 
         <ul class="topbar-menu d-flex align-items-center gap-3">
 
+            <!-- Testmodus-Badge -->
+            @if (env('TEST_MODE', false))
+				<li class="d-none d-sm-inline-block">
+					<div class="badge bg-warning text-dark">Test-Modus aktiv</div>
+				</li>
+            @endif
+
 			<!-- Theme Mode -->
 			<li class="d-none d-sm-inline-block">
 				<div class="nav-link cursor-pointer" wire:click="toggle">
@@ -82,10 +89,12 @@
                         <span>Einstellungen</span>
                     </a>
 
-                    <a href="#" class="dropdown-item" wire:click.prevent="logout">
-                        <i class="mdi mdi-logout me-1"></i>
-                        <span>Abmelden</span>
-                    </a>
+					@if (env('AUTH_MODE') === 'local')
+						<a href="#" class="dropdown-item" wire:click.prevent="logout">
+							<i class="mdi mdi-logout me-1"></i>
+							<span>Abmelden</span>
+						</a>
+					@endif
                 </div>
             </li>
         </ul>

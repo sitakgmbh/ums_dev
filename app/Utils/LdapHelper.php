@@ -64,7 +64,7 @@ class LdapHelper
 
 		if (! $user) 
 		{
-			throw new \RuntimeException("AD-Benutzer {$username} nicht gefunden für Gruppenmitgliedschaften.");
+			throw new \RuntimeException("AD-Benutzer {$username} nicht gefunden.");
 		}
 
 		// SamAccountName absichern (kann Array sein)

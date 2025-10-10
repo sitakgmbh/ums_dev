@@ -2,13 +2,7 @@
 
 return [
 	'taskDefinitions' => [
-		[
-			'field'   => 'status_ad',
-			'label'   => 'AD-Benutzer',
-			'icon'    => 'mdi mdi-account',
-			'modal' => 'components.modals.eroeffnungen.ad',
-		],
-		[
+        [
             'field' => 'status_pep',
             'label' => 'PEP-Benutzer',
             'icon'  => 'mdi mdi-clock',
@@ -19,6 +13,12 @@ return [
 			'label'   => 'KIS-Benutzer',
 			'icon'    => 'mdi mdi-doctor',
 			'modal' => 'components.modals.eroeffnungen.kis',
+		],
+		[
+			'field'   => 'status_ad',
+			'label'   => 'AD-Benutzer',
+			'icon'    => 'mdi mdi-account',
+			'modal' => 'components.modals.eroeffnungen.ad',
 		],
 		[
 			'field'   => 'status_tel',

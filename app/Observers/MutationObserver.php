@@ -4,11 +4,15 @@ namespace App\Observers;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Support\SafeMail;
 use App\Models\Mutation;
 use App\Mail\Mutationen\Bestaetigung;
 use App\Services\OtoboService;
 use App\Utils\Logging\Logger;
 
+/**
+ * Überwacht Mutationen
+ */
 class MutationObserver
 {
     protected function filterData(array $data, Mutation $mutation): array
@@ -24,11 +28,13 @@ class MutationObserver
         $username = $antragsteller?->username ?? "unbekannt";
         $fullname = $antragsteller?->name ?? ($antragsteller?->firstname . " " . $antragsteller?->lastname);
 
+		// Logeintrag erstellen
         Logger::db("antraege", "info", "Mutation ID {$mutation->id} erstellt durch {$fullname} ({$username})", [
             "mutation_id" => $mutation->id,
             "form_data"   => $this->filterData($mutation->getAttributes(), $mutation),
         ]);
 
+		// Bestätigunsmail versenden
         $to = "patrik@sitak.ch"; // später ersetzen durch $mutation->antragsteller?->email ?: $fallback;
         $cc = [];
 		
@@ -37,44 +43,65 @@ class MutationObserver
             // $cc[] = $mutation->bezugsperson->email;
         }
 
-        Mail::to($to)->cc($cc)->send(new Bestaetigung($mutation));
+		SafeMail::send(new Bestaetigung($mutation), $to, $cc);
 
+		// Ticket erstellen
         app(OtoboService::class)->createTicket($mutation);
     }
 
-    public function updated(Mutation $mutation): void
-    {
-        $user = Auth::user();
-        $username = $user?->username ?? "unbekannt";
-        $fullname = $user?->name ?? ($user?->firstname . " " . $user?->lastname);
+	public function updated(Mutation $mutation): void
+	{
+		$user = Auth::user();
+		$username = $user?->username ?? "unbekannt";
+		$fullname = $user?->name ?? ($user?->firstname . " " . $user?->lastname);
 
-        $changes  = $this->filterData($mutation->getChanges(), $mutation);
-        $original = $this->filterData($mutation->getOriginal(), $mutation);
+		$changes  = $this->filterData($mutation->getChanges(), $mutation);
+		$original = $this->filterData($mutation->getOriginal(), $mutation);
 
-        Logger::db("antraege", "info", "Mutation ID {$mutation->id} bearbeitet durch {$fullname} ({$username})", [
-            "mutation_id" => $mutation->id,
-            "changes"     => $changes,
-            "original"    => $original,
-        ]);
+		Logger::db("antraege", "info", "Mutation ID {$mutation->id} bearbeitet durch {$fullname} ({$username})", [
+			"mutation_id" => $mutation->id,
+			"changes"     => $changes,
+			"original"    => $original,
+		]);
 
-        // 🔹 Wenn archiviert = 1 → Ticket schliessen
-        if ($mutation->wasChanged('archiviert') && $mutation->archiviert) {
-            $msg = "Mutation wurde archiviert durch {$fullname} ({$username}).";
-            app(OtoboService::class)->updateTicket($mutation, $msg, true);
-            return;
-        }
+		// Ticket schliessen wenn archiviert
+		if ($mutation->wasChanged('archiviert') && $mutation->archiviert) 
+		{
+			$msg = "Mutation wurde archiviert durch {$fullname} ({$username}).";
+			app(OtoboService::class)->updateTicket($mutation, $msg, true);
+			return;
+		}
 
-        // 🔹 Änderungen an OTOBO loggen
-        if (!empty($changes)) {
-            $message = "Mutation aktualisiert durch {$fullname} ({$username}):\n\n";
-            foreach ($changes as $field => $newValue) {
-                $oldValue = $original[$field] ?? '(leer)';
-                $newValue = $newValue === '' ? '(leer)' : $newValue;
-                $message .= "- {$field}: {$oldValue} → {$newValue}\n";
-            }
-            app(OtoboService::class)->updateTicket($mutation, $message);
-        }
-    }
+		// Ticket aktualisieren
+		if (!empty($changes)) 
+		{
+			$message = "Mutation aktualisiert durch {$fullname} ({$username}):\n\n";
+			
+			foreach ($changes as $field => $newValue) 
+			{
+				$oldValue = $original[$field] ?? '(leer)';
+
+				if (is_array($oldValue) || is_object($oldValue)) 
+				{
+					$oldValue = json_encode($oldValue, JSON_UNESCAPED_UNICODE);
+				}
+				
+				if (is_array($newValue) || is_object($newValue)) 
+				{
+					$newValue = json_encode($newValue, JSON_UNESCAPED_UNICODE);
+				}
+
+				if ($newValue === '') 
+				{
+					$newValue = '(leer)';
+				}
+
+				$message .= "- {$field}: {$oldValue} → {$newValue}\n";
+			}
+
+			app(OtoboService::class)->updateTicket($mutation, $message);
+		}
+	}
 
     public function deleted(Mutation $mutation): void
     {
@@ -84,11 +111,13 @@ class MutationObserver
 
         $deletedData = $this->filterData($mutation->getOriginal(), $mutation);
 
+		// Logeintrag erstellen
         Logger::db("antraege", "info", "Mutation ID {$mutation->id} gelöscht durch {$fullname} ({$username})", [
             "mutation_id" => $mutation->id,
             "deleted_data" => $deletedData,
         ]);
 
+		// Ticket abschliessen
         $message = "Mutation wurde gelöscht durch {$fullname} ({$username}).";
         app(OtoboService::class)->updateTicket($mutation, $message, true);
     }

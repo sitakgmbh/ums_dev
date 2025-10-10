@@ -26,7 +26,8 @@ class MailTest extends Component
 	{
 		$this->validate();
 
-		try {
+		try 
+		{
 			Mail::to($this->to)->send(new TestMail($this->to));
 
 			$this->status = "Testmail erfolgreich an {$this->to} gesendet.";
@@ -34,7 +35,9 @@ class MailTest extends Component
 
 			$this->preview = null;
 
-		} catch (\Throwable $e) {
+		} 
+		catch (\Throwable $e) 
+		{
 			$this->status = "Fehler beim Senden: " . $e->getMessage();
 			$this->statusType = "danger";
 		}

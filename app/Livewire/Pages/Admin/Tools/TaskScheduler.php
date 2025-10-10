@@ -31,7 +31,8 @@ class TaskScheduler extends Component
         // routes/console.php manuell einbinden
         $consoleFile = base_path("routes/console.php");
 
-        if (file_exists($consoleFile)) {
+        if (file_exists($consoleFile)) 
+		{
             require $consoleFile;
         }
 
@@ -49,7 +50,8 @@ class TaskScheduler extends Component
     private function extractCommandName(string $command): string
     {
         // Beispiel: "C:\xampp\php\php.EXE" "artisan" ad:sync-users
-        if (preg_match('/artisan"?\s+([^\s]+)/', $command, $matches)) {
+        if (preg_match('/artisan"?\s+([^\s]+)/', $command, $matches)) 
+		{
             return $matches[1];
         }
         return $command;
@@ -57,7 +59,8 @@ class TaskScheduler extends Component
 
     public function run(string $command): void
     {
-        if (! in_array($command, $this->allowed, true)) {
+        if (! in_array($command, $this->allowed, true)) 
+		{
             $this->dispatch("open-modal", modal: "components.modals.artisan-output", payload: [
                 "command" => $command,
                 "output"  => "Command `{$command}` ist nicht erlaubt.",
@@ -65,7 +68,8 @@ class TaskScheduler extends Component
             return;
         }
 
-        if ($this->running) {
+        if ($this->running) 
+		{
             $this->dispatch("open-modal", modal: "components.modals.artisan-output", payload: [
                 "command" => $command,
                 "output"  => "Es läuft bereits ein Command. Bitte warten.",
@@ -75,7 +79,8 @@ class TaskScheduler extends Component
 
         $this->running = true;
 
-        try {
+        try 
+		{
             $start = microtime(true);
             $startedAt = now();
 
@@ -90,12 +95,16 @@ class TaskScheduler extends Component
                 "started"  => $startedAt->format("d.m.Y H:i:s"),
                 "duration" => $duration,
             ]);
-        } catch (\Throwable $e) {
+        } 
+		catch (\Throwable $e) 
+		{
             $this->dispatch("open-modal", modal: "components.modals.artisan-output", payload: [
                 "command" => $command,
                 "output"  => "Fehler beim Ausführen von {$command}: " . $e->getMessage(),
             ]);
-        } finally {
+        } 
+		finally 
+		{
             $this->running = false;
         }
     }

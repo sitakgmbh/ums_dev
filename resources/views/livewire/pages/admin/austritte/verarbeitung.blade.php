@@ -140,18 +140,6 @@
                         </li>
                     @endforeach
                 </ul>
-
-                {{-- Modals --}}
-                @livewire('components.modals.austritte.pep')
-                @livewire('components.modals.austritte.kis')
-                @livewire('components.modals.austritte.streamline')
-                @livewire('components.modals.austritte.telefonie')
-                @livewire('components.modals.austritte.alarmierung')
-                @livewire('components.modals.austritte.logimen')
-                @livewire('components.modals.austritte.besitzer')
-				@livewire('components.modals.austritte.archivieren')
-				@livewire('components.modals.austritte.delete')
-                <livewire:components.modals.alert-modal />
             </div>
         </div>
     </div>
@@ -218,3 +206,15 @@
 </div>
 
 </div>
+
+@section('modals')
+    <livewire:components.modals.austritte.pep />
+    <livewire:components.modals.austritte.kis />
+    <livewire:components.modals.austritte.streamline />
+    <livewire:components.modals.austritte.telefonie />
+    <livewire:components.modals.austritte.alarmierung />
+    <livewire:components.modals.austritte.logimen />
+    <livewire:components.modals.austritte.besitzer />
+    <livewire:components.modals.austritte.archivieren />
+    <livewire:components.modals.austritte.delete />
+@endsection

@@ -80,23 +80,30 @@ class AustritteAdminTable extends BaseTable
 
     protected function applyFilters(Builder $query): void
     {
-        if ($this->onlyMine && auth()->check()) {
+        if ($this->onlyMine && auth()->check()) 
+		{
             $adUserId = auth()->user()->adUser?->id;
-            if ($adUserId) {
+			
+            if ($adUserId) 
+			{
                 $query->where("austritte.owner_id", $adUserId);
             }
         }
 
-        if (! $this->showArchived) {
+        if (! $this->showArchived) 
+		{
             $query->where("austritte.archiviert", false);
         }
 
-        if ($this->onlyUnassigned) {
+        if ($this->onlyUnassigned) 
+		{
             $query->whereNull("austritte.owner_id");
         }
 
-        if ($this->search) {
+        if ($this->search) 
+		{
             $search = strtolower($this->search);
+			
             $query->where(function ($q) use ($search) {
                 $q->orWhereRaw("LOWER(austritte.vertragsende) LIKE ?", ["%{$search}%"])
                   ->orWhereHas("adUser", function ($sub) use ($search) {

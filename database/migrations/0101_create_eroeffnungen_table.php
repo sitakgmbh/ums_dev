@@ -28,11 +28,11 @@ return new class extends Migration
             $table->boolean('filter_mitarbeiter')->default(false);
             $table->foreignId('anrede_id')->nullable()->constrained('anreden')->nullOnDelete();
             $table->foreignId('titel_id')->nullable()->constrained('titel')->nullOnDelete();
-            $table->foreignId('arbeitsort_id')->constrained('arbeitsorte')->nullOnDelete();
-            $table->foreignId('unternehmenseinheit_id')->constrained('unternehmenseinheiten')->nullOnDelete();
-            $table->foreignId('abteilung_id')->constrained('abteilungen')->nullOnDelete();
+            $table->foreignId('arbeitsort_id')->nullable()->constrained('arbeitsorte')->nullOnDelete();
+            $table->foreignId('unternehmenseinheit_id')->nullable()->constrained('unternehmenseinheiten')->nullOnDelete();
+            $table->foreignId('abteilung_id')->nullable()->constrained('abteilungen')->nullOnDelete();
             $table->foreignId('abteilung2_id')->nullable()->constrained('abteilungen')->nullOnDelete();
-            $table->foreignId('funktion_id')->constrained('funktionen')->nullOnDelete();
+            $table->foreignId('funktion_id')->nullable()->constrained('funktionen')->nullOnDelete();
             $table->foreignId('sap_rolle_id')->nullable()->constrained('sap_rollen')->nullOnDelete();
 
             // --- Account-Daten ---

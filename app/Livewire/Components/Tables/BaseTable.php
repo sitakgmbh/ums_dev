@@ -67,13 +67,17 @@ abstract class BaseTable extends Component
         $columns = $this->getColumns();
         $col = $columns[$field] ?? null;
 
-        if (is_array($col) && ($col["sortable"] ?? true) === false) {
+        if (is_array($col) && ($col["sortable"] ?? true) === false) 
+		{
             return;
         }
 
-        if ($this->sortField === $field) {
+        if ($this->sortField === $field) 
+		{
             $this->sortDirection = $this->sortDirection === "asc" ? "desc" : "asc";
-        } else {
+        } 
+		else 
+		{
             $this->sortField = $field;
             $this->sortDirection = "asc";
         }

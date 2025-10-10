@@ -15,7 +15,8 @@ class Changelog extends Component
     {
         $file = base_path('CHANGELOG.md');
 
-        if (File::exists($file)) {
+        if (File::exists($file)) 
+		{
             $markdown = File::get($file);
 
             preg_match_all(
@@ -25,7 +26,8 @@ class Changelog extends Component
                 PREG_SET_ORDER
             );
 
-            foreach ($matches as $index => $match) {
+            foreach ($matches as $index => $match) 
+			{
                 $this->entries[] = [
                     'version' => trim($match[1]),
                     'date'    => trim($match[2]),

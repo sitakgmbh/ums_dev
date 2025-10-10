@@ -5,7 +5,7 @@ namespace App\Providers;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Auth;
-use App\Providers\CustomUserProvider;
+use App\Providers\LocalUserProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -15,9 +15,9 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        Auth::provider('ldap_or_local', function ($app, array $config) 
+        Auth::provider('local', function ($app, array $config) 
 		{
-            return new CustomUserProvider();
+            return new LocalUserProvider();
         });
 
         ResetPassword::createUrlUsing(function ($user, string $token) 

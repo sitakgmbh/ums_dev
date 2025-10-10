@@ -4,8 +4,9 @@
 	@endsection
 
     <livewire:components.tables.mutationen-table />
-
-    {{-- Modals --}}
-    <livewire:components.modals.mutationen.delete />
-    <livewire:components.modals.alert-modal />
 </div>
+
+@section("modals")
+    <livewire:components.modals.mutationen.status />
+	<livewire:components.modals.mutationen.delete />
+@endsection

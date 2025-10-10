@@ -7,6 +7,10 @@ use App\Models\Mutation;
 use Livewire\Component;
 
 #[Layout('layouts.app')]
+/**
+ * Zeigt eine Übersicht über die Anzahl eigener Eröffnungen und Mutationen
+ * basierend auf der SID des aktuell angemeldeten Benutzers an.
+ */
 class Dashboard extends Component
 {
     public int $eroeffnungenCount = 0;
@@ -27,9 +31,6 @@ class Dashboard extends Component
 	
     public function render()
     {
-        return view("livewire.pages.dashboard")
-			->layout("layouts.app", [
-				"pageTitle" => "Dashboard",
-			]);
+        return view("livewire.pages.dashboard")->layout("layouts.app", ["pageTitle" => "Dashboard",]);
     }
 }

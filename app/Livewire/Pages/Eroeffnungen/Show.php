@@ -10,6 +10,9 @@ use App\Livewire\Traits\EroeffnungFormHooks;
 use App\Utils\AntragHelper;
 
 #[Layout("layouts.app")]
+/**
+ * Anzeigen einer Eröffnung
+ */
 class Show extends Component
 {
     use EroeffnungFormHooks;
@@ -19,6 +22,7 @@ class Show extends Component
 
     public function mount(Eroeffnung $eroeffnung): void
     {
+		// Nur eigene Anträge
 		if (! AntragHelper::canView($eroeffnung, auth()->user())) abort(403);
 
         $this->form->isReadonly = true;
@@ -26,15 +30,16 @@ class Show extends Component
 		$this->form->fillFromModel($eroeffnung);
         $this->eroeffnung = $eroeffnung;
 
-        $this->form->loadArbeitsorte($this->form->neue_konstellation);
-        $this->form->loadAnreden();
-        $this->form->loadTitel();
-        $this->form->loadMailendungen();
-        $this->form->loadUnternehmenseinheiten($this->form->neue_konstellation);
-        $this->form->loadAbteilungen($this->form->neue_konstellation);
-        $this->form->loadFunktionen($this->form->neue_konstellation);
-        $this->form->loadAdusers($this->form->filter_mitarbeiter ? $this->form->abteilung_id : null);
-		$this->form->loadAdusersKalender();
+		$this->form->loadArbeitsorte($eroeffnung);
+		$this->form->loadAnreden($eroeffnung);
+		$this->form->loadTitel($eroeffnung);
+		$this->form->loadMailendungen();
+		$this->form->loadSapRollen($eroeffnung);
+		$this->form->loadAdusersKalender($eroeffnung);
+		$this->form->loadUnternehmenseinheiten($eroeffnung);
+		$this->form->loadAbteilungen($eroeffnung);
+		$this->form->loadFunktionen($eroeffnung);
+		$this->form->loadAdusers($eroeffnung);
 
         // Select2-Dropdowns initialisieren
         foreach ([

@@ -22,6 +22,6 @@
 @section('footer')
     <button type="button" class="btn btn-secondary" wire:click="closeModal">Abbrechen</button>
     @if(!empty($pendingAuftraege))
-        <button type="button" class="btn btn-primary" wire:click="confirm">Senden</button>
+        <x-action-button action="confirm" class="btn-primary"> Senden</x-action-button>
     @endif
 @endsection

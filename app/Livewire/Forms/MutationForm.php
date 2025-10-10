@@ -14,13 +14,18 @@ use App\Models\Anrede;
 use App\Models\Titel;
 use App\Models\SapRolle;
 use App\Utils\DateHelper;
+use App\Livewire\Traits\MutationDropdownHandlers;
 
+/**
+ * Formular Mutation mit Validierung und Logik
+ */
 class MutationForm extends Form
 {
-    public bool $isCreate = true;
+    use MutationDropdownHandlers;
+
+	public bool $isCreate = true;
     public bool $isReadonly = false;
 
-    // --- Aktivierungs-Checkboxen für Mutationsfelder ---
     public bool $enable_arbeitsort = false;
     public bool $enable_unternehmenseinheit = false;
     public bool $enable_abteilung = false;
@@ -29,6 +34,8 @@ class MutationForm extends Form
     public bool $enable_anrede = false;
     public bool $enable_titel = false;
     public bool $enable_mailendung = false;
+
+	public array $adusersForSelection = [];
 
     // Stammdaten
     public ?int $ad_user_id = null;
@@ -162,45 +169,68 @@ class MutationForm extends Form
 			],
         ];
 
-		if ($this->enable_anrede) {
+		if ($this->enable_anrede) 
+		{
 			$rules["anrede_id"] = ["required", "exists:anreden,id"];
 		}
-		if ($this->enable_titel) {
+		
+		if ($this->enable_titel) 
+		{
 			$rules["titel_id"] = ["required", "exists:titel,id"];
 		}
-		if ($this->enable_arbeitsort) {
+		
+		if ($this->enable_arbeitsort) 
+		{
 			$rules["arbeitsort_id"] = ["required", "exists:arbeitsorte,id"];
 		}
-		if ($this->enable_unternehmenseinheit) {
+		
+		if ($this->enable_unternehmenseinheit) 
+		{
 			$rules["unternehmenseinheit_id"] = ["required", "exists:unternehmenseinheiten,id"];
 		}
-		if ($this->enable_abteilung) {
+		
+		if ($this->enable_abteilung) 
+		{
 			$rules["abteilung_id"] = ["required", "exists:abteilungen,id"];
 		}
-		if ($this->enable_funktion) {
+		
+		if ($this->enable_funktion) 
+		{
 			$rules["funktion_id"] = ["required", "exists:funktionen,id"];
 		}
-		if ($this->enable_mailendung) {
+		
+		if ($this->enable_mailendung) 
+		{
 			$rules["mailendung"] = ["required", "string"];
 		}
-		if ($this->enable_vorlage) {
+		
+		if ($this->enable_vorlage) 
+		{
 			$rules["vorlage_benutzer_id"] = ["required", "integer", "exists:ad_users,id"];
 		}
 
-        if ($this->sap_status) {
+        if ($this->sap_status) 
+		{
             $rules["sap_rolle_id"] = ["required", "exists:sap_rollen,id"];
         }
 
-        if ($this->is_lei) {
+        if ($this->is_lei) 
+		{
             $rules["komm_lei"] = ["required", "string", "max:1000"];
         }
-        if ($this->berufskleider) {
+		
+        if ($this->berufskleider) 
+		{
             $rules["komm_berufskleider"] = ["required", "string", "max:1000"];
         }
-        if ($this->garderobe) {
+		
+        if ($this->garderobe) 
+		{
             $rules["komm_garderobe"] = ["required", "string", "max:1000"];
         }
-        if ($this->buerowechsel) {
+		
+        if ($this->buerowechsel) 
+		{
             $rules["komm_buerowechsel"] = ["required", "string", "max:1000"];
         }
 
@@ -323,17 +353,26 @@ class MutationForm extends Form
     {
         $data = parent::toArray();
 
-        if ($this->tel_status) {
-            if ($this->tel_auswahl === "neu") {
+        if ($this->tel_status) 
+		{
+            if ($this->tel_auswahl === "neu") 
+			{
                 $data["tel_nr"] = null;
-            } elseif ($this->tel_nr) {
-                if (preg_match("/^\d{4}$/", $this->tel_nr)) {
+            } 
+			elseif ($this->tel_nr) 
+			{
+                if (preg_match("/^\d{4}$/", $this->tel_nr)) 
+				{
                     $data["tel_nr"] = "+41 58 225 " . $this->tel_nr;
-                } else {
+                } 
+				else 
+				{
                     $data["tel_nr"] = $this->tel_nr;
                 }
             }
-        } else {
+        } 
+		else 
+		{
             $data["tel_auswahl"] = null;
             $data["tel_nr"] = null;
             $data["tel_tischtel"] = false;
@@ -346,233 +385,180 @@ class MutationForm extends Form
         return $data;
     }
 
-    // --- Loader-Methoden (gleich wie bei EroeffnungForm) ---
-    public function loadArbeitsorte(bool $all = false): void
-    {
-        $this->arbeitsorte = Arbeitsort::query()
-            ->when(!$all, fn($q) => $q->where("enabled", true))
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
+	public function loadArbeitsorte(?Mutation $mutation = null): void
+	{
+		$this->loadDropdown(\App\Models\Arbeitsort::class, $mutation?->arbeitsort_id, 'arbeitsorte');
+	}
 
-    public function loadAlleArbeitsorte(): void
-    {
-        $this->arbeitsorte = Arbeitsort::orderBy("name")->get(["id", "name"])->toArray();
-    }
+	public function loadUnternehmenseinheiten(?Mutation $mutation = null): void
+	{
+		$this->loadDropdown(
+			\App\Models\Unternehmenseinheit::class,
+			$mutation?->unternehmenseinheit_id,
+			'unternehmenseinheiten',
+			scope: fn($q) => $this->arbeitsort_id
+				? $q->whereHas('konstellationen', fn($s) => $s->where('arbeitsort_id', $this->arbeitsort_id))
+				: $q
+		);
+	}
 
-    public function loadUnternehmenseinheiten(bool $all = false): void
-    {
-        if ($all || $this->neue_konstellation) 
-		{
-            $this->unternehmenseinheiten = Unternehmenseinheit::orderBy("name")->get(["id", "name"])->toArray();
-            return;
-        }
+	public function loadAbteilungen(?Mutation $mutation = null): void
+	{
+		$this->loadDropdown(
+			\App\Models\Abteilung::class,
+			[$mutation?->abteilung_id, $mutation?->abteilung2_id],
+			'abteilungen',
+			scope: fn($q) => ($this->arbeitsort_id && $this->unternehmenseinheit_id)
+				? $q->whereHas('konstellationen', fn($s) =>
+					$s->where('arbeitsort_id', $this->arbeitsort_id)
+					  ->where('unternehmenseinheit_id', $this->unternehmenseinheit_id))
+				: $q
+		);
+	}
 
-        if (!$this->arbeitsort_id) 
-		{
-            $this->unternehmenseinheiten = [];
-            return;
-        }
+	public function loadFunktionen(?Mutation $mutation = null): void
+	{
+		$this->loadDropdown(
+			\App\Models\Funktion::class,
+			$mutation?->funktion_id,
+			'funktionen',
+			scope: fn($q) => ($this->arbeitsort_id && $this->unternehmenseinheit_id && $this->abteilung_id)
+				? $q->whereHas('konstellationen', fn($s) =>
+					$s->where('arbeitsort_id', $this->arbeitsort_id)
+					  ->where('unternehmenseinheit_id', $this->unternehmenseinheit_id)
+					  ->where('abteilung_id', $this->abteilung_id))
+				: $q
+		);
+	}
 
-        $this->unternehmenseinheiten = Unternehmenseinheit::whereHas("konstellationen", function ($q) {
-                $q->where("arbeitsort_id", $this->arbeitsort_id);
-            })
-            ->where("enabled", true)
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
+	public function loadAnreden(?Mutation $mutation = null): void
+	{
+		$this->loadDropdown(\App\Models\Anrede::class, $mutation?->anrede_id, 'anreden');
+	}
 
-    public function loadAlleUnternehmenseinheiten(): void
-    {
-        $this->unternehmenseinheiten = Unternehmenseinheit::orderBy("name")->get(["id", "name"])->toArray();
-    }
+	public function loadTitel(?Mutation $mutation = null): void
+	{
+		$this->loadDropdown(\App\Models\Titel::class, $mutation?->titel_id, 'titel');
+	}
 
-    public function loadAbteilungen(bool $all = false): void
-    {
-        if ($all || $this->neue_konstellation) 
-		{
-            $this->abteilungen = Abteilung::orderBy("name")->get(["id", "name"])->toArray();
-            return;
-        }
+	public function loadMailendungen(): void
+	{
+		$this->mailendungen = [
+			["id" => "pdgr.ch", "name" => "pdgr.ch"],
+			["id" => "mentalva.ch", "name" => "mentalva.ch"],
+			["id" => "arbes.ch", "name" => "arbes.ch"],
+		];
+	}
 
-        if (!$this->arbeitsort_id || !$this->unternehmenseinheit_id) 
-		{
-            $this->abteilungen = [];
-            return;
-        }
+	public function loadAdusers(?\App\Models\Mutation $mutation = null): void
+	{
+		// Gespeicherte Benutzer-IDs sammeln (aus DB oder Formular)
+		$extraIds = collect([
+			$mutation?->vorlage_benutzer_id,
+			$this->vorlage_benutzer_id,
+		])->filter()->unique()->values()->toArray();
 
-        $this->abteilungen = Abteilung::whereHas("konstellationen", function ($q) {
-                $q->where("arbeitsort_id", $this->arbeitsort_id)
-                  ->where("unternehmenseinheit_id", $this->unternehmenseinheit_id);
-            })
-            ->where("enabled", true)
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
+		// Trait-Funktion aufrufen (holt aktive + gespeicherte)
+		$this->loadAdUserDropdown($extraIds, 'adusers');
+	}
 
-    public function loadAlleAbteilungen(): void
-    {
-        $this->abteilungen = Abteilung::orderBy("name")->get(["id", "name"])->toArray();
-    }
+	public function loadAdUser(?\App\Models\Mutation $mutation = null): void
+	{
+		// Gespeicherte Benutzer-ID aus Mutation oder Formular übernehmen
+		$extraIds = collect([
+			$mutation?->ad_user_id,
+			$this->ad_user_id,
+		])->filter()->unique()->values()->toArray();
 
-    public function loadFunktionen(bool $all = false): void
-    {
-        if ($all || $this->neue_konstellation) 
-		{
-            $this->funktionen = Funktion::orderBy("name")->get(["id", "name"])->toArray();
-            return;
-        }
+		// Trait-Loader für AdUser verwenden
+		$this->loadAdUserDropdown($extraIds, 'adusersForSelection');
+	}
 
-        if (!$this->arbeitsort_id || !$this->unternehmenseinheit_id || !$this->abteilung_id) 
-		{
-            $this->funktionen = [];
-            return;
-        }
-
-        $this->funktionen = Funktion::whereHas("konstellationen", function ($q) {
-                $q->where("arbeitsort_id", $this->arbeitsort_id)
-                  ->where("unternehmenseinheit_id", $this->unternehmenseinheit_id)
-                  ->where("abteilung_id", $this->abteilung_id);
-            })
-            ->where("enabled", true)
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
-
-    public function loadAlleFunktionen(): void
-    {
-        $this->funktionen = Funktion::orderBy("name")->get(["id", "name"])->toArray();
-    }
-
-    public function loadAnreden(): void
-    {
-        $this->anreden = Anrede::where("enabled", true)
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
-
-    public function loadTitel(): void
-    {
-        $this->titel = Titel::where("enabled", true)
-            ->orderBy("name")
-            ->get(["id", "name"])
-            ->toArray();
-    }
-
-    public function loadMailendungen(): void
-    {
-        $this->mailendungen = [
-            ["id" => "waldhaus.ch", "name" => "waldhaus.ch"],
-            ["id" => "kliniken-gr.ch", "name" => "kliniken-gr.ch"],
-            ["id" => "example.org", "name" => "example.org"],
-        ];
-    }
-
-    public function loadAdusers(?int $abteilungId = null): void
-    {
-        $query = AdUser::query()->with("funktion")->orderBy("display_name");
-
-        if ($this->filter_mitarbeiter && $abteilungId) {
-            $query->where("abteilung_id", $abteilungId);
-        }
-
-        $this->adusers = $query->get()->map(fn($user) => [
-            "id" => $user->id,
-            "display_name" => $user->funktion
-                ? $user->display_name . " (" . $user->funktion->name . ")"
-                : $user->display_name,
-        ])->toArray();
-    }
-
-    public function loadAdusersKalender(): void
-    {
-        $this->adusersKalender = AdUser::query()
-            ->with("funktion")
-            ->orderBy("display_name")
-            ->get()
-            ->map(fn($user) => [
-                "id" => $user->id,
-                "display_name" => Str::limit(
-                    $user->funktion
-                        ? $user->display_name . " (" . $user->funktion->name . ")"
-                        : $user->display_name,
-                    40
-                ),
-            ])
-            ->toArray();
-    }
-
-    public function loadSapRollen(): void
-    {
-        $this->sapRollen = SapRolle::where("enabled", true)->orderBy("label")->get(["id", "label"])->toArray();
-    }
+	public function loadSapRollen(?Mutation $mutation = null): void
+	{
+		$this->loadDropdown(\App\Models\SapRolle::class, $mutation?->sap_rolle_id, 'sapRollen', 'label');
+	}
 
 	private function setStatus(string $field, bool $active): void
 	{
 		$current = (int) $this->{$field};
 
-		if ($active) {
+		if ($active) 
+		{
 			// Wenn noch nicht erledigt (0), auf "in Bearbeitung" (1) setzen
-			if ($current === 0) {
+			if ($current === 0) 
+			{
 				$this->{$field} = 1;
 			}
 			// wenn bereits 1 oder 2, unverändert lassen
-		} else {
+		} 
+		else 
+		{
 			// Deaktiviert -> sicher auf 0
 			$this->{$field} = 0;
 		}
 	}
 
-
 	public function applyStatus(?Mutation $existing = null): void
 	{
 		// AD nur wenn Vorlage-Benutzer gesetzt ist
-		if ($this->vorlage_benutzer_id) {
+		if ($this->vorlage_benutzer_id) 
+		{
 			$this->setStatus('status_ad', true);
-		} else {
+		} 
+		else 
+		{
 			$this->setStatus('status_ad', false);
 		}
 
 		// Mail
-		if (!empty($this->vorname) || !empty($this->nachname) || !empty($this->mailendung)) {
+		if (!empty($this->vorname) || !empty($this->nachname) || !empty($this->mailendung)) 
+		{
 			$this->setStatus('status_mail', true);
-		} else {
+		} 
+		else 
+		{
 			$this->setStatus('status_mail', false);
 		}
 
 		// SAP
-		if ($this->sap_status && $this->sap_rolle_id) {
+		if ($this->sap_status && $this->sap_rolle_id) 
+		{
 			$this->setStatus('status_sap', true);
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->setStatus('status_sap', false);
 			$this->sap_status   = false;
 			$this->sap_rolle_id = null;
 		}
 
 		// SAP-Benutzer löschen
-		if ($this->sap_delete) {
+		if ($this->sap_delete) 
+		{
 			$this->setStatus('status_sap', true);
 			$this->setStatus('status_auftrag', true);
 		}
 
 		// Leistungserbringer
-		if ($this->is_lei && $this->komm_lei) {
+		if ($this->is_lei && $this->komm_lei) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->is_lei = false;
 			$this->komm_lei = null;
 		}
 
 		// Telefonie
-		if ($this->tel_status && $this->tel_auswahl) {
+		if ($this->tel_status && $this->tel_auswahl) 
+		{
 			$this->setStatus('status_tel', true);
-		} else {
+		} 
+		else 
+		{
 			$this->setStatus('status_tel', false);
 			$this->tel_status       = false;
 			$this->tel_auswahl      = null;
@@ -585,60 +571,81 @@ class MutationForm extends Form
 		}
 
 		// Raumbeschriftung
-		if ($this->raumbeschriftung_flag && $this->raumbeschriftung) {
+		if ($this->raumbeschriftung_flag && $this->raumbeschriftung) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->raumbeschriftung_flag = false;
 			$this->raumbeschriftung      = null;
 		}
 
 		// Schlüsselrechte Waldhaus
-		if ($this->key_waldhaus && ($this->key_wh_badge || $this->key_wh_schluessel)) {
+		if ($this->key_waldhaus && ($this->key_wh_badge || $this->key_wh_schluessel)) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->key_waldhaus      = false;
 			$this->key_wh_badge      = false;
 			$this->key_wh_schluessel = false;
 		}
 
 		// Schlüsselrechte Beverin
-		if ($this->key_beverin && ($this->key_be_badge || $this->key_be_schluessel)) {
+		if ($this->key_beverin && ($this->key_be_badge || $this->key_be_schluessel)) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->key_beverin      = false;
 			$this->key_be_badge     = false;
 			$this->key_be_schluessel = false;
 		}
 
 		// Schlüsselrechte Rothenbrunnen
-		if ($this->key_rothenbr && ($this->key_rb_badge || $this->key_rb_schluessel)) {
+		if ($this->key_rothenbr && ($this->key_rb_badge || $this->key_rb_schluessel)) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->key_rothenbr      = false;
 			$this->key_rb_badge      = false;
 			$this->key_rb_schluessel = false;
 		}
 
 		// Berufsbekleidung
-		if ($this->berufskleider && $this->komm_berufskleider) {
+		if ($this->berufskleider && $this->komm_berufskleider) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->berufskleider = false;
 			$this->komm_berufskleider = null;
 		}
 
 		// Garderobe
-		if ($this->garderobe && $this->komm_garderobe) {
+		if ($this->garderobe && $this->komm_garderobe) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->garderobe = false;
 			$this->komm_garderobe = null;
 		}
 
 		// Bürowechsel
-		if ($this->buerowechsel && $this->komm_buerowechsel) {
+		if ($this->buerowechsel && $this->komm_buerowechsel) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->buerowechsel = false;
 			$this->komm_buerowechsel = null;
 		}
@@ -665,7 +672,7 @@ class MutationForm extends Form
         $this->fill($mutation->toArray());
         $this->has_abteilung2 = !empty($mutation->abteilung2_id);
 		$this->vertragsbeginn = $mutation->vertragsbeginn ? $mutation->vertragsbeginn->format('Y-m-d') : null;
-        
+
         $this->sap_status = (bool)$mutation->status_sap;
         $this->sap_rolle_id = $mutation->sap_rolle_id;
         $this->tel_status = (bool)$mutation->status_tel;

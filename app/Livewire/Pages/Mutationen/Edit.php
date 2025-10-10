@@ -28,19 +28,22 @@ class Edit extends Component
         $this->mutation = $mutation;
         $this->form->isReadonly = ! $status['canEdit'];
 
+		// Benutzer (mutierte Person) laden
+		$this->form->loadAdUser($mutation);
+
         // Daten für Select2-Dropdowns laden
-        $this->form->loadArbeitsorte($this->form->neue_konstellation);
-        $this->form->loadAnreden();
-        $this->form->loadTitel();
-        $this->form->loadMailendungen();
-        $this->form->loadSapRollen();
-        $this->form->loadAdusersKalender();
-        $this->form->loadUnternehmenseinheiten($this->form->neue_konstellation);
-        $this->form->loadAbteilungen($this->form->neue_konstellation);
-        $this->form->loadFunktionen($this->form->neue_konstellation);
-        $this->form->loadAdusers($this->form->filter_mitarbeiter ? $this->form->abteilung_id : null);
+		$this->form->loadArbeitsorte($mutation);
+		$this->form->loadUnternehmenseinheiten($mutation);
+		$this->form->loadAbteilungen($mutation);
+		$this->form->loadFunktionen($mutation);
+		$this->form->loadAnreden($mutation);
+		$this->form->loadTitel($mutation);
+		$this->form->loadMailendungen();
+		$this->form->loadSapRollen($mutation);
+		$this->form->loadAdusers($mutation);
 
         foreach ([
+			'ad_user_id'             => $this->form->adusersForSelection,
             "anrede_id"               => $this->form->anreden,
             "titel_id"                => $this->form->titel,
             "mailendung"              => $this->form->mailendungen,
@@ -51,7 +54,6 @@ class Edit extends Component
             "vorlage_benutzer_id"     => $this->form->adusers,
             "abteilung2_id"           => $this->form->abteilungen,
             "kalender_berechtigungen" => $this->form->adusersKalender,
-            "ad_user_id"              => $this->form->adusers,
         ] as $id => $options) {
             $this->dispatch("select2-options", id: $id, options: $options, value: $this->form->$id);
         }
@@ -59,7 +61,8 @@ class Edit extends Component
 
     public function save()
     {
-        try {
+        try 
+		{
             $this->form->validate(
                 $this->form->rules(),
                 $this->form->messages(),
@@ -74,10 +77,14 @@ class Edit extends Component
             session()->flash("success", "Mutation erfolgreich aktualisiert.");
             return redirect()->route("mutationen.index");
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } 
+		catch (\Illuminate\Validation\ValidationException $e) 
+		{
             throw $e;
 
-        } catch (\Throwable $e) {
+        } 
+		catch (\Throwable $e) 
+		{
             \App\Utils\Logging\Logger::error("Fehler beim Bearbeiten der Mutation", [
                 "message" => $e->getMessage(),
                 "trace"   => $e->getTraceAsString(),

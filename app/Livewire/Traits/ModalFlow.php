@@ -6,8 +6,6 @@ use Livewire\Attributes\On;
 use App\Utils\Logging\Logger;
 
 /**
- * Trait ModalFlow
- *
  * Verwaltet eine Queue von Modals, die nacheinander angezeigt werden sollen.
  * Nach Schliessen des aktuellen Modals wird automatisch das nächste geöffnet.
  */

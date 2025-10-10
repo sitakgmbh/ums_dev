@@ -145,7 +145,6 @@ class SapImportService
 			$titelName      = trim($row["d_titel"] ?? "");
 			$anredeName     = trim($row["d_anrlt"] ?? "");
 			$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
-			$username       = trim($row["d_name"] ?? "");
 
 			$funktionId   = $funktionName   ? Funktion::where("name", $funktionName)->value("id") : null;
 			$abteilungId  = $abteilungName  ? Abteilung::where("name", $abteilungName)->value("id") : null;
@@ -155,8 +154,8 @@ class SapImportService
 			$anredeId     = $anredeName     ? Anrede::where("name", $anredeName)->value("id") : null;
 
 			// AD User identifizieren über Benutzername und Personalnummer
-			$adUser = AdUser::where("username", $username)
-				->where("initials", $personalnummer)
+			$adUser = AdUser::where("initials", $personalnummer)
+				->where("is_existing", true)
 				->first();
 
 			if ($adUser) 
@@ -175,7 +174,7 @@ class SapImportService
 			} 
 			else 
 			{
-				// Logger::db("sap", "warning", "Kein AD-Benutzer {$username} zu Personalnummer {$personalnummer} gefunden");
+				Logger::db("sap", "warning", "Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
 				Logger::debug("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
 			}
 		}

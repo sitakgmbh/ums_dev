@@ -16,43 +16,48 @@ use App\Utils\UserHelper;
 use App\Utils\LdapHelper;
 
 #[Layout("layouts.app")]
+/**
+ * Erstellung einer Mutation
+ */
 class Create extends Component
 {
     use MutationFormHooks;
 
     public MutationForm $form;
 
-    public function mount(): void
-    {
-        $this->form->isCreate = true;
+	public function mount(): void
+	{
+		// Flag setzen
+		$this->form->isCreate = true;
 
-        $this->form->loadArbeitsorte();
-        $this->form->loadAnreden();
-        $this->form->loadTitel();
-        $this->form->loadMailendungen();
+		// Alle Dropdowns laden
+		$this->form->loadArbeitsorte();
+		$this->form->loadAnreden();
+		$this->form->loadTitel();
+		$this->form->loadMailendungen();
 		$this->form->loadSapRollen();
-		$this->form->loadAdusersKalender();
 
-        $this->form->filter_mitarbeiter ? $this->form->adusers = [] : $this->form->loadAdusers(null);
+		// AD-Benutzer (mutierte Person) laden
+		$this->form->loadAdusers();
 
-        // Select2 initialisieren
-        foreach ([
-            "anrede_id"              => $this->form->anreden,
-            "titel_id"               => $this->form->titel,
-            "mailendung"             => $this->form->mailendungen,
-            "arbeitsort_id"          => $this->form->arbeitsorte,
-            "unternehmenseinheit_id" => [],
-            "abteilung_id"           => [],
-            "funktion_id"            => [],
-            "bezugsperson_id"        => $this->form->adusers,
-            "vorlage_benutzer_id"    => $this->form->adusers,
-            "abteilung2_id"          => [],
-			"kalender_berechtigungen" => $this->form->adusersKalender,
-			"ad_user_id" => $this->form->adusersKalender,
-        ] as $id => $options) {
-            $this->dispatch("select2-options", id: $id, options: $options, value: null);
-        }
-    }
+		// Select2 initialisieren
+		foreach ([
+			"ad_user_id"               => $this->form->adusers,
+			"anrede_id"                => $this->form->anreden,
+			"titel_id"                 => $this->form->titel,
+			"mailendung"               => $this->form->mailendungen,
+			"arbeitsort_id"            => $this->form->arbeitsorte,
+			"unternehmenseinheit_id"   => [],
+			"abteilung_id"             => [],
+			"funktion_id"              => [],
+			"bezugsperson_id"          => $this->form->adusers,
+			"vorlage_benutzer_id"      => $this->form->adusers,
+			"abteilung2_id"            => [],
+			"kalender_berechtigungen"  => $this->form->adusersKalender,
+		] as $id => $options) {
+			$this->dispatch("select2-options", id: $id, options: $options, value: null);
+		}
+	}
 
 	public function save()
 	{
@@ -69,8 +74,8 @@ class Create extends Component
 
 			$data["antragsteller_id"] = auth()->user()?->adUser?->id;
 
-			// nur laden, wenn eine Vorlage ausgewählt wurde
-			if (!empty($data["vorlage_benutzer_id"])) {
+			if (!empty($data["vorlage_benutzer_id"])) 
+			{
 				$vorlageUser = AdUser::findOrFail($data["vorlage_benutzer_id"]);
 				$groups = LdapHelper::getAdGroups($vorlageUser->username);
 				$data["ad_gruppen"] = $groups;
@@ -84,13 +89,12 @@ class Create extends Component
 		} 
 		catch (\Illuminate\Validation\ValidationException $e) 
 		{
-			// Validierungsfehler weiterleiten
-			throw $e;
+			throw $e; // Validierungsfehler weiterleiten
 
 		} 
 		catch (\Throwable $e) 
 		{
-			\App\Utils\Logging\Logger::error("Fehler bei Mutation", [
+			Logger::error("Fehler bei der Erstellung einer Mutation", [
 				"message" => $e->getMessage(),
 				"trace"   => $e->getTraceAsString(),
 				"data"    => $this->form->toArray(),

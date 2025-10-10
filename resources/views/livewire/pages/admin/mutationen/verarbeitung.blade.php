@@ -139,20 +139,6 @@
                         </li>
                     @endforeach
                 </ul>
-
-                {{-- Modal-Container --}}
-                @livewire('components.modals.mutationen.pep')
-                @livewire('components.modals.mutationen.kis')
-                @livewire('components.modals.mutationen.ad')
-				@livewire('components.modals.mutationen.email-bearbeiten')
-                @livewire('components.modals.mutationen.telefonie')
-                @livewire('components.modals.mutationen.auftraege')
-                @livewire('components.modals.mutationen.info-mail')
-                @livewire('components.modals.mutationen.besitzer')
-				@livewire('components.modals.mutationen.archivieren')
-				@livewire('components.modals.mutationen.delete')
-                <livewire:components.modals.alert-modal />
-
             </div>
         </div>
     </div>
@@ -309,3 +295,16 @@
         }
     }
 </script>
+
+@section('modals')
+    <livewire:components.modals.mutationen.pep />
+    <livewire:components.modals.mutationen.kis />
+    <livewire:components.modals.mutationen.ad />
+	<livewire:components.modals.mutationen.email-bearbeiten />
+    <livewire:components.modals.mutationen.telefonie />
+    <livewire:components.modals.mutationen.auftraege />
+    <livewire:components.modals.mutationen.info-mail />
+    <livewire:components.modals.mutationen.besitzer />
+    <livewire:components.modals.mutationen.archivieren />
+    <livewire:components.modals.mutationen.delete />
+@endsection

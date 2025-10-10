@@ -10,6 +10,9 @@ use App\Livewire\Traits\EroeffnungFormHooks;
 use App\Utils\AntragHelper;
 
 #[Layout("layouts.app")]
+/**
+ * Bearbeitung einer Eröffnung
+ */
 class Edit extends Component
 {
     use EroeffnungFormHooks;
@@ -19,26 +22,29 @@ class Edit extends Component
 
     public function mount(Eroeffnung $eroeffnung): void
     {
+		// Nur eigene Anträge
 		if (! AntragHelper::canView($eroeffnung, auth()->user())) abort(403);
 
-        $status = AntragHelper::statusForBearbeitung($eroeffnung, auth()->user());
+        // Enthält Infos, ob eine Eröffnung bearbeitet werden darf
+		$status = AntragHelper::statusForBearbeitung($eroeffnung, auth()->user());
 
         $this->form->isCreate   = false;
         $this->form->fillFromModel($eroeffnung);
         $this->eroeffnung = $eroeffnung;
         $this->form->isReadonly = ! $status['canEdit'];
 
-        $this->form->loadArbeitsorte($this->form->neue_konstellation);
-        $this->form->loadAnreden();
-        $this->form->loadTitel();
-        $this->form->loadMailendungen();
-        $this->form->loadSapRollen();
-        $this->form->loadAdusersKalender();
-        $this->form->loadUnternehmenseinheiten($this->form->neue_konstellation);
-        $this->form->loadAbteilungen($this->form->neue_konstellation);
-        $this->form->loadFunktionen($this->form->neue_konstellation);
-        $this->form->loadAdusers($this->form->filter_mitarbeiter ? $this->form->abteilung_id : null);
+		$this->form->loadArbeitsorte($eroeffnung);
+		$this->form->loadAnreden($eroeffnung);
+		$this->form->loadTitel($eroeffnung);
+		$this->form->loadMailendungen();
+		$this->form->loadSapRollen($eroeffnung);
+		$this->form->loadAdusersKalender($eroeffnung);
+		$this->form->loadUnternehmenseinheiten($eroeffnung);
+		$this->form->loadAbteilungen($eroeffnung);
+		$this->form->loadFunktionen($eroeffnung);
+		$this->form->loadAdusers($eroeffnung);
 
+		// Select2-Dropdowns initialisieren
         foreach ([
             "anrede_id"               => $this->form->anreden,
             "titel_id"                => $this->form->titel,
@@ -58,7 +64,8 @@ class Edit extends Component
 
     public function save()
     {
-        try {
+        try 
+		{
             $this->form->validate(
                 $this->form->rules(),
                 $this->form->messages(),
@@ -73,10 +80,14 @@ class Edit extends Component
             session()->flash("success", "Eröffnung erfolgreich aktualisiert.");
             return redirect()->route("eroeffnungen.index");
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            throw $e;
+        } 
+		catch (\Illuminate\Validation\ValidationException $e) 
+		{
+            throw $e; // Validierungsfehler weiterleiten
 
-        } catch (\Throwable $e) {
+        } 
+		catch (\Throwable $e) 
+		{
             \App\Utils\Logging\Logger::error("Fehler beim Bearbeiten der Eröffnung", [
                 "message" => $e->getMessage(),
                 "trace"   => $e->getTraceAsString(),
@@ -85,7 +96,7 @@ class Edit extends Component
             ]);
 
             $this->dispatch("open-modal", modal: "alert-modal", payload: [
-                "message"  => "Es ist ein unerwarteter Fehler beim Bearbeiten aufgetreten. Bitte wenden Sie sich an den Support.",
+                "message"  => "Es ist ein Fehler beim aufgetreten. Bitte wende dich an den ICT-Servicedesk.",
                 "headline" => "Fehler",
                 "color"    => "bg-danger",
                 "icon"     => "ri-close-circle-line",

@@ -12,12 +12,15 @@ class MutationVorhanden extends BaseModal
 
     protected function openWith(array $payload): bool
     {
-        if (empty($payload["mutation"]["id"])) {
+        if (empty($payload["mutation"]["id"])) 
+		{
             return false;
         }
 
         $mutation = Mutation::with("antragsteller")->find($payload["mutation"]["id"]);
-        if (!$mutation) {
+		
+        if (!$mutation) 
+		{
             return false;
         }
 
@@ -26,7 +29,8 @@ class MutationVorhanden extends BaseModal
             "erstellt" => $mutation->created_at?->format("d.m.Y H:i"),
         ];
 
-        if ($mutation->antragsteller) {
+        if ($mutation->antragsteller) 
+		{
             $this->antragsteller = [
                 "vorname"  => $mutation->antragsteller->firstname,
                 "nachname" => $mutation->antragsteller->lastname,
@@ -37,7 +41,7 @@ class MutationVorhanden extends BaseModal
             ];
         }
 
-        $this->title      = "Mutation bereits vorhanden";
+        $this->title      = "Mögliche Doppelerfassung";
         $this->size       = "md";
         $this->backdrop   = true;
         $this->position   = "centered";

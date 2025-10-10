@@ -25,5 +25,8 @@
 
 @section('footer')
     <button type="button" class="btn btn-light" wire:click="closeModal">Abbrechen</button>
-    <button type="button" class="btn btn-primary" wire:click="confirm">Speichern</button>
+	<x-action-button action="confirm" class="btn-primary"> Speichern</x-action-button>
 @endsection
+
+
+    

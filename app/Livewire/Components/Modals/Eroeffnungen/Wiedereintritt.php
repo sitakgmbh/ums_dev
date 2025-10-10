@@ -5,6 +5,9 @@ namespace App\Livewire\Components\Modals\Eroeffnungen;
 use App\Livewire\Components\Modals\BaseModal;
 use App\Models\AdUser;
 
+/**
+ * Zeigt einen Hinweis an, dass bereits eine AD-Benutzer mit dem Vor- und Nachnamen existiert.
+ */
 class Wiedereintritt extends BaseModal
 {
     public array $adusers = [];
@@ -28,7 +31,8 @@ class Wiedereintritt extends BaseModal
             }
 
             $this->adusers = AdUser::with("funktion")
-                ->where("firstname", $vorname)
+                ->where("is_existing", true)
+				->where("firstname", $vorname)
                 ->where("lastname", $nachname)
                 ->get()
                 ->map(fn ($u) => [

@@ -225,7 +225,7 @@ class OtoboService
 		{
 			if (!$this->url) 
 			{
-				Logger::db("otobo", "error", "Keine OTOBO URL konfiguriert", [
+				Logger::error("Keine OTOBO URL konfiguriert", [
 					"endpoint" => $endpoint,
 				]);
 				

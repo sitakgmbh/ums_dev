@@ -5,6 +5,7 @@ namespace App\Livewire\Components\Modals\Eroeffnungen;
 use App\Livewire\Components\Modals\BaseModal;
 use App\Models\Eroeffnung;
 use Illuminate\Support\Facades\Mail;
+use App\Support\SafeMail;
 
 class Auftraege extends BaseModal
 {
@@ -48,48 +49,58 @@ class Auftraege extends BaseModal
         ]);
     }
 
-    public function confirm(): void
-    {
-        if (! $this->entry) {
-            $this->addError("general", "Keine Eröffnung gefunden");
-            return;
-        }
+	public function confirm(): void
+	{
+		if (! $this->entry) {
+			$this->addError("general", "Keine Eröffnung gefunden");
+			return;
+		}
 
-        foreach ($this->pendingAuftraege as $key => $label) {
-            try {
-                // Empfänger aus Config holen (mit Standort-Logik)
-                [$recipients, $cc, $mailable] = $this->resolveMailConfig($key);
+		foreach ($this->pendingAuftraege as $key => $label) 
+		{
+			try 
+			{
+				[$recipients, $cc, $mailable] = $this->resolveMailConfig($key);
 
-                if (empty($recipients) && empty($cc)) {
-                    $this->addError("general", "Keine Empfänger für {$label} definiert");
-                    continue;
-                }
+				if (empty($recipients) && empty($cc)) 
+				{
+					$this->addError("general", "Keine Empfänger für {$label} definiert");
+					continue;
+				}
 
-                if (! $mailable) {
-                    $this->addError("general", "Kein Mailable für {$label} gefunden");
-                    continue;
-                }
+				if (! $mailable) 
+				{
+					$this->addError("general", "Kein Mailable für {$label} gefunden");
+					continue;
+				}
 
-                logger()->info("Versand {$label}", [
-                    "to"    => $recipients,
-                    "cc"    => $cc,
-                    "entry" => $this->entry->id,
-                ]);
+				logger()->info("Versand {$label}", [
+					"to"    => $recipients,
+					"cc"    => $cc,
+					"entry" => $this->entry->id,
+				]);
 
-                Mail::to($recipients)->cc($cc)->send($mailable);
+				SafeMail::send($mailable, $recipients, $cc);
 
-            } catch (\Exception $e) {
-                logger()->error("Fehler bei {$label}: " . $e->getMessage());
-                $this->addError("general", "Fehler bei {$label}: " . $e->getMessage());
-            }
-        }
+			} 
+			catch (\Throwable $e) 
+			{
+				logger()->error("Fehler bei {$label}: " . $e->getMessage(), [
+					"trace" => $e->getTraceAsString(),
+				]);
+				
+				$this->addError("general", "Fehler bei {$label}: " . $e->getMessage());
+			}
+		}
 
-        if (! $this->getErrorBag()->isNotEmpty()) {
-            $this->entry->update(["status_auftrag" => 2]);
-            $this->dispatch("auftraege-versendet");
-            $this->closeModal();
-        }
-    }
+		// Wenn keine Fehler Status aktualisieren
+		if (! $this->getErrorBag()->isNotEmpty()) 
+		{
+			$this->entry->update(["status_auftrag" => 2]);
+			$this->dispatch("auftraege-versendet");
+			$this->closeModal();
+		}
+	}
 
     private function resolveMailConfig(string $key): array
     {
@@ -99,7 +110,8 @@ class Auftraege extends BaseModal
 
         $arbeitsort = $this->entry->arbeitsort?->name;
 
-        switch ($key) {
+        switch ($key) 
+		{
             case "sap":
                 $recipients = config("ums.eroeffnung.mail.sap.to", []);
                 $cc         = config("ums.eroeffnung.mail.sap.cc", []);
@@ -113,16 +125,21 @@ class Auftraege extends BaseModal
                 break;
 
             case "raumbeschriftung":
-                if ($arbeitsort === "Chur") {
+                if ($arbeitsort === "Chur") 
+				{
                     $recipients = config("ums.eroeffnung.mail.raumbeschriftung_wh.to", []);
                     $cc         = config("ums.eroeffnung.mail.raumbeschriftung_wh.cc", []);
-                } elseif ($arbeitsort === "Cazis") {
+                } 
+				elseif ($arbeitsort === "Cazis") 
+				{
                     $recipients = config("ums.eroeffnung.mail.raumbeschriftung_be.to", []);
                     $cc         = config("ums.eroeffnung.mail.raumbeschriftung_be.cc", []);
-                } elseif ($arbeitsort === "Rothenbrunnen") {
+                } 
+				elseif ($arbeitsort === "Rothenbrunnen") {
                     $recipients = config("ums.eroeffnung.mail.raumbeschriftung_rb.to", []);
                     $cc         = config("ums.eroeffnung.mail.raumbeschriftung_rb.cc", []);
                 }
+				
                 $mailable = new \App\Mail\Eroeffnungen\AuftragRaumbeschriftung($this->entry);
                 break;
 
@@ -139,16 +156,22 @@ class Auftraege extends BaseModal
                 break;
 
             case "zutrittsrechte":
-                if ($arbeitsort === "Chur") {
+                if ($arbeitsort === "Chur") 
+				{
                     $recipients = config("ums.eroeffnung.mail.zutrittsrechte_wh.to", []);
                     $cc         = config("ums.eroeffnung.mail.zutrittsrechte_wh.cc", []);
-                } elseif ($arbeitsort === "Cazis") {
+                } 
+				elseif ($arbeitsort === "Cazis") 
+				{
                     $recipients = config("ums.eroeffnung.mail.zutrittsrechte_be.to", []);
                     $cc         = config("ums.eroeffnung.mail.zutrittsrechte_be.cc", []);
-                } elseif ($arbeitsort === "Rothenbrunnen") {
+                } 
+				elseif ($arbeitsort === "Rothenbrunnen") 
+				{
                     $recipients = config("ums.eroeffnung.mail.zutrittsrechte_rb.to", []);
                     $cc         = config("ums.eroeffnung.mail.zutrittsrechte_rb.cc", []);
                 }
+				
                 $mailable = new \App\Mail\Eroeffnungen\AuftragZutrittsrechte($this->entry);
                 break;
         }

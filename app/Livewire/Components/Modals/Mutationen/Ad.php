@@ -18,13 +18,15 @@ class Ad extends BaseModal
 
     protected function openWith(array $payload): bool
     {
-        if (! isset($payload["entryId"])) {
+        if (! isset($payload["entryId"])) 
+		{
             return false;
         }
 
         $this->entry = Mutation::find($payload["entryId"]);
 
-        if (! $this->entry) {
+        if (! $this->entry) 
+		{
             return false;
         }
 
@@ -47,7 +49,8 @@ class Ad extends BaseModal
 	{
 		Logger::debug("confirm() gestartet für Benutzer {$this->entry->adUser->display_name}");
 
-		if (! $this->entry || empty($this->entry->vorlage_benutzer_id)) {
+		if (! $this->entry || empty($this->entry->vorlage_benutzer_id)) 
+		{
 			$this->errorMessage = "Antrag fehlt oder Vorlage-Benutzer nicht hinterlegt.";
 			return;
 		}
@@ -55,22 +58,28 @@ class Ad extends BaseModal
 		$username = $this->entry->adUser->username;
 		$groups   = $this->groups ?? [];
 
-		if (empty($groups)) {
+		if (empty($groups)) 
+		{
 			$this->errorMessage = "Keine Gruppen im Antrag vorhanden.";
 			return;
 		}
 
-		try {
-			if ($this->mode === "overwrite") {
+		try 
+		{
+			if ($this->mode === "overwrite") 
+			{
 				Logger::debug("Überschreibe Gruppen für {$username}");
 				$current = LdapHelper::getAdGroups($username);
-				foreach ($current as $group) {
+				
+				foreach ($current as $group) 
+				{
 					Logger::debug("Entferne Gruppe {$group} von {$username}");
 					LdapHelper::updateGroupMembership($username, [$group => false], true);
 				}
 			}
 
-			foreach ($groups as $group) {
+			foreach ($groups as $group) 
+			{
 				Logger::debug("Füge Gruppe {$group} hinzu für {$username}");
 				LdapHelper::updateGroupMembership($username, [$group => true], true);
 			}
@@ -83,12 +92,13 @@ class Ad extends BaseModal
 
 			$this->dispatch("ad-updated");
 			$this->closeModal();
-		} catch (\Exception $e) {
+		} 
+		catch (\Exception $e) 
+		{
 			Logger::error("Fehler in confirm(): ".$e->getMessage());
 			$this->errorMessage = "Fehler bei Berechtigungen: " . $e->getMessage();
 		}
 	}
-
 
     public function render()
     {

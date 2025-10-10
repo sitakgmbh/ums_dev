@@ -8,9 +8,17 @@
     @endif
 
     @if($entry)
-        <div class="mb-3">
+        <div class="mb-2">
             <p>{{ $infoText }}</p>
         </div>
+
+        {{-- Hinweis auf generierte Adresse --}}
+        @if($generatedMail)
+            <div class="alert alert-info">
+                <strong>Die E-Mail-Adresse wurde neu generiert.</strong><br>
+                <small>Grund: {{ implode(", ", $reasons) }}</small>
+            </div>
+        @endif
 
         {{-- Primäre Adresse --}}
         <div class="mb-2">
@@ -37,16 +45,6 @@
                         <li>- {{ $alias }}</li>
                     @endforeach
                 </ul>
-            </div>
-        @endif
-
-        {{-- Hinweis auf generierte Adresse --}}
-        @if($generatedMail)
-            <div class="alert alert-info mt-2">
-                <strong>Adresse wird neu generiert.</strong><br>
-                Primär: {{ $mail1 }}<br>
-                Alias: {{ $mail2 }}<br>
-                <small>Grund: {{ implode(", ", $reasons) }}</small>
             </div>
         @endif
     @endif

@@ -26,7 +26,8 @@
     @endif
 
     @include('livewire.forms.mutation-form')
-
-    <livewire:components.modals.alert-modal />
-    <livewire:components.modals.mutationen.status />
 </div>
+
+@section("modals")
+    <livewire:components.modals.mutationen.status />
+@endsection

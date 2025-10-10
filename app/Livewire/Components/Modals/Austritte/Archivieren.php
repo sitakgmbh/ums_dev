@@ -11,13 +11,15 @@ class Archivieren extends BaseModal
 
     protected function openWith(array $payload): bool
     {
-        if (! isset($payload['entryId'])) {
+        if (! isset($payload['entryId'])) 
+		{
             return false;
         }
 
         $this->entry = Austritt::find($payload['entryId']);
 
-        if (! $this->entry) {
+        if (! $this->entry) 
+		{
             return false;
         }
 
@@ -33,7 +35,8 @@ class Archivieren extends BaseModal
 
 	public function confirm(): void
 	{
-		if ($this->entry) {
+		if ($this->entry) 
+		{
 			$this->entry->update(["archiviert" => 1]);
 			$this->closeModal();
 

@@ -4,6 +4,9 @@ namespace App\Livewire\Components\Modals\Eroeffnungen;
 
 use App\Livewire\Components\Modals\BaseModal;
 
+/**
+ * Zeigt einen Hinweis bzgl. komischer E-Mail-Adresse an, wenn Leerzeichen in Vor- oder Nachname enthalten sind.
+ */
 class EmailBearbeiten extends BaseModal
 {
     public string $email = "";

@@ -42,7 +42,8 @@ class Status extends BaseModal
             $value = (int) $this->mutation->$field;
 
             // nicht benötigt, überspringen
-            if ($value === 0) {
+            if ($value === 0) 
+			{
                 continue;
             }
 

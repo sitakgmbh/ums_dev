@@ -4,12 +4,15 @@ namespace App\Observers;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Support\SafeMail;
 use App\Models\Eroeffnung;
-use App\Mail\EroeffnungBestaetigungMail;
+use App\Mail\Eroeffnungen\Bestaetigung;
 use App\Utils\Logging\Logger;
 use App\Services\OtoboService;
 
-
+/**
+ * Überwacht Eröffnungen
+ */
 class EroeffnungObserver
 {
     protected function filterData(array $data, Eroeffnung $eroeffnung): array
@@ -35,9 +38,11 @@ class EroeffnungObserver
             "eroeffnung_id"    => $eroeffnung->id,
             "form_data"        => $this->filterData($eroeffnung->getAttributes(), $eroeffnung),
         ];
-
+		
+		// Log-Eintrag erstellen
         Logger::db("antraege", "info", "Eröffnung ID {$eroeffnung->id} erstellt durch {$fullname} ({$username})", $context);
 
+		// Bestätigungsmail versenden
         $to = "patrik@sitak.ch"; // später ersetzen durch $eroeffnung->antragsteller?->email ?: $fallback;
         $cc = [];
 		
@@ -46,8 +51,9 @@ class EroeffnungObserver
             // $cc[] = $eroeffnung->bezugsperson->email;
         }
 
-        Mail::to($to)->cc($cc)->send(new EroeffnungBestaetigungMail($eroeffnung));
+		SafeMail::send(new Bestaetigung($eroeffnung), $to, $cc);
 
+		// Ticket erstellen
 		app(\App\Services\OtoboService::class)->createTicket($eroeffnung);
     }
 
@@ -60,26 +66,46 @@ class EroeffnungObserver
         $changes  = $this->filterData($eroeffnung->getChanges(), $eroeffnung);
         $original = $this->filterData($eroeffnung->getOriginal(), $eroeffnung);
 
+		// Logeintrag erstellen
         Logger::db("antraege", "info", "Eröffnung ID {$eroeffnung->id} bearbeitet durch {$fullname} ({$username})", [
             "eroeffnung_id" => $eroeffnung->id,
             "changes"       => $changes,
             "original"      => $original,
         ]);
 
-        if ($eroeffnung->wasChanged('archiviert') && $eroeffnung->archiviert) {
+		// Ticket aktualisieren und abschliessen, wenn Antrag archiviert
+        if ($eroeffnung->wasChanged('archiviert') && $eroeffnung->archiviert) 
+		{
             $msg = "Eröffnung wurde archiviert durch {$fullname} ({$username}).";
             app(OtoboService::class)->updateTicket($eroeffnung, $msg, true);
             return;
         }
 
-        if (!empty($changes)) {
+        if (!empty($changes)) 
+		{
             $message = "Eröffnung aktualisiert durch {$fullname} ({$username}):\n\n";
 
-            foreach ($changes as $field => $newValue) {
-                $oldValue = $original[$field] ?? '(leer)';
-                $newValue = $newValue === '' ? '(leer)' : $newValue;
-                $message .= "- {$field}: {$oldValue} → {$newValue}\n";
-            }
+			foreach ($changes as $field => $newValue) 
+			{
+				$oldValue = $original[$field] ?? '(leer)';
+
+				if (is_array($oldValue) || is_object($oldValue)) 
+				{
+					$oldValue = json_encode($oldValue, JSON_UNESCAPED_UNICODE);
+				}
+
+				if (is_array($newValue) || is_object($newValue)) 
+				{
+					$newValue = json_encode($newValue, JSON_UNESCAPED_UNICODE);
+				}
+
+				if ($newValue === '') 
+				{
+					$newValue = '(leer)';
+				}
+
+				$message .= "- {$field}: {$oldValue} → {$newValue}\n";
+			}
 
             app(OtoboService::class)->updateTicket($eroeffnung, $message);
         }
@@ -93,11 +119,13 @@ class EroeffnungObserver
 
         $deletedData = $this->filterData($eroeffnung->getOriginal(), $eroeffnung);
 
+		// Logeintrag erstellen
         Logger::db("antraege", "info", "Eröffnung ID {$eroeffnung->id} gelöscht durch {$fullname} ({$username})", [
             "eroeffnung_id" => $eroeffnung->id,
             "deleted_data"  => $deletedData,
         ]);
 
+		// Ticket abschliessen
 		$message = "Eröffnung wurde gelöscht durch {$fullname} ({$username})";
 		app(\App\Services\OtoboService::class)->updateTicket($eroeffnung, $message, true);
     }

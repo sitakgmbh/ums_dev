@@ -13,13 +13,15 @@ class Auftraege extends BaseModal
 
     protected function openWith(array $payload): bool
     {
-        if (! isset($payload["entryId"])) {
+        if (! isset($payload["entryId"])) 
+		{
             return false;
         }
 
         $this->entry = Mutation::find($payload["entryId"]);
 
-        if (! $this->entry) {
+        if (! $this->entry) 
+		{
             return false;
         }
 
@@ -49,12 +51,12 @@ class Auftraege extends BaseModal
 		]);
 	}
 
-
     private function resolveMailKey(string $baseKey): ?string
     {
         $ort = $this->entry->arbeitsort?->name;
 
-        if (! $ort) {
+        if (! $ort) 
+		{
             return null;
         }
 
@@ -75,16 +77,20 @@ class Auftraege extends BaseModal
 
     public function confirm(): void
     {
-        if (! $this->entry) {
+        if (! $this->entry) 
+		{
             $this->addError("general", "Keine Mutation gefunden");
             return;
         }
 
-        foreach ($this->pendingAuftraege as $key => $label) {
-            try {
+        foreach ($this->pendingAuftraege as $key => $label) 
+		{
+            try 
+			{
                 $mailKey = $this->resolveMailKey($key);
 
-                if (! $mailKey) {
+                if (! $mailKey) 
+				{
                     $this->addError("general", "Kein Mail-Key für {$label} ermittelt");
                     continue;
                 }
@@ -92,7 +98,8 @@ class Auftraege extends BaseModal
                 $recipients = config("ums.mutation.mail.{$mailKey}.to", []);
                 $cc         = config("ums.mutation.mail.{$mailKey}.cc", []);
 
-                if (empty($recipients) && empty($cc)) {
+                if (empty($recipients) && empty($cc)) 
+				{
                     $this->addError("general", "Keine Empfänger für {$label} definiert");
                     continue;
                 }
@@ -106,7 +113,8 @@ class Auftraege extends BaseModal
                     default           => null,
                 };
 
-                if (! $mailable) {
+                if (! $mailable) 
+				{
                     $this->addError("general", "Kein Mailable für {$label} gefunden");
                     continue;
                 }
@@ -118,13 +126,16 @@ class Auftraege extends BaseModal
                 ]);
 
                 Mail::to($recipients)->cc($cc)->send($mailable);
-            } catch (\Exception $e) {
+            } 
+			catch (\Exception $e) 
+			{
                 logger()->error("Fehler bei {$label}: " . $e->getMessage());
                 $this->addError("general", "Fehler bei {$label}: " . $e->getMessage());
             }
         }
 
-        if (! $this->getErrorBag()->isNotEmpty()) {
+        if (! $this->getErrorBag()->isNotEmpty()) 
+		{
             $this->entry->update(["status_auftrag" => 2]);
             $this->dispatch("auftraege-versendet");
             $this->closeModal();

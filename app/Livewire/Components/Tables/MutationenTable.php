@@ -31,18 +31,16 @@ class MutationenTable extends BaseTable
         return Mutation::class;
     }
 
-protected function getColumns(): array
-{
-    return [
-        "status" => ["label" => "Status", "sortable" => true, "searchable" => false],
-        "vertragsbeginn" => ["label" => "Änderungsdatum", "sortable" => true],
-        "adUser.display_name" => ["label" => "Benutzer", "sortable" => true],
-        "antragsteller.display_name" => ["label" => "Antragsteller", "sortable" => true],
-        "owner.display_name" => ["label" => "Besitzer", "sortable" => true],
-        "actions" => ["label" => "Aktionen", "sortable" => false, "class" => "shrink"],
-    ];
-}
-
+	protected function getColumns(): array
+	{
+		return [
+			"status" => ["label" => "Status", "sortable" => true, "searchable" => false],
+			"vertragsbeginn" => ["label" => "Änderungsdatum", "sortable" => true],
+			"adUser.display_name" => ["label" => "Benutzer", "sortable" => true],
+			"antragsteller.display_name" => ["label" => "Antragsteller", "sortable" => true],
+			"actions" => ["label" => "Aktionen", "sortable" => false, "class" => "shrink"],
+		];
+	}
 
     protected function defaultSortField(): string
     {
@@ -132,48 +130,58 @@ protected function getColumns(): array
         }
     }
 
-    protected function getColumnFormatters(): array
-    {
-        return [
-            "vertragsbeginn" => fn($row) => $row->vertragsbeginn?->format("d.m.Y"),
-        ];
-    }
+	protected function getColumnFormatters(): array
+	{
+		return [
+			"vertragsbeginn" => function ($row) {
+				return $row->vertragsbeginn?->format("d.m.Y");
+			},
+			"status" => function ($row) {
+				$statusLabels = [
+					1 => ["label" => "Neu",          "class" => "badge bg-secondary"],
+					2 => ["label" => "Bearbeitung",  "class" => "badge bg-info"],
+					3 => ["label" => "Abgeschlossen","class" => "badge bg-success"],
+				];
 
-protected function getColumnBadges(): array
-{
-    return [
-        "status" => [
-            1 => ["label" => "Neu",          "class" => "secondary"],
-            2 => ["label" => "Bearbeitung",  "class" => "info"],
-            3 => ["label" => "Abgeschlossen","class" => "success"],
-        ],
-    ];
-}
+				$status = $statusLabels[$row->status_info ?? 1] ?? ["label" => "-", "class" => "badge bg-light text-dark"];
+				$html = "<span class='{$status["class"]}'>{$status["label"]}</span>";
 
+				if ($row->archiviert) 
+				{
+					$html .= " <span class='badge bg-light text-dark p-1' title='Archiviert'>Archiv</span>";
+				}
 
-    protected function getColumnButtons(): array
-    {
-        return [
-            "actions" => [
-                [
-                    "url"   => fn($row) => route("mutationen.edit", $row->id),
-                    "icon"  => "mdi mdi-square-edit-outline",
-                    "title" => "Mutation bearbeiten",
-                ],
-                [
-                    "method"  => "openDeleteModal",
-                    "idParam" => "id",
-                    "icon"    => "mdi mdi-delete",
-                    "title"   => "Mutation löschen",
-                ],
-                [
-                    "url"   => fn($row) => route("mutationen.show", $row->id),
-                    "icon"  => "mdi mdi-eye",
-                    "title" => "Mutation ansehen",
-                ],
-            ],
-        ];
-    }
+				return "<div class='d-inline-flex align-items-center gap-1 flex-nowrap' style='white-space:nowrap;'>{$html}</div>";
+			},
+		];
+	}
+
+	protected function getColumnButtons(): array
+	{
+		return [
+			"actions" => [
+				[
+					"url"    => fn($row) => route("mutationen.edit", $row->id),
+					"icon"   => "mdi mdi-square-edit-outline",
+					"showIf" => fn($row) => $row->status === 1, // Neu
+					"title"  => "Antrag bearbeiten",
+				],
+				[
+					"method"  => "openDeleteModal",
+					"idParam" => "id",
+					"icon"    => "mdi mdi-delete",
+					"showIf"  => fn($row) => $row->status === 1, // Neu
+					"title"   => "Antrag löschen",
+				],
+				[
+					"url"    => fn($row) => route("mutationen.show", $row->id),
+					"icon"   => "mdi mdi-eye",
+					"showIf" => fn($row) => $row->status !== 1, // nicht Neu
+					"title"  => "Antrag einsehen",
+				],
+			],
+		];
+	}
 
     public function openDeleteModal(int $id): void
     {

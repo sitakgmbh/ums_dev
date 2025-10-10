@@ -13,7 +13,8 @@ class Delete extends BaseModal
     {
         $id = $payload["id"] ?? null;
 
-        if (!$id || !($this->mutation = Mutation::find($id))) {
+        if (!$id || !($this->mutation = Mutation::find($id))) 
+		{
             $this->dispatch("open-modal", modal: "alert-modal", payload: [
                 "message"  => "Die Mutation konnte nicht gefunden werden (ID: {$id}).",
                 "headline" => "Fehler",
@@ -37,7 +38,8 @@ class Delete extends BaseModal
 
     public function delete(): void
     {
-        if (!$this->mutation || !Mutation::find($this->mutation->id)) {
+        if (!$this->mutation || !Mutation::find($this->mutation->id)) 
+		{
             $this->dispatch("open-modal", modal: "alert-modal", payload: [
                 "message"  => "Die Mutation ist nicht mehr vorhanden.",
                 "headline" => "Fehler",

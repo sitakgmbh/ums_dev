@@ -19,24 +19,19 @@ use App\Livewire\Pages\Admin\Tools\Index as ToolsIndex;
 use App\Livewire\Pages\Admin\Tools\TaskScheduler;
 use App\Livewire\Pages\Admin\Tools\MailTest as ToolsMailTest;
 use App\Livewire\Pages\Admin\AdminDashboard;
-
 use Illuminate\Support\Facades\Auth;
 
-Route::get('/sso-test', function () {
-    $_SERVER['REMOTE_USER'] = 'BSM\luspet';
-
-    $credentials = ['username' => $_SERVER['REMOTE_USER']];
-    if (Auth::attempt($credentials)) {
-        return redirect()->route('dashboard');
-    }
-
-    return redirect()->route('login')->withErrors(['msg' => 'SSO-Test fehlgeschlagen']);
-});
-
 Route::redirect('/', '/dashboard');
-Route::get('/login', Login::class)->name('login');
-Route::get('/forgot-password', ForgotPassword::class)->name('password.request');
-Route::get('/reset-password/{token}', ResetPassword::class)->name('password.reset');
+
+// Nur Loginrouten registrieren, wenn AUTH_MODE=local
+if (env('AUTH_MODE') === 'local') {
+    Route::get('/login', Login::class)->name('login');
+    Route::get('/forgot-password', ForgotPassword::class)->name('password.request');
+    Route::get('/reset-password/{token}', ResetPassword::class)->name('password.reset');
+} else {
+    // Wenn SSO aktiv → /login deaktivieren (aber KEIN Redirect!)
+    Route::get('/login', fn() => abort(403, 'Login disabled in SSO mode'))->name('login');
+}
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');

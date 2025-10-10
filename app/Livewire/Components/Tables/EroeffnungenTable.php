@@ -115,15 +115,18 @@ class EroeffnungenTable extends BaseTable
     {
         $adUserId = auth()->user()?->adUser?->id;
 
-        if ($adUserId) {
+        if ($adUserId) 
+		{
             $query->where("eroeffnungen.antragsteller_id", $adUserId);
         }
 
-        if (! $this->showArchived) {
+        if (! $this->showArchived) 
+		{
             $query->where("eroeffnungen.archiviert", false);
         }
 
-        if ($this->search) {
+        if ($this->search) 
+		{
             $search = strtolower($this->search);
 
             $query->where(function ($q) use ($search) {
@@ -150,8 +153,10 @@ class EroeffnungenTable extends BaseTable
                     3 => "abgeschlossen",
                 ];
 
-                foreach ($statusLabels as $code => $label) {
-                    if (str_contains($label, $search)) {
+                foreach ($statusLabels as $code => $label) 
+				{
+                    if (str_contains($label, $search)) 
+					{
                         $q->orWhereRaw("
                             CASE
                                 WHEN status_info = 2 THEN 3
@@ -165,29 +170,31 @@ class EroeffnungenTable extends BaseTable
         }
     }
 
-    protected function getColumnFormatters(): array
-    {
-        return [
-            "vertragsbeginn" => function ($row) {
-                return $row->vertragsbeginn?->format("d.m.Y");
-            },
-        ];
-    }
+	protected function getColumnFormatters(): array
+	{
+		return [
+			"vertragsbeginn" => function ($row) {
+				return $row->vertragsbeginn?->format("d.m.Y");
+			},
+			"status" => function ($row) {
+				$statusLabels = [
+					1 => ["label" => "Neu",          "class" => "badge bg-secondary"],
+					2 => ["label" => "Bearbeitung",  "class" => "badge bg-info"],
+					3 => ["label" => "Abgeschlossen","class" => "badge bg-success"],
+				];
 
-    protected function getColumnBadges(): array
-    {
-        return [
-            "status" => [
-                1 => ["label" => "Neu",          "class" => "secondary"],
-                2 => ["label" => "Bearbeitung",  "class" => "info"],
-                3 => ["label" => "Abgeschlossen","class" => "success"],
-            ],
-            "wiedereintritt" => [
-                true  => ["label" => "Ja",   "class" => "success"],
-                false => ["label" => "Nein", "class" => "secondary"],
-            ],
-        ];
-    }
+				$status = $statusLabels[$row->status_info ?? 1] ?? ["label" => "-", "class" => "badge bg-light text-dark"];
+				$html = "<span class='{$status["class"]}'>{$status["label"]}</span>";
+
+				if ($row->archiviert) 
+				{
+					$html .= " <span class='badge bg-light text-dark p-1' title='Archiviert'>Archiv</span>";
+				}
+
+				return "<div class='d-inline-flex align-items-center gap-1 flex-nowrap' style='white-space:nowrap;'>{$html}</div>";
+			},
+		];
+	}
 
 	protected function getColumnButtons(): array
 	{

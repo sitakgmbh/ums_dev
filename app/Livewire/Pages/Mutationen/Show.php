@@ -27,18 +27,19 @@ class Show extends Component
         $this->mutation = $mutation;
 
         // Daten für Dropdowns laden
-        $this->form->loadArbeitsorte($this->form->neue_konstellation);
-        $this->form->loadAnreden();
-        $this->form->loadTitel();
-        $this->form->loadMailendungen();
-        $this->form->loadUnternehmenseinheiten($this->form->neue_konstellation);
-        $this->form->loadAbteilungen($this->form->neue_konstellation);
-        $this->form->loadFunktionen($this->form->neue_konstellation);
-        $this->form->loadAdusers($this->form->filter_mitarbeiter ? $this->form->abteilung_id : null);
-        $this->form->loadAdusersKalender();
+		$this->form->loadArbeitsorte($mutation);
+		$this->form->loadUnternehmenseinheiten($mutation);
+		$this->form->loadAbteilungen($mutation);
+		$this->form->loadFunktionen($mutation);
+		$this->form->loadAnreden($mutation);
+		$this->form->loadTitel($mutation);
+		$this->form->loadMailendungen();
+		$this->form->loadSapRollen($mutation);
+		$this->form->loadAdusers($mutation);
 
         // Select2-Dropdowns initialisieren
         foreach ([
+			"ad_user_id" => $this->form->adusers,
             "anrede_id"               => $this->form->anreden,
             "titel_id"                => $this->form->titel,
             "mailendung"              => $this->form->mailendungen,

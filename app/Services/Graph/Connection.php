@@ -12,38 +12,34 @@ use App\Utils\Logging\Logger;
 
 class Connection
 {
-    protected string $tenantId;
-    protected string $clientId;
-    protected string $clientSecret;
+    protected ?string $tenantId = null;
+    protected ?string $clientId = null;
+    protected ?string $clientSecret = null;
 
-    public function __construct()
+    public function __construct() {}
+
+    protected function loadCredentials(): void
     {
+        if ($this->tenantId !== null) return;
+
         $this->tenantId     = Setting::getValue("azure_tenant_id", "");
         $this->clientId     = Setting::getValue("azure_client_id", "");
         $this->clientSecret = Setting::getValue("azure_client_secret", "");
+    }
+
+    public function getClient(): GraphServiceClient
+    {
+        $this->loadCredentials();
 
         if (!$this->tenantId || !$this->clientId || !$this->clientSecret) 
 		{
-            Logger::db("graph", "error", "Azure Zugangsdaten fehlen", [
-                "tenantId" => $this->tenantId,
-                "clientId" => $this->clientId,
-            ]);
-			
             throw new \RuntimeException("Azure Zugangsdaten fehlen");
         }
+
+        $context = new ClientCredentialContext($this->tenantId, $this->clientId, $this->clientSecret);
+        return new GraphServiceClient($context, ["https://graph.microsoft.com/.default"]);
     }
-
-    public function getClient(array $scopes = ["https://graph.microsoft.com/.default"]): GraphServiceClient
-    {
-        $context = new ClientCredentialContext(
-            $this->tenantId,
-            $this->clientId,
-            $this->clientSecret
-        );
-
-        return new GraphServiceClient($context, $scopes);
-    }
-
+	
 	public function call(callable $fn, string $contextLabel = "Graph Call")
 	{
 		try 

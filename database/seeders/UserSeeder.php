@@ -19,15 +19,17 @@ class UserSeeder extends Seeder
             'username'  => 'admin',
             'firstname' => 'Admin',
             'lastname'  => '',
-            'email'     => 'admin@example.com',
+            'email'     => 'admin@sitak.ch',
             'password'  => bcrypt('Password!'),
         ]);
         $admin->assignRole($adminRole);
 
+		/*
         // 20 normale Benutzer
         $users = User::factory()->count(10)->create();
         foreach ($users as $u) {
             $u->assignRole($userRole);
         }
+		*/
     }
 }

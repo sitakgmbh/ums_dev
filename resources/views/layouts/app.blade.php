@@ -82,7 +82,14 @@
     <script src="{{ asset('assets/js/app.js') }}"></script>
 	<script src="{{ asset('assets/js/custom.js') }}"></script>
 
+	<!-- Modal-Manager und Basic Modals -->
 	<livewire:components.modals.modal-manager />
+	<livewire:components.modals.alert-modal />
+	
+	{{-- Platzhalter Modals --}}
+	@hasSection('modals')
+		@yield('modals')
+	@endif
 
     @livewire('actions.logout')
 

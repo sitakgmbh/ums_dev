@@ -7,15 +7,18 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use App\Livewire\Forms\EroeffnungForm;
+use App\Livewire\Traits\EroeffnungFormHooks;
 use App\Models\Eroeffnung;
 use App\Models\SapRolle;
 use App\Models\AdUser;
-use App\Livewire\Traits\EroeffnungFormHooks;
 use App\Utils\Logging\Logger;
 use App\Utils\UserHelper;
 use App\Utils\LdapHelper;
 
 #[Layout("layouts.app")]
+/**
+ * Erstellung einer Eröffnung
+ */
 class Create extends Component
 {
     use EroeffnungFormHooks;
@@ -35,7 +38,7 @@ class Create extends Component
 
         $this->form->filter_mitarbeiter ? $this->form->adusers = [] : $this->form->loadAdusers(null);
 
-        // Select2 initialisieren
+        // Select2-Dropdowns initialisieren
         foreach ([
             "anrede_id"              => $this->form->anreden,
             "titel_id"               => $this->form->titel,
@@ -66,15 +69,25 @@ class Create extends Component
 			$this->form->applyStatus();
 			$data = $this->form->toArray();
 
+			// AD-User des angemeldeten Benutzers
 			$data["antragsteller_id"] = auth()->user()?->adUser?->id;
 
 			$username = UserHelper::generateUsername($data["vorname"], $data["nachname"]);
-			$email    = UserHelper::generateEmail($data["vorname"], $data["nachname"], $data["mailendung"], $username);
 			$password = UserHelper::generatePassword();
 
+			// Benutzername und Passwort immer generieren
 			$data["benutzername"] = $username;
 			$data["passwort"] = $password;
-			$data["email"] = $email;
+
+			// Nur E-Mail generieren, wenn sie noch leer ist
+			if (empty($data["email"])) {
+				$data["email"] = UserHelper::generateEmail(
+					$data["vorname"],
+					$data["nachname"],
+					$data["mailendung"],
+					$username
+				);
+			}
 
 			$vorlageUser = AdUser::findOrFail($data["vorlage_benutzer_id"]);
 			$groups = LdapHelper::getAdGroups($vorlageUser->username);
@@ -84,24 +97,22 @@ class Create extends Component
 
 			session()->flash("success", "Eröffnung erfolgreich erstellt.");
 			return redirect()->route("eroeffnungen.index");
-
 		} 
 		catch (\Illuminate\Validation\ValidationException $e) 
 		{
-			// Validierungsfehler weiterleiten
-			throw $e;
-
+			throw $e; // Validierungsfehler weiterleiten
 		} 
 		catch (\Throwable $e) 
 		{
-			\App\Utils\Logging\Logger::error("Fehler bei Eröffnung", [
+			\App\Utils\Logging\Logger::error("Fehler beim Erstellen einer Eröffnung Eröffnung", [
 				"message" => $e->getMessage(),
 				"trace"   => $e->getTraceAsString(),
 				"data"    => $this->form->toArray(),
 			]);
 
+			// Zeigt dem Benutzer eine allgemeine Fehlermeldung an
 			$this->dispatch("open-modal", modal: "alert-modal", payload: [
-				"message"  => "Es ist ein unerwarteter Fehler aufgetreten. Bitte wenden Sie sich an den Support.",
+				"message"  => "Es ist ein Fehler beim aufgetreten. Bitte wende dich an den ICT-Servicedesk.",
 				"headline" => "Fehler",
 				"color"    => "bg-danger",
 				"icon"     => "ri-close-circle-line",

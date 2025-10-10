@@ -5,6 +5,9 @@ namespace App\Livewire\Components\Modals\Eroeffnungen;
 use App\Livewire\Components\Modals\BaseModal;
 use App\Models\Eroeffnung;
 
+/**
+ * Zeigt einen Hinweis an, dass bereits eine Eröffnung mit demselben Vor- und Nachnamen existiert.
+ */
 class EroeffnungVorhanden extends BaseModal
 {
     public ?array $eroeffnung = null;
@@ -43,7 +46,7 @@ class EroeffnungVorhanden extends BaseModal
             ];
         }
 
-        $this->title      = "Eröffnung bereits vorhanden";
+        $this->title      = "Mögliche Doppelerfassung";
         $this->size       = "md";
         $this->backdrop   = true;
         $this->position   = "centered";

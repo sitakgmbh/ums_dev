@@ -7,6 +7,9 @@ use App\Models\Austritt;
 use App\Services\OtoboService;
 use App\Utils\Logging\Logger;
 
+/**
+ * Überwacht Austritte
+ */
 class AustrittObserver
 {
     protected function filterData(array $data, Austritt $austritt): array
@@ -27,7 +30,7 @@ class AustrittObserver
             "form_data"   => $this->filterData($austritt->getAttributes(), $austritt),
         ]);
 
-        // 🔹 Ticket automatisch erstellen
+        // Ticket erstellen
         app(OtoboService::class)->createTicket($austritt);
     }
 
@@ -46,21 +49,41 @@ class AustrittObserver
             "original"    => $original,
         ]);
 
-        // 🔹 Wenn archiviert = 1 → Ticket schliessen
-        if ($austritt->wasChanged('archiviert') && $austritt->archiviert) {
+        // Ticket schliessen wenn archiviert
+        if ($austritt->wasChanged('archiviert') && $austritt->archiviert) 
+		{
             $msg = "Austritt wurde archiviert durch {$fullname} ({$username}).";
             app(OtoboService::class)->updateTicket($austritt, $msg, true);
             return;
         }
 
-        // 🔹 Änderungen an OTOBO loggen
-        if (!empty($changes)) {
+        // Änderungen in Ticket speichern
+        if (!empty($changes)) 
+		{
             $message = "Austritt aktualisiert durch {$fullname} ({$username}):\n\n";
-            foreach ($changes as $field => $newValue) {
+			
+            foreach ($changes as $field => $newValue) 
+			{
                 $oldValue = $original[$field] ?? '(leer)';
-                $newValue = $newValue === '' ? '(leer)' : $newValue;
+
+                if (is_array($oldValue) || is_object($oldValue)) 
+				{
+                    $oldValue = json_encode($oldValue, JSON_UNESCAPED_UNICODE);
+                }
+				
+                if (is_array($newValue) || is_object($newValue)) 
+				{
+                    $newValue = json_encode($newValue, JSON_UNESCAPED_UNICODE);
+                }
+
+                if ($newValue === '') 
+				{
+                    $newValue = '(leer)';
+                }
+
                 $message .= "- {$field}: {$oldValue} → {$newValue}\n";
             }
+
             app(OtoboService::class)->updateTicket($austritt, $message);
         }
     }
@@ -72,12 +95,14 @@ class AustrittObserver
         $fullname = $user?->name ?? ($user?->firstname . " " . $user?->lastname);
 
         $deletedData = $this->filterData($austritt->getOriginal(), $austritt);
-
+		
+		// Logeintrag erstellen
         Logger::db("antraege", "info", "Austritt ID {$austritt->id} gelöscht durch {$fullname} ({$username})", [
             "austritt_id" => $austritt->id,
             "deleted_data" => $deletedData,
         ]);
 
+		// Ticket abschliessen
         $message = "Austritt wurde gelöscht durch {$fullname} ({$username}).";
         app(OtoboService::class)->updateTicket($austritt, $message, true);
     }

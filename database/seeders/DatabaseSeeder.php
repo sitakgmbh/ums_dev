@@ -15,7 +15,5 @@ class DatabaseSeeder extends Seeder
     {
 		$this->call(SettingsSeeder::class);
 		$this->call(UserSeeder::class);
-		$this->call(AdUserSeeder::class);
-		$this->call(KonstellationenSeeder::class);
     }
 }

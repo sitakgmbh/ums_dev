@@ -154,14 +154,17 @@ class LogsTable extends BaseTable
 		$col = $columns[$field] ?? null;
 		$value = data_get($row, $field);
 
-		if ($field === 'level') {
+		if ($field === 'level') 
+		{
 			$key = is_string($value)
 				? strtolower($value)
 				: strtolower($value->value ?? '');
 			$badges = $this->getColumnBadges()['level'] ?? [];
 
-			if (isset($badges[$key])) {
+			if (isset($badges[$key])) 
+			{
 				$badge = $badges[$key];
+				
 				return view('livewire.components.tables.base-table-badge', [
 					'label' => $badge['label'],
 					'class' => $badge['class'],
