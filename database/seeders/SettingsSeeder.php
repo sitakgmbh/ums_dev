@@ -38,27 +38,6 @@ class SettingsSeeder extends Seeder
 				'name'        => 'Client Secret',
 				'description' => 'Microsoft Azure Application Client Secret',
 			],
-			[
-				'key'         => 'otobo_url',
-				'value'       => '',
-				'type'        => 'string',
-				'name'        => 'Webservice URL',
-				'description' => 'Die OTOBO Webservice URL',
-			],
-			[
-				'key'         => 'otobo_username',
-				'value'       => '',
-				'type'        => 'string',
-				'name'        => 'Benutzername',
-				'description' => 'OTOBO Webservice Benutzername',
-			],
-			[
-				'key'         => 'otobo_password',
-				'value'       => '',
-				'type'        => 'password',
-				'name'        => 'Passwort',
-				'description' => 'OTOBO Webservice Passwort',
-			],
         ];
 
 		foreach ($settings as $data) 
