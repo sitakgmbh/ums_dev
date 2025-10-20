@@ -12,6 +12,21 @@ class Login extends Component
 {
     public LoginForm $form;
 
+    public function mount(): void
+    {
+        // Wenn bereits authentifiziert
+        if (auth()->check()) {
+            $user = auth()->user();
+
+            session([
+                'darkmode_enabled' => (bool) $user->getSetting('darkmode_enabled', false),
+            ]);
+
+            // Weiterleitung auf Dashboard (oder letzte Intent-Route)
+            $this->redirectIntended(route('dashboard'));
+        }
+    }
+
     public function login(): void
     {
         $this->validate();
@@ -23,7 +38,7 @@ class Login extends Component
         $user = auth()->user();
 
         session([
-            'darkmode_enabled'  => (bool) $user->getSetting('darkmode_enabled', false),
+            'darkmode_enabled' => (bool) $user->getSetting('darkmode_enabled', false),
         ]);
 
         $this->redirectIntended(route('dashboard'));

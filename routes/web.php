@@ -22,15 +22,11 @@ use App\Livewire\Pages\Admin\AdminDashboard;
 use Illuminate\Support\Facades\Auth;
 
 Route::redirect('/', '/dashboard');
+Route::get('/login', Login::class)->name('login');
 
-// Nur Loginrouten registrieren, wenn AUTH_MODE=local
 if (env('AUTH_MODE') === 'local') {
-    Route::get('/login', Login::class)->name('login');
     Route::get('/forgot-password', ForgotPassword::class)->name('password.request');
     Route::get('/reset-password/{token}', ResetPassword::class)->name('password.reset');
-} else {
-    // Wenn SSO aktiv → /login deaktivieren (aber KEIN Redirect!)
-    Route::get('/login', fn() => abort(403, 'Login disabled in SSO mode'))->name('login');
 }
 
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -64,6 +64,11 @@ class User extends Authenticatable
         ];
     }
 
+	public function guardName(): string
+	{
+		return 'web';
+	}
+
     public function getNameAttribute(): string
     {
         return "{$this->firstname} {$this->lastname}";

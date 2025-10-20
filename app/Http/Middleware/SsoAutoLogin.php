@@ -14,59 +14,79 @@ class SsoAutoLogin
 {
     public function handle($request, Closure $next)
     {
-        // Nur aktiv, wenn SSO aktiviert ist
-        if (env('AUTH_MODE') !== 'sso') 
-		{
+        $mode = config('auth.mode', 'local');
+
+        // Nur aktiv, wenn AUTH_MODE = sso
+        if ($mode !== 'sso') {
             return $next($request);
         }
 
-        // Prüfen, ob Apache bereits authentifiziert hat
-        if (!Auth::check() && isset($_SERVER['REMOTE_USER'])) 
-		{
-            $username = Str::after($_SERVER['REMOTE_USER'], '\\');
-            Logger::debug("SSO-AutoLogin Middleware: {$username}");
+        $remoteUser = $_SERVER['REMOTE_USER'] ?? null;
 
-            // Benutzer aus DB laden
-            $user = User::where('username', $username)->first();
+        if (! $remoteUser) {
+            Logger::debug('SSO-AutoLogin: kein REMOTE_USER vorhanden');
+            return $next($request);
+        }
 
-			$service = app(LdapProvisioningService::class);
+        // DOMAIN\username oder username@domain → nur Username extrahieren
+        $username = Str::of($remoteUser)
+            ->after('\\')
+            ->before('@')
+            ->lower()
+            ->toString();
 
-            // Wenn Benutzer nicht existiert, neu anlegen (Provisionierung)
-            if (! $user) 
-			{
-                $ldapUser = LdapUser::query()->where('samaccountname', '=', $username)->first();
+        Logger::debug("SSO-AutoLogin gestartet für Benutzer '{$username}'");
 
-                if ($ldapUser) 
-				{
-					$user = $service->provisionOrUpdateUserFromLdap($ldapUser, $username, true);
+        // Wenn bereits eingeloggt und derselbe Benutzer → nichts tun
+        if (Auth::check() && Auth::user()->username === $username) {
+            Logger::debug("SSO-AutoLogin: Benutzer '{$username}' bereits eingeloggt, übersprungen");
+            return $next($request);
+        }
 
-                    Logger::debug("SSO-User {$username} automatisch provisioniert", ['user_id' => $user->id]);
-                } 
-				else 
-				{
-                    Logger::warning("SSO-User {$username} nicht im AD gefunden – keine Provisionierung möglich");
-                }
-            } 
-			else 
-			{
-                // Benutzer existiert → Gruppen und Felder aktualisieren
-                $ldapUser = LdapUser::query()->where('samaccountname', '=', $username)->first();
+        $service = app(LdapProvisioningService::class);
+        $ldapUser = LdapUser::query()
+            ->where('samaccountname', '=', $username)
+            ->first();
 
-                if ($ldapUser) 
-				{
-                    $service->provisionOrUpdateUserFromLdap($ldapUser, $username, false, $user);
-                    Logger::debug("SSO-User {$username} Gruppen/Rollen synchronisiert", ['user_id' => $user->id]);
-                }
-            }
+        $user = User::where('username', $username)->first();
 
-            // Benutzer anmelden
-            if ($user) 
-			{
-                Auth::login($user);
-                Logger::debug("SSO-Login erfolgreich für {$username}");
-            }
+        // Benutzer anlegen oder aktualisieren
+        if (! $user && $ldapUser) {
+            $user = $service->provisionOrUpdateUserFromLdap($ldapUser, $username, true);
+            Logger::debug("SSO-AutoLogin: Benutzer '{$username}' neu provisioniert (ID {$user->id})");
+        } elseif ($user && $ldapUser) {
+            $service->provisionOrUpdateUserFromLdap($ldapUser, $username, false, $user);
+            Logger::debug("SSO-AutoLogin: Benutzer '{$username}' aktualisiert (ID {$user->id})");
+        }
+
+        // Login durchführen
+        if ($user) {
+            Auth::guard('sso')->login($user, true);
+            session()->regenerate();
+
+            $this->logDb('auth', 'info', "SSO-Login erfolgreich für Benutzer '{$username}'", [
+                'user_id' => $user->id,
+            ]);
+
+            Logger::debug("SSO-Login erfolgreich für '{$username}'");
+        } else {
+            $this->logDb('auth', 'warning', "SSO-Login fehlgeschlagen: Benutzer '{$username}' nicht gefunden oder nicht im LDAP");
+            Logger::debug("SSO-Login fehlgeschlagen für '{$username}'");
         }
 
         return $next($request);
+    }
+
+    private function logDb(string $channel, string $level, string $message, array $extra = []): void
+    {
+        try {
+            Logger::db($channel, $level, $message, array_merge([
+                'ip' => request()->ip(),
+                'userAgent' => request()->userAgent(),
+                'guard' => 'sso',
+            ], $extra));
+        } catch (\Throwable $e) {
+            Logger::debug("Fehler beim Schreiben des SSO-Logs: {$e->getMessage()}");
+        }
     }
 }

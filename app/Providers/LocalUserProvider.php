@@ -5,8 +5,10 @@ namespace App\Providers;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use App\Utils\Logging\Logger;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 
 class LocalUserProvider implements UserProvider
 {
@@ -24,23 +26,31 @@ class LocalUserProvider implements UserProvider
 
     public function updateRememberToken(Authenticatable $user, $token)
     {
-        $user->setRememberToken($token);
-        $user->save();
+        try {
+            $user->setRememberToken($token);
+            $user->saveQuietly();
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000') {
+                Logger::debug("Duplicate remember_token für Benutzer-ID {$user->id} ignoriert");
+            } else {
+                throw $e;
+            }
+        }
     }
 
     public function retrieveByCredentials(array $credentials)
     {
-        // Wenn im SSO-Modus, keine Formular-Authentifizierung zulassen
-        if (env('AUTH_MODE') === 'sso') {
+        $mode = config('auth.mode', 'local');
+
+        // Im SSO-Modus keine Formularauthentifizierung
+        if ($mode === 'sso') {
             Logger::debug('Form-Login verweigert: System im SSO-Modus');
             return null;
         }
 
-        $username = $credentials['username'] ?? '';
+        $username = trim($credentials['username'] ?? '');
+        Logger::debug("Suche lokalen Benutzer '{$username}'");
 
-        Logger::debug("Suche lokalen Benutzer {$username}");
-
-        // Nur lokale Benutzer zulassen
         return User::where('username', $username)
             ->where('auth_type', 'local')
             ->first();
@@ -48,7 +58,9 @@ class LocalUserProvider implements UserProvider
 
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
-        if (env('AUTH_MODE') !== 'local') {
+        $mode = config('auth.mode', 'local');
+
+        if ($mode !== 'local') {
             Logger::debug('validateCredentials ignoriert: System nicht im local-Modus');
             return false;
         }
@@ -57,7 +69,9 @@ class LocalUserProvider implements UserProvider
         $password = $credentials['password'] ?? '';
 
         if (! $user->is_enabled) {
-            $this->logDb('auth', 'warning', "Login Benutzer {$username} fehlgeschlagen: deaktiviert");
+            $this->logDb('auth', 'warning', "Login Benutzer {$username} fehlgeschlagen: Benutzer deaktiviert", [
+                'user_id' => $user->id,
+            ]);
             return false;
         }
 
@@ -72,26 +86,40 @@ class LocalUserProvider implements UserProvider
             ['user_id' => $user->id]
         );
 
+        // Zusätzlich in Debug-Log für Nachvollziehbarkeit
+        Logger::debug($ok
+            ? "LocalUserProvider: Authentifizierung für '{$username}' erfolgreich"
+            : "LocalUserProvider: Authentifizierung für '{$username}' fehlgeschlagen"
+        );
+
         return $ok;
     }
 
     public function rehashPasswordIfRequired(Authenticatable $user, array $credentials, bool $force = false): void
     {
+        $mode = config('auth.mode', 'local');
+
         if (
-            env('AUTH_MODE') === 'local'
-            && isset($credentials['password'])
-            && Hash::needsRehash($user->getAuthPassword())
+            $mode === 'local' &&
+            isset($credentials['password']) &&
+            Hash::needsRehash($user->getAuthPassword())
         ) {
             $user->password = Hash::make($credentials['password']);
             $user->save();
+            Logger::debug("Passworthash für Benutzer-ID {$user->id} wurde erneuert");
         }
     }
 
     private function logDb(string $channel, string $level, string $message, array $extra = []): void
     {
-        Logger::db($channel, $level, $message, array_merge([
-            'ip' => request()->ip(),
-            'userAgent' => request()->userAgent(),
-        ], $extra));
+        try {
+            Logger::db($channel, $level, $message, array_merge([
+                'ip' => request()->ip(),
+                'userAgent' => request()->userAgent(),
+                'guard' => Auth::getDefaultDriver(),
+            ], $extra));
+        } catch (\Throwable $e) {
+            Logger::debug("Fehler beim Schreiben des Login-Logs: {$e->getMessage()}");
+        }
     }
 }

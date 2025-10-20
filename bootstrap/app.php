@@ -18,15 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-        // Middleware-Aliase registrieren
         $middleware->alias([
             'role'               => RoleMiddleware::class,
             'permission'         => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
-            'api.auth'           => ApiAuthSwitcher::class, // eigene Middleware
+            'api.auth'           => ApiAuthSwitcher::class,
         ]);
 
-        // Globale Web-Middleware (gilt nur für Web-Routen)
         $middleware->web(append: [
             SsoAutoLogin::class,
         ]);
