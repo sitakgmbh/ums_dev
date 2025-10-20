@@ -15,20 +15,19 @@ class AuthServiceProvider extends ServiceProvider
 	{
 		$this->registerPolicies();
 
-		Auth::provider('local', function ($app, array $config) {
+		Auth::provider("local", function ($app, array $config) {
 			return new LocalUserProvider();
 		});
 
 		ResetPassword::createUrlUsing(function ($user, string $token) {
-			return url(route('password.reset', [
-				'token' => $token,
-				'email' => $user->email,
+			return url(route("password.reset", [
+				"token" => $token,
+				"email" => $user->email,
 			], false));
 		});
 
-		// Dynamisch den Default-Auth-Guard anhand des Modus setzen
-		$authMode = config('auth.mode', env('AUTH_MODE', 'local'));
-		config(['auth.defaults.guard' => $authMode === 'sso' ? 'sso' : 'web']);
+		$authMode = config("auth.mode", env("AUTH_MODE", "local"));
+		config(["auth.defaults.guard" => $authMode === "sso" ? "sso" : "web"]);
 	}
 
 }

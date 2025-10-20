@@ -7,23 +7,22 @@ use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
-#[Layout('layouts.auth')]
+#[Layout("layouts.auth")]
 class Login extends Component
 {
     public LoginForm $form;
 
     public function mount(): void
     {
-        // Wenn bereits authentifiziert
-        if (auth()->check()) {
+        if (auth()->check()) 
+		{
             $user = auth()->user();
 
             session([
-                'darkmode_enabled' => (bool) $user->getSetting('darkmode_enabled', false),
+                "darkmode_enabled" => (bool) $user->getSetting("darkmode_enabled", false),
             ]);
 
-            // Weiterleitung auf Dashboard (oder letzte Intent-Route)
-            $this->redirectIntended(route('dashboard'));
+            $this->redirectIntended(route("dashboard"));
         }
     }
 
@@ -38,14 +37,14 @@ class Login extends Component
         $user = auth()->user();
 
         session([
-            'darkmode_enabled' => (bool) $user->getSetting('darkmode_enabled', false),
+            "darkmode_enabled" => (bool) $user->getSetting("darkmode_enabled", false),
         ]);
 
-        $this->redirectIntended(route('dashboard'));
+        $this->redirectIntended(route("dashboard"));
     }
 
     public function render()
     {
-        return view('livewire.pages.auth.login');
+        return view("livewire.pages.auth.login");
     }
 }

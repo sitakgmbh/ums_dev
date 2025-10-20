@@ -66,7 +66,7 @@ class User extends Authenticatable
 
 	public function guardName(): string
 	{
-		return 'web';
+		return "web";
 	}
 
     public function getNameAttribute(): string

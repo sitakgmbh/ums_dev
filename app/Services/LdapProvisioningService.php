@@ -12,38 +12,38 @@ class LdapProvisioningService
 	{
         $sid = $ldapUser->getConvertedSid();
 		
-		$groups = collect($ldapUser->getAttribute('memberOf') ?? [])
-			->map(fn($dn) => preg_match('/CN=([^,]+)/i', $dn, $m) ? $m[1] : null)
+		$groups = collect($ldapUser->getAttribute("memberOf") ?? [])
+			->map(fn($dn) => preg_match("/CN=([^,]+)/i", $dn, $m) ? $m[1] : null)
 			->filter()
 			->values()
 			->toArray();
 
         $newRole = null;
 		
-        if (env('LDAP_ADMIN_GROUP') && in_array(env('LDAP_ADMIN_GROUP'), $groups, true)) 
+        if (env("LDAP_ADMIN_GROUP") && in_array(env("LDAP_ADMIN_GROUP"), $groups, true)) 
 		{
-            $newRole = 'admin';
+            $newRole = "admin";
         } 
-		elseif (env('LDAP_USER_GROUP') && in_array(env('LDAP_USER_GROUP'), $groups, true)) 
+		elseif (env("LDAP_USER_GROUP") && in_array(env("LDAP_USER_GROUP"), $groups, true)) 
 		{
-            $newRole = 'user';
+            $newRole = "user";
         }
 
         $user = $existingUser ?? new User();
 
         $user->fill([
-            'username'   => $username,
-            'firstname'  => $ldapUser->getFirstAttribute('givenname') ?? '',
-            'lastname'   => $ldapUser->getFirstAttribute('sn') ?? '',
-            'email'      => $ldapUser->getFirstAttribute('mail') ?? '',
-            'auth_type'  => 'ldap',
-            'ad_sid'     => $sid,
-            'is_enabled' => null,
+            "username"   => $username,
+            "firstname"  => $ldapUser->getFirstAttribute("givenname") ?? "",
+            "lastname"   => $ldapUser->getFirstAttribute("sn") ?? "",
+            "email"      => $ldapUser->getFirstAttribute("mail") ?? "",
+            "auth_type"  => "ldap",
+            "ad_sid"     => $sid,
+            "is_enabled" => null,
         ]);
 
         if ($create) 
 		{
-            $user->password = ''; // kein Passwort nötig
+            $user->password = ""; 
         }
 
         $user->save();

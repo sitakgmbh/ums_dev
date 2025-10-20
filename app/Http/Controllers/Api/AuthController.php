@@ -41,48 +41,48 @@ class AuthController extends Controller
 	public function login(Request $request)
 	{
 		$credentials = $request->validate([
-			'username' => 'required|string',
-			'password' => 'required|string',
+			"username" => "required|string",
+			"password" => "required|string",
 		]);
 
-		$username = $credentials['username'];
-		$password = $credentials['password'];
+		$username = $credentials["username"];
+		$password = $credentials["password"];
 
 		try 
 		{
 			$connection = Container::getDefaultConnection();
-			$ldapUser = LdapUser::where('samaccountname', '=', $username)->first();
+			$ldapUser = LdapUser::where("samaccountname", "=", $username)->first();
 
 			if (! $ldapUser) 
 			{
-				return response()->json(['message' => 'Benutzer nicht gefunden'], 401);
+				return response()->json(["message" => "Benutzer nicht gefunden"], 401);
 			}
 
 			if (! $connection->auth()->attempt($ldapUser->getDn(), $password)) 
 			{
-				return response()->json(['message' => 'Ungueltige Anmeldedaten'], 401);
+				return response()->json(["message" => "Ungültige Anmeldedaten"], 401);
 			}
 
 			$provisioner = app(LdapProvisioningService::class);
 
-			$existingUser = \App\Models\User::where('username', $username)->first();
+			$existingUser = \App\Models\User::where("username", $username)->first();
 			$user = $provisioner->provisionOrUpdateUserFromLdap($ldapUser, $username, ! $existingUser, $existingUser);
 
-			if (! $user->hasRole('admin')) 
+			if (! $user->hasRole("admin")) 
 			{
-				return response()->json(['message' => 'Keine Berechtigung'], 403);
+				return response()->json(["message" => "Keine Berechtigung"], 403);
 			}
 
-			$token = $user->createToken('api-token')->plainTextToken;
+			$token = $user->createToken("api-token")->plainTextToken;
 
 			return response()->json([
-				'access_token' => $token,
-				'token_type'   => 'Bearer',
+				"access_token" => $token,
+				"token_type"   => "Bearer",
 			]);
 		} 
 		catch (\Exception $e) 
 		{
-			return response()->json(['message' => 'LDAP-Fehler: ' . $e->getMessage()], 500);
+			return response()->json(["message" => "LDAP-Fehler: " . $e->getMessage()], 500);
 		}
 	}
 
