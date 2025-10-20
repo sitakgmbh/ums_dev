@@ -35,7 +35,7 @@ class SsoAutoLogin
             ->lower()
             ->toString();
 
-        Logger::debug("SSO-AutoLogin gestartet für Benutzer '{$username}'");
+        // Logger::debug("SSO-AutoLogin gestartet für Benutzer '{$username}'");
 
         if (Auth::check() && Auth::user()->username === $username) 
 		{
