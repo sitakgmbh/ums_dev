@@ -72,7 +72,7 @@ class OtoboService
 
 			foreach ($config["field_mapping"] as $key => $label)
 			{
-				// 🔹 Holt Werte auch aus Relationen wie "antragsteller.display_name"
+				// Werte aus Relationen wie "antragsteller.display_name"
 				$value = data_get($model, $key);
 
 				if (!empty($value)) 
@@ -185,7 +185,7 @@ class OtoboService
 			if ($close) 
 			{
 				$data["Ticket"]["StateID"] = 2; // geschlossen
-				$data["Ticket"]["Owner"] = auth()->user()->username; // für Statistik
+				$data["Ticket"]["Owner"] = $model->Owner->username; // für Statistik
 			}
 
 			$response = $this->sendRequest("/TicketUpdate", $data);

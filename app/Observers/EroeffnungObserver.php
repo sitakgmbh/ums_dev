@@ -66,48 +66,18 @@ class EroeffnungObserver
         $changes  = $this->filterData($eroeffnung->getChanges(), $eroeffnung);
         $original = $this->filterData($eroeffnung->getOriginal(), $eroeffnung);
 
-		// Logeintrag erstellen
         Logger::db("antraege", "info", "Eröffnung ID {$eroeffnung->id} bearbeitet durch {$fullname} ({$username})", [
             "eroeffnung_id" => $eroeffnung->id,
             "changes"       => $changes,
             "original"      => $original,
         ]);
 
-		// Ticket aktualisieren und abschliessen, wenn Antrag archiviert
+		// Ticket schliessen wenn archiviert
         if ($eroeffnung->wasChanged('archiviert') && $eroeffnung->archiviert) 
 		{
             $msg = "Eröffnung wurde archiviert durch {$fullname} ({$username}).";
             app(OtoboService::class)->updateTicket($eroeffnung, $msg, true);
             return;
-        }
-
-        if (!empty($changes)) 
-		{
-            $message = "Eröffnung aktualisiert durch {$fullname} ({$username}):\n\n";
-
-			foreach ($changes as $field => $newValue) 
-			{
-				$oldValue = $original[$field] ?? '(leer)';
-
-				if (is_array($oldValue) || is_object($oldValue)) 
-				{
-					$oldValue = json_encode($oldValue, JSON_UNESCAPED_UNICODE);
-				}
-
-				if (is_array($newValue) || is_object($newValue)) 
-				{
-					$newValue = json_encode($newValue, JSON_UNESCAPED_UNICODE);
-				}
-
-				if ($newValue === '') 
-				{
-					$newValue = '(leer)';
-				}
-
-				$message .= "- {$field}: {$oldValue} → {$newValue}\n";
-			}
-
-            app(OtoboService::class)->updateTicket($eroeffnung, $message);
         }
     }
 

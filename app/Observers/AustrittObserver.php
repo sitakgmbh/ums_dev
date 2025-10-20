@@ -56,36 +56,6 @@ class AustrittObserver
             app(OtoboService::class)->updateTicket($austritt, $msg, true);
             return;
         }
-
-        // Änderungen in Ticket speichern
-        if (!empty($changes)) 
-		{
-            $message = "Austritt aktualisiert durch {$fullname} ({$username}):\n\n";
-			
-            foreach ($changes as $field => $newValue) 
-			{
-                $oldValue = $original[$field] ?? '(leer)';
-
-                if (is_array($oldValue) || is_object($oldValue)) 
-				{
-                    $oldValue = json_encode($oldValue, JSON_UNESCAPED_UNICODE);
-                }
-				
-                if (is_array($newValue) || is_object($newValue)) 
-				{
-                    $newValue = json_encode($newValue, JSON_UNESCAPED_UNICODE);
-                }
-
-                if ($newValue === '') 
-				{
-                    $newValue = '(leer)';
-                }
-
-                $message .= "- {$field}: {$oldValue} → {$newValue}\n";
-            }
-
-            app(OtoboService::class)->updateTicket($austritt, $message);
-        }
     }
 
     public function deleted(Austritt $austritt): void

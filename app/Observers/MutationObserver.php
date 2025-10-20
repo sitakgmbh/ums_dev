@@ -58,62 +58,18 @@ class MutationObserver
 		$changes  = $this->filterData($mutation->getChanges(), $mutation);
 		$original = $this->filterData($mutation->getOriginal(), $mutation);
 
-		// Abbruch, wenn nur ticket_nr geändert wurde
-		if (count($changes) === 1 && array_key_exists('ticket_nr', $changes))
-		{
-			Logger::debug("MutationObserver: update ignoriert (nur Ticketnummer geändert)", [
-				'mutation_id' => $mutation->id,
-				'changes'     => $changes,
-			]);
-			return;
-		}
-
 		Logger::db("antraege", "info", "Mutation ID {$mutation->id} bearbeitet durch {$fullname} ({$username})", [
 			"mutation_id" => $mutation->id,
 			"changes"     => $changes,
 			"original"    => $original,
 		]);
 
-
-if (
-    $mutation->getOriginal('archiviert') === false &&
-    $mutation->archiviert === true
-) {
-    $msg = "Mutation wurde archiviert durch {$fullname} ({$username}).";
-	Logger::debug($msg);
-    app(OtoboService::class)->updateTicket($mutation, $msg, true);
-    return;
-}
-
-
-		// Ticket aktualisieren
-		if (!empty($changes))
+		// Ticket schliessen wenn archiviert
+		if ($mutation->wasChanged('archiviert') && $mutation->archiviert)
 		{
-			$message = "Mutation aktualisiert durch {$fullname} ({$username}):\n\n";
-
-			foreach ($changes as $field => $newValue)
-			{
-				$oldValue = $original[$field] ?? '(leer)';
-
-				if (is_array($oldValue) || is_object($oldValue))
-				{
-					$oldValue = json_encode($oldValue, JSON_UNESCAPED_UNICODE);
-				}
-
-				if (is_array($newValue) || is_object($newValue))
-				{
-					$newValue = json_encode($newValue, JSON_UNESCAPED_UNICODE);
-				}
-
-				if ($newValue === '')
-				{
-					$newValue = '(leer)';
-				}
-
-				$message .= "- {$field}: {$oldValue} → {$newValue}\n";
-			}
-
-			app(OtoboService::class)->updateTicket($mutation, $message);
+			$msg = "Mutation wurde archiviert durch {$fullname} ({$username}).";
+			app(OtoboService::class)->updateTicket($mutation, $msg, true);
+			return;
 		}
 	}
 

@@ -11,17 +11,16 @@
     </button>
 
     {{-- Archivieren --}}
-    <button type="button" class="btn btn-primary"
-        title="Archivieren"
+    <button type="button" class="btn btn-primary" title="Archivieren"
         onclick="window.Livewire && Livewire.dispatch('open-modal', { modal: 'components.modals.mutationen.archivieren', payload: { entryId: {{ $entry->id }} }})"
-        @disabled($entry->archiviert)>
+        @disabled($entry->archiviert || empty($entry->owner_id))>
         <i class="mdi mdi-archive"></i>
     </button>
 
     {{-- Löschen --}}
-    <button type="button" class="btn btn-danger"
-        title="Löschen"
-        onclick="window.Livewire && Livewire.dispatch('open-modal', { modal: 'components.modals.mutationen.delete', payload: { id: {{ $entry->id }} }})">
+    <button type="button" class="btn btn-danger" title="Löschen"
+        onclick="window.Livewire && Livewire.dispatch('open-modal', { modal: 'components.modals.mutationen.delete', payload: { id: {{ $entry->id }} }})"
+        @disabled(empty($entry->owner_id))>
         <i class="mdi mdi-delete"></i>
     </button>
 </div>
