@@ -58,6 +58,16 @@ class MutationObserver
 		$changes  = $this->filterData($mutation->getChanges(), $mutation);
 		$original = $this->filterData($mutation->getOriginal(), $mutation);
 
+		// Abbruch, wenn nur ticket_nr geändert wurde
+		if (count($changes) === 1 && array_key_exists('ticket_nr', $changes))
+		{
+			Logger::debug("MutationObserver: update ignoriert (nur Ticketnummer geändert)", [
+				'mutation_id' => $mutation->id,
+				'changes'     => $changes,
+			]);
+			return;
+		}
+
 		Logger::db("antraege", "info", "Mutation ID {$mutation->id} bearbeitet durch {$fullname} ({$username})", [
 			"mutation_id" => $mutation->id,
 			"changes"     => $changes,
@@ -65,7 +75,7 @@ class MutationObserver
 		]);
 
 		// Ticket schliessen wenn archiviert
-		if ($mutation->wasChanged('archiviert') && $mutation->archiviert) 
+		if ($mutation->wasChanged('archiviert') && $mutation->archiviert)
 		{
 			$msg = "Mutation wurde archiviert durch {$fullname} ({$username}).";
 			app(OtoboService::class)->updateTicket($mutation, $msg, true);
@@ -73,25 +83,25 @@ class MutationObserver
 		}
 
 		// Ticket aktualisieren
-		if (!empty($changes)) 
+		if (!empty($changes))
 		{
 			$message = "Mutation aktualisiert durch {$fullname} ({$username}):\n\n";
-			
-			foreach ($changes as $field => $newValue) 
+
+			foreach ($changes as $field => $newValue)
 			{
 				$oldValue = $original[$field] ?? '(leer)';
 
-				if (is_array($oldValue) || is_object($oldValue)) 
+				if (is_array($oldValue) || is_object($oldValue))
 				{
 					$oldValue = json_encode($oldValue, JSON_UNESCAPED_UNICODE);
 				}
-				
-				if (is_array($newValue) || is_object($newValue)) 
+
+				if (is_array($newValue) || is_object($newValue))
 				{
 					$newValue = json_encode($newValue, JSON_UNESCAPED_UNICODE);
 				}
 
-				if ($newValue === '') 
+				if ($newValue === '')
 				{
 					$newValue = '(leer)';
 				}
@@ -102,6 +112,7 @@ class MutationObserver
 			app(OtoboService::class)->updateTicket($mutation, $message);
 		}
 	}
+
 
     public function deleted(Mutation $mutation): void
     {

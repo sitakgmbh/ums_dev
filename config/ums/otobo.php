@@ -12,8 +12,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Hier wird definiert, wie Tickets für die verschiedenen Typen aufgebaut
-    | werden. Die Keys sind die Model-Klassen. Du kannst hier Felder, Titel,
-    | Queue, Service usw. konfigurieren.
+    | werden. Die Keys sind die Model-Klassen.
     |
     */
 
@@ -48,12 +47,16 @@ return [
 		"ticket_type_id" => 9, // Anfrage
 		"state_id" => 4, // offen
 		"priority_id" => 3, // normal
-        "field_mapping" => [
-            "vorname" => "Vorname",
-            "nachname" => "Nachname",
-            "benutzername" => "Benutzername",
-            "antragsteller_displayname" => "Antragsteller",
-        ],
+		"field_mapping" => [
+			"vorname" => "Vorname",
+			"nachname" => "Nachname",
+			"antragsteller.display_name" => "Antragsteller",
+			"bezugsperson.display_name" => "Bezugsperson",
+			"arbeitsort.name" => "Arbeitsort",
+			"unternehmenseinheit.name" => "Unternehmenseinheit",
+			"abteilung.name" => "Abteilung",
+			"funktion.name" => "Funktion",
+		],
     ],
 
     Austritt::class => [

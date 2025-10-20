@@ -68,11 +68,16 @@ class OtoboService
 
 			$body = "Details:\n\n";
 			
-			foreach ($config["field_mapping"] as $key => $label) 
+			$body = "Details:\n\n";
+
+			foreach ($config["field_mapping"] as $key => $label)
 			{
-				if (!empty($model->$key)) 
+				// 🔹 Holt Werte auch aus Relationen wie "antragsteller.display_name"
+				$value = data_get($model, $key);
+
+				if (!empty($value)) 
 				{
-					$body .= "{$label}: {$model->$key}\n";
+					$body .= "{$label}: {$value}\n";
 				}
 			}
 
