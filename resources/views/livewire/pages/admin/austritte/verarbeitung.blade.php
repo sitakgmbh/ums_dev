@@ -10,19 +10,20 @@
         <i class="mdi mdi-account-switch"></i>
     </button>
 
-	{{-- Archivieren --}}
-	<button type="button" class="btn btn-primary" title="Archivieren"
-		onclick="window.Livewire && Livewire.dispatch('open-modal', { modal: 'components.modals.austritte.archivieren', payload: { entryId: {{ $entry->id }} }})"
-		@disabled($entry->archiviert || empty($entry->owner_id))>
-		<i class="mdi mdi-archive"></i>
-	</button>
+    {{-- Archivieren --}}
+    <button type="button" class="btn btn-primary"
+        title="Archivieren"
+        onclick="window.Livewire && Livewire.dispatch('open-modal', { modal: 'components.modals.austritte.archivieren', payload: { entryId: {{ $entry->id }} }})"
+        @disabled($entry->archiviert)>
+        <i class="mdi mdi-archive"></i>
+    </button>
 
-	{{-- Loeschen --}}
-	<button type="button" class="btn btn-danger" title="Loeschen"
-		onclick="window.Livewire && Livewire.dispatch('open-modal', { modal: 'components.modals.austritte.delete', payload: { id: {{ $entry->id }} }})"
-		@disabled(empty($entry->owner_id))>
-		<i class="mdi mdi-delete"></i>
-	</button>
+    {{-- Loeschen --}}
+    <button type="button" class="btn btn-danger"
+        title="Löschen"
+        onclick="window.Livewire && Livewire.dispatch('open-modal', { modal: 'components.modals.austritte.delete', payload: { id: {{ $entry->id }} }})">
+        <i class="mdi mdi-delete"></i>
+    </button>
 </div>
 @endsection
 

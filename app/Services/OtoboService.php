@@ -67,8 +67,6 @@ class OtoboService
 			}
 
 			$body = "Details:\n\n";
-			
-			$body = "Details:\n\n";
 
 			foreach ($config["field_mapping"] as $key => $label)
 			{
@@ -185,7 +183,7 @@ class OtoboService
 			if ($close) 
 			{
 				$data["Ticket"]["StateID"] = 2; // geschlossen
-				$data["Ticket"]["Owner"] = $model->Owner->username; // für Statistik
+				$data["Ticket"]["Owner"] = $model->owner->username ?? auth()->user()->username; // für Statistik
 			}
 
 			$response = $this->sendRequest("/TicketUpdate", $data);
@@ -240,7 +238,12 @@ class OtoboService
 			Logger::debug("Sende Request an OTOBO", [
 				"endpoint" => $endpoint,
 				"url" => rtrim($this->url, "/") . $endpoint,
-				"payload" => $data,
+				"payload" => collect($data)
+					->replaceRecursive([
+						"Password" => "******",
+						"UserLogin" => $data["UserLogin"] ?? null,
+					])
+					->toArray(),
 			]);
 
 			$response = Http::withBasicAuth($this->username, $this->password)
