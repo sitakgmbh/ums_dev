@@ -226,14 +226,14 @@ class OtoboService
 	 */
 	private function sendRequest(string $endpoint, array $data): ?array
 	{
-		try 
+		try
 		{
-			if (!$this->url) 
+			if (!$this->url)
 			{
 				Logger::error("Keine OTOBO URL konfiguriert", [
 					"endpoint" => $endpoint,
 				]);
-				
+
 				return null;
 			}
 
@@ -248,7 +248,14 @@ class OtoboService
 				->withOptions(["verify" => false])
 				->post(rtrim($this->url, "/") . $endpoint, $data);
 
-			if ($response->successful()) 
+			Logger::debug("Antwort von OTOBO erhalten", [
+				"endpoint" => $endpoint,
+				"status" => $response->status(),
+				"body" => $response->body(),
+				"json" => $response->json(),
+			]);
+
+			if ($response->successful())
 			{
 				return $response->json();
 			}
@@ -257,17 +264,21 @@ class OtoboService
 				"status" => $response->status(),
 				"body" => $response->body(),
 				"endpoint" => $endpoint,
+				"payload" => $data,
 			]);
-			
+
 			return null;
-		} 
-		catch (\Throwable $e) 
+		}
+		catch (\Throwable $e)
 		{
 			Logger::db("otobo", "error", "Fehler beim Senden an OTOBO", [
 				"endpoint" => $endpoint,
 				"error" => $e->getMessage(),
+				"payload" => $data,
 			]);
+
 			return null;
 		}
 	}
+
 }
