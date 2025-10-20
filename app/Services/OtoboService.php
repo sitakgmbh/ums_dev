@@ -185,7 +185,7 @@ class OtoboService
 			if ($close) 
 			{
 				$data["Ticket"]["StateID"] = 2; // geschlossen
-				$data["Ticket"]["Owner"] = auth()->user()->adUser->email; // für Statistik
+				$data["Ticket"]["Owner"] = auth()->user()->username; // für Statistik
 			}
 
 			$response = $this->sendRequest("/TicketUpdate", $data);
