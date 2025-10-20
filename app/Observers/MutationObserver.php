@@ -74,13 +74,17 @@ class MutationObserver
 			"original"    => $original,
 		]);
 
-		// Ticket schliessen wenn archiviert
-		if ($mutation->wasChanged('archiviert') && $mutation->archiviert)
-		{
-			$msg = "Mutation wurde archiviert durch {$fullname} ({$username}).";
-			app(OtoboService::class)->updateTicket($mutation, $msg, true);
-			return;
-		}
+
+if (
+    $mutation->getOriginal('archiviert') === false &&
+    $mutation->archiviert === true
+) {
+    $msg = "Mutation wurde archiviert durch {$fullname} ({$username}).";
+	Logger::debug($msg);
+    app(OtoboService::class)->updateTicket($mutation, $msg, true);
+    return;
+}
+
 
 		// Ticket aktualisieren
 		if (!empty($changes))

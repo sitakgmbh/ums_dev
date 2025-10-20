@@ -237,6 +237,12 @@ class OtoboService
 				return null;
 			}
 
+			Logger::debug("Sende Request an OTOBO", [
+				"endpoint" => $endpoint,
+				"url" => rtrim($this->url, "/") . $endpoint,
+				"payload" => $data,
+			]);
+
 			$response = Http::withBasicAuth($this->username, $this->password)
 				->withHeaders(["Content-Type" => "application/json"])
 				->withOptions(["verify" => false])

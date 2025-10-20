@@ -39,7 +39,6 @@ class SsoAutoLogin
 
         if (Auth::check() && Auth::user()->username === $username) 
 		{
-            Logger::debug("SSO-AutoLogin: Benutzer '{$username}' bereits eingeloggt, übersprungen");
             return $next($request);
         }
 
