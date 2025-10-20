@@ -16,6 +16,9 @@ class Settings extends Component
         "azure_tenant_id"     => "Microsoft Graph",
         "azure_client_id"     => "Microsoft Graph",
         "azure_client_secret" => "Microsoft Graph",
+		"otobo_url" => "Otobo",
+		"otobo_username" => "Otobo",
+		"otobo_password" => "Otobo",
     ];
 
     public function mount(): void

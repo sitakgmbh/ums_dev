@@ -17,6 +17,7 @@ class SettingsSeeder extends Seeder
                 'name'        => 'Debug-Modus',
                 'description' => 'Aktiviert erweiterte Protokollierung. Im Debug-Modus werden zusätzliche Details in den Logdateien gespeichert, um die Analyse und Fehlersuche zu erleichtern. Sollte nur in Entwicklungs- oder Testumgebungen verwendet werden.',
             ],
+			// Azure
 			[
 				'key'         => 'azure_tenant_id',
 				'value'       => '',
@@ -37,6 +38,28 @@ class SettingsSeeder extends Seeder
 				'type'        => 'password',
 				'name'        => 'Client Secret',
 				'description' => 'Microsoft Azure Application Client Secret',
+			],
+			// Otobo
+			[
+				'key'         => 'otobo_url',
+				'value'       => '',
+				'type'        => 'string',
+				'name'        => 'Webservice URL',
+				'description' => 'Otobo Webservice URL',
+			],
+			[
+				'key'         => 'otobo_username',
+				'value'       => '',
+				'type'        => 'string',
+				'name'        => 'Benutzername',
+				'description' => 'Benutzername Otobo Webservice',
+			],
+			[
+				'key'         => 'otobo_password',
+				'value'       => '',
+				'type'        => 'password',
+				'name'        => 'Passwort',
+				'description' => 'Passwort Otobo Webservice',
 			],
         ];
 

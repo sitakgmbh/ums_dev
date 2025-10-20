@@ -51,7 +51,7 @@
             </div>
         @endforeach
 
-        <div class="">
+        <div class="mb-3">
             <button type="submit" class="btn btn-primary">Speichern</button>
         </div>
     </form>

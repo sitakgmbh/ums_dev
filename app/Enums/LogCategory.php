@@ -8,6 +8,7 @@ enum LogCategory: string
     case Database = "database";
     case Auth = "auth";
     case Api = "api";
+	case Email = "mail";
 	case Sap = "sap";
 	case Antraege = "antraege";
 	case Otobo = "otobo";
@@ -21,6 +22,7 @@ enum LogCategory: string
             self::Database => "Datenbank",
             self::Auth => "Authentifizierung",
             self::Api => "API",
+			self::Email => "E-Mail",
 			self::Sap => "SAP",
 			self::Antraege => "Anträge",
 			self::Otobo => "Otobo",
