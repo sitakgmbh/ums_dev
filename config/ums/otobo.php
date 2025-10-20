@@ -24,19 +24,19 @@ return [
         "state_id" => 4, // offen
         "priority_id" => 3, // normal
         "field_mapping" => [
-            "anrede_name" => "Anrede",
+            "anrede.name" => "Anrede",
             "vorname" => "Vorname",
             "nachname" => "Nachname",
-            "antragsteller_displayname" => "Antragsteller",
-            "bezugsperson_displayname" => "Bezugsperson",
-            "berechtigung_displayname" => "Berechtigungen uebernehmen von",
-            "arbeitsort_name" => "Arbeitsort",
-            "unternehmenseinheit_name" => "Unternehmenseinheit",
-            "abteilung_name" => "Abteilung",
-            "funktion_name" => "Funktion",
+            "antragsteller.display_name" => "Antragsteller",
+            "bezugsperson.display_name" => "Bezugsperson",
+            "vorlageBenutzer.display_name" => "Berechtigungen übernehmen von",
+            "arbeitsort.name" => "Arbeitsort",
+            "unternehmenseinheit.name" => "Unternehmenseinheit",
+            "abteilung.name" => "Abteilung",
+            "funktion.name" => "Funktion",
             "vertragsbeginn" => "Eintrittsdatum",
             "benutzername" => "Vorlaeufiger Benutzername",
-            "email" => "Vorlaeufige E-Mail-Adresse",
+            "email" => "Vorläufige E-Mail-Adresse",
         ],
     ],
 
@@ -48,14 +48,9 @@ return [
 		"state_id" => 4, // offen
 		"priority_id" => 3, // normal
 		"field_mapping" => [
-			"vorname" => "Vorname",
-			"nachname" => "Nachname",
+			"adUser.display_name" => "Benutzer",
 			"antragsteller.display_name" => "Antragsteller",
-			"bezugsperson.display_name" => "Bezugsperson",
-			"arbeitsort.name" => "Arbeitsort",
-			"unternehmenseinheit.name" => "Unternehmenseinheit",
-			"abteilung.name" => "Abteilung",
-			"funktion.name" => "Funktion",
+			"vertragsbeginn" => "Vertragsbeginn",
 		],
     ],
 
@@ -67,10 +62,9 @@ return [
 			"state_id" => 4, // offen
 			"priority_id" => 3, // normal
         "field_mapping" => [
-            "vorname" => "Vorname",
-            "nachname" => "Nachname",
-            "personalnummer" => "Personalnummer",
-            "benutzername" => "Benutzername",
+			"adUser.display_name" => "Benutzer",
+            "adUser.initials" => "Personalnummer",
+            "adUser.username" => "Benutzername",
             "vertragsende" => "Austrittsdatum",
         ],
     ],
