@@ -213,6 +213,7 @@ trait EroeffnungFormHooks
 
 		// Eröffnung mit Vor- und Nachname vorhanden?
 		$eroeffnung = \App\Models\Eroeffnung::query()
+			->where("archiviert", false)
 			->where("vorname", $this->form->vorname)
 			->where("nachname", $this->form->nachname)
 			->first();
