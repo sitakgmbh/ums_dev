@@ -167,10 +167,11 @@ class UserSyncService
             "last_synced_at" => Carbon::now(),
         ]);
 
-        Logger::info("AD-Sync beendet", [
+		Logger::db("system", "info", "Synchronisation Actice Directory abgeschlossen", [
             "found"   => count($seenSids),
             "missing" => AdUser::where("is_existing", false)->count(),
-        ]);
+		]);
+
     }
 
 	protected function toCarbon($value): ?Carbon
@@ -192,7 +193,7 @@ class UserSyncService
 			if ($unixTime > 0) 
 			{
 				// return Carbon::createFromTimestampUTC($unixTime);
-				return Carbon::createFromTimestampUTC($unixTime)->toDateTimeString()
+				return Carbon::createFromTimestampUTC($unixTime)->toDateTimeString();
 			}
 			return null;
 		}
