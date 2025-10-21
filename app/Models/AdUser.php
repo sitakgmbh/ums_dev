@@ -49,6 +49,7 @@ class AdUser extends Model
         "street_address",
         "title",
         "manager_dn",
+		"profile_photo_base64",
 
         "distinguished_name",
         "user_principal_name",

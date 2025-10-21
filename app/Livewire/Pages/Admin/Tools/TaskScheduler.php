@@ -11,8 +11,8 @@ use Livewire\Attributes\Layout;
 class TaskScheduler extends Component
 {
     public array $allowed = [
-        "ad:sync-users",
         "sap:import",
+		"ad:sync-users",
         "graph:test-connection",
         // "test:do",
         // "test:do-error",

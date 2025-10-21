@@ -56,6 +56,7 @@ class UserSyncService
                 "proxyaddresses",
                 "memberof",
                 "manager",
+				"thumbnailphoto",
                 "extensionattribute1",
                 "extensionattribute2",
                 "extensionattribute3",
@@ -221,4 +222,16 @@ class UserSyncService
         if ($uac === null) return false;
         return (($uac & 0x10000) === 0x10000);
     }
+
+	protected function getBase64Image(LdapUser $ldapUser): ?string
+	{
+		$photo = $ldapUser->thumbnailphoto[0] ?? null;
+
+		if (!$photo) {
+			return null;
+		}
+
+		// thumbnailPhoto ist binär, wird als String geliefert
+		return base64_encode($photo);
+	}
 }

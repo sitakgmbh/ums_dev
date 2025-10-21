@@ -56,6 +56,7 @@ return new class extends Migration
             $table->string('street_address')->nullable();
             $table->string('title')->nullable();
             $table->string('manager_dn')->nullable();
+			$table->longText('profile_photo_base64')->nullable();
 
             // AD Identitaet
             $table->string('distinguished_name')->nullable();
