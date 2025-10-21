@@ -41,25 +41,33 @@ class AntragHelper
         return [$canEdit, $messages];
     }
 
-    public static function statusForVerarbeitung($antrag, $user): array
-    {
-        [$canEdit, $messages] = self::baseChecks($antrag, $user);
+	public static function statusForVerarbeitung($antrag, $user): array
+	{
+		[$canEdit, $messages] = self::baseChecks($antrag, $user);
 
-        if ($antrag->owner_id !== ($user?->adUser?->id)) 
+		if (!$canEdit) 
 		{
-            $messages[] = [
-                "type" => "warning",
-                "text" => "Du musst Besitzer dieses Antrags sein, um die Aufgaben zu bearbeiten.",
-            ];
-			
-            $canEdit = false;
-        }
+			return [
+				"canEdit"  => false,
+				"messages" => $messages,
+			];
+		}
 
-        return [
-            "canEdit"  => $canEdit,
-            "messages" => $messages,
-        ];
-    }
+		if ($antrag->owner_id !== ($user?->adUser?->id)) 
+		{
+			$messages[] = [
+				"type" => "warning",
+				"text" => "Du musst Besitzer dieses Antrags sein, um die Aufgaben zu bearbeiten.",
+			];
+			$canEdit = false;
+		}
+
+		return [
+			"canEdit"  => $canEdit,
+			"messages" => $messages,
+		];
+	}
+
 
 	public static function statusForBearbeitung($antrag, $user): array
 	{
