@@ -130,7 +130,7 @@ class UserSyncService
                 "street_address"        => $ldapUser->streetaddress[0] ?? null,
                 "title"                 => $ldapUser->title[0] ?? null,
                 "manager_dn"            => $ldapUser->manager[0] ?? null,
-				"profile_image_base64" => $this->getBase64Image($ldapUser),
+				"profile_photo_base64" => $this->getBase64Image($ldapUser),
 
                 "distinguished_name"    => $ldapUser->distinguishedname[0] ?? null,
                 "user_principal_name"   => $ldapUser->userprincipalname[0] ?? null,
