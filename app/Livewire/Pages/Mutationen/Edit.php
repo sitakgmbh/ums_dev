@@ -27,8 +27,6 @@ class Edit extends Component
         $this->form->fillFromModel($mutation);
         $this->mutation = $mutation;
         $this->form->isReadonly = ! $status['canEdit'];
-
-		// Benutzer (mutierte Person) laden
 		$this->form->loadAdUser($mutation);
 
         // Daten für Select2-Dropdowns laden

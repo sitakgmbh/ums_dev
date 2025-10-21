@@ -14,8 +14,6 @@ trait MutationDropdownHandlers
     protected function loadDropdown(string $modelClass, array|int|null $extraIds, string $targetProperty, string $labelField = 'name', string $enabledField = 'enabled', ?callable $scope = null): void 
 	{
         $extraIds = collect($extraIds)->filter()->unique()->values()->toArray();
-
-        // Aktive Einträge laden (nach optionalem Scope)
         $activeQuery = $modelClass::query()->orderBy($labelField);
 		
         if (!$this->neue_konstellation && $scope) 
@@ -33,8 +31,6 @@ trait MutationDropdownHandlers
         }
 
         $active = $activeQuery->get(['id', $labelField]);
-
-        // Gespeicherte Einträge nachladen (ohne Filter)
         $extras = collect();
 		
         if (!empty($extraIds)) 
@@ -44,10 +40,8 @@ trait MutationDropdownHandlers
                 ->get(['id', $labelField]);
         }
 
-        // Zusammenführen
         $records = $extras->merge($active)->unique('id');
 
-        // Mapping
         $this->{$targetProperty} = $records
             ->map(fn($item) => [
                 'id' => $item->id,
@@ -56,34 +50,23 @@ trait MutationDropdownHandlers
             ->toArray();
     }
 
-	// Lädt Dropdown für AD-Benutzer (Bezugsperson oder Vorlage)
 	protected function loadAdUserDropdown(array|int|null $extraIds, string $targetProperty, string $enabledField = 'is_enabled' ): void 
 	{
 		$extraIds = collect($extraIds)->filter()->unique()->values()->toArray();
 
-		// Aktive Benutzer
 		$activeQuery = \App\Models\AdUser::query()
 			->with('funktion')
 			->orderBy('display_name');
 
-		// Filter-Logik
-		if ($this->neue_konstellation || $this->isCreate) 
+		$activeQuery->where('is_existing', true)
+					->where($enabledField, true);
+
+		if (! $this->neue_konstellation && $this->filter_mitarbeiter && $this->abteilung_id && $targetProperty !== 'adusersKalender') 
 		{
-			$activeQuery->where('is_existing', true)->where($enabledField, true);
-		} 
-		else 
-		{
-			if ($this->filter_mitarbeiter && $this->abteilung_id && $targetProperty !== 'adusersKalender') 
-			{
-				$activeQuery->where('abteilung_id', $this->abteilung_id);
-			}
-			
-			$activeQuery->where('is_existing', true)->where($enabledField, true);
+			$activeQuery->where('abteilung_id', $this->abteilung_id);
 		}
 
 		$active = $activeQuery->get();
-
-		// Gespeicherte Benutzer nachladen (ohne Filter)
 		$extras = collect();
 		
 		if (!empty($extraIds)) 
@@ -93,10 +76,8 @@ trait MutationDropdownHandlers
 				->get();
 		}
 
-		// Zusammenführen (Gespeicherte zuerst)
 		$records = $extras->merge($active)->unique('id');
 
-		// Mapping für Dropdown
 		$this->{$targetProperty} = $records
 			->map(fn($user) => [
 				'id' => $user->id,
@@ -104,7 +85,7 @@ trait MutationDropdownHandlers
 					$user->funktion
 						? $user->display_name . ' (' . $user->funktion->name . ')'
 						: $user->display_name,
-					40 // Max. Zeichen
+					40
 				),
 			])
 			->toArray();

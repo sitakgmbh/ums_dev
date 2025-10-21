@@ -272,7 +272,7 @@
 							<div x-data x-show="$wire.form.is_lei" x-cloak>
 								<label class="form-label" for="inputKommLei">Kommentar SAP-Leistungserbringer</label>
 								<div class="input-group">
-									<span class="input-group-text"><i class="mdi mdi-pencil"></i></span>
+									<span class="input-group-text"><i class="mdi mdi-comment"></i></span>
 									<textarea id="inputKommLei" class="form-control"
 											  wire:model.defer="form.komm_lei"
 											  rows="3"
@@ -427,7 +427,7 @@
 							<div x-data x-show="$wire.form.berufskleider" x-cloak>
 								<label class="form-label" for="inputKommBerufskleider">Kommentar Berufsbekleidung</label>
 								<div class="input-group">
-									<span class="input-group-text"><i class="mdi mdi-tshirt-crew"></i></span>
+									<span class="input-group-text"><i class="mdi mdi-comment"></i></span>
 									<textarea id="inputKommBerufskleider" class="form-control"
 											  wire:model.defer="form.komm_berufskleider"
 											  rows="3"
@@ -440,7 +440,7 @@
 							<div x-data x-show="$wire.form.garderobe" x-cloak>
 								<label class="form-label" for="inputKommGarderobe">Kommentar Garderobe</label>
 								<div class="input-group">
-									<span class="input-group-text"><i class="mdi mdi-hanger"></i></span>
+									<span class="input-group-text"><i class="mdi mdi-comment"></i></span>
 									<textarea id="inputKommGarderobe" class="form-control"
 											  wire:model.defer="form.komm_garderobe"
 											  rows="3"
@@ -453,7 +453,7 @@
 							<div x-data x-show="$wire.form.buerowechsel" x-cloak>
 								<label class="form-label" for="inputKommBuerowechsel">Kommentar Bürowechsel</label>
 								<div class="input-group">
-									<span class="input-group-text"><i class="mdi mdi-office-building"></i></span>
+									<span class="input-group-text"><i class="mdi mdi-comment"></i></span>
 									<textarea id="inputKommBuerowechsel" class="form-control"
 											  wire:model.defer="form.komm_buerowechsel"
 											  rows="3"

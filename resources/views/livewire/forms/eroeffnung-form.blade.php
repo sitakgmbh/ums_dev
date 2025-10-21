@@ -75,7 +75,7 @@
                             <select id="bezugsperson_id" class="form-control select2" @disabled($form->isReadonly)></select>
                             <div class="form-check">
                                 <input type="checkbox" id="filter_mitarbeiter" wire:model="form.filter_mitarbeiter" class="form-check-input" @disabled($form->isReadonly)>
-                                <label class="form-check-label" for="filter_mitarbeiter">Einträge filtern</label>
+                                <label class="form-check-label" for="filter_mitarbeiter">Mitarbeiter filtern</label>
 								<i class="mdi mdi-information-outline text-muted ms-1" data-bs-toggle="tooltip" title="Deaktiviere diese Option, wenn der gesuchte Mitarbeiter in einer anderen Abteilung arbeitet oder eine andere Funktion ausübt."></i>
                             </div>
                         </div>

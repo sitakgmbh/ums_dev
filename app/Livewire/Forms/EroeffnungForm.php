@@ -345,20 +345,33 @@ class EroeffnungForm extends Form
 		);
 	}
 
-	public function loadFunktionen(?Eroeffnung $eroeffnung = null): void
-	{
-		$this->loadDropdown(
-			\App\Models\Funktion::class,
-			$eroeffnung?->funktion_id,
-			'funktionen',
-			scope: fn($q) => ($this->arbeitsort_id && $this->unternehmenseinheit_id && $this->abteilung_id)
-				? $q->whereHas('konstellationen', fn($s) =>
-					$s->where('arbeitsort_id', $this->arbeitsort_id)
-					  ->where('unternehmenseinheit_id', $this->unternehmenseinheit_id)
-					  ->where('abteilung_id', $this->abteilung_id))
-				: $q
-		);
-	}
+public function loadFunktionen(?Eroeffnung $eroeffnung = null): void
+{
+    $this->loadDropdown(
+        \App\Models\Funktion::class,
+        $eroeffnung?->funktion_id,
+        'funktionen',
+        scope: function ($q) {
+            // Wenn neue Konstellation aktiv ist → alle Funktionen
+            if ($this->neue_konstellation) {
+                return $q;
+            }
+
+            // Nur filtern, wenn alle IDs vorhanden
+            if ($this->arbeitsort_id && $this->unternehmenseinheit_id && $this->abteilung_id) {
+                return $q->whereHas('konstellationen', function ($s) {
+                    $s->where('arbeitsort_id', $this->arbeitsort_id)
+                      ->where('unternehmenseinheit_id', $this->unternehmenseinheit_id)
+                      ->where('abteilung_id', $this->abteilung_id);
+                });
+            }
+
+            // Kein Filter, wenn unvollständig
+            return $q;
+        }
+    );
+}
+
 
 	public function loadAnreden(?Eroeffnung $eroeffnung = null): void
 	{
@@ -387,13 +400,38 @@ class EroeffnungForm extends Form
 		];
 	}
 
-	public function loadAdusers(?Eroeffnung $eroeffnung = null): void
+	public function loadAdusers(Eroeffnung|int|null $context = null): void
 	{
-		$extraIds = $eroeffnung
-			? [$eroeffnung->bezugsperson_id, $eroeffnung->vorlage_benutzer_id]
-			: [];
+		// Fall 1: Abteilungs-ID übergeben → Filter aktiv
+		if (is_int($context)) 
+		{
+			$this->adusers = \App\Models\AdUser::query()
+				->with('funktion')
+				->where('abteilung_id', $context)
+				->where('is_existing', true)
+				->where('is_enabled', true)
+				->orderBy('display_name')
+				->get()
+				->map(fn($user) => [
+					'id' => $user->id,
+					'display_name' => \Illuminate\Support\Str::limit(
+						$user->funktion
+							? $user->display_name . ' (' . $user->funktion->name . ')'
+							: $user->display_name,
+						40
+					),
+				])
+				->toArray();
+
+			return;
+		}
+
+		// Fall 2: Eroeffnung-Objekt oder kein Argument → Standardverhalten
+		$extraIds = $context ? [$context->bezugsperson_id, $context->vorlage_benutzer_id] : [];
+
 		$this->loadAdUserDropdown($extraIds, 'adusers');
 	}
+
 
 	public function loadAdusersKalender(?Eroeffnung $eroeffnung = null): void
 	{
@@ -453,10 +491,24 @@ class EroeffnungForm extends Form
         }
     }
 
-    public function loadAdusersForAbteilung(?int $abteilungId = null): void
-    {
-        $this->loadAdusers($abteilungId);
-    }
+	public function loadAdusersForAbteilung(?int $abteilungId = null): void
+	{
+		$extraIds = [];
+		$this->loadAdUserDropdown($extraIds, 'adusers');
+
+		// Filter aktiv? Dann direkt in DropdownHandler verwenden
+		if ($abteilungId) {
+			$this->adusers = \App\Models\AdUser::query()
+				->where('abteilung_id', $abteilungId)
+				->where('is_existing', true)
+				->where('is_enabled', true)
+				->orderBy('display_name')
+				->get(['id', 'display_name'])
+				->map(fn($u) => ['id' => $u->id, 'display_name' => $u->display_name])
+				->toArray();
+		}
+	}
+
 
 	private function setStatus(string $field, bool $active): void
 	{
@@ -481,7 +533,9 @@ class EroeffnungForm extends Form
 		// KIS
 		if ($this->kis_status || $this->is_lei) {
 			$this->setStatus('status_kis', true);
-		} else {
+		} 
+		else 
+		{
 			$this->setStatus('status_kis', false);
 			$this->kis_status = false;
 			$this->is_lei     = false;
@@ -491,21 +545,27 @@ class EroeffnungForm extends Form
 		if ($this->sap_status && $this->sap_rolle_id) {
 			$this->setStatus('status_sap', true);
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->setStatus('status_sap', false);
 			$this->sap_status   = false;
 			$this->sap_rolle_id = null;
 		}
 
 		// Leistungserbringer
-		if ($this->is_lei) {
+		if ($this->is_lei) 
+		{
 			$this->setStatus('status_auftrag', true);
 		}
 
 		// Telefonie
-		if ($this->tel_status && $this->tel_auswahl) {
+		if ($this->tel_status && $this->tel_auswahl) 
+		{
 			$this->setStatus('status_tel', true);
-		} else {
+		} 
+		else 
+		{
 			$this->setStatus('status_tel', false);
 			$this->tel_status       = false;
 			$this->tel_auswahl      = null;
@@ -518,44 +578,59 @@ class EroeffnungForm extends Form
 		}
 
 		// Raumbeschriftung
-		if ($this->raumbeschriftung_flag && $this->raumbeschriftung) {
+		if ($this->raumbeschriftung_flag && $this->raumbeschriftung) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->raumbeschriftung_flag = false;
 			$this->raumbeschriftung      = null;
 		}
 
 		// Schlüsselrechte Waldhaus
-		if ($this->key_waldhaus && ($this->key_wh_badge || $this->key_wh_schluessel)) {
+		if ($this->key_waldhaus && ($this->key_wh_badge || $this->key_wh_schluessel)) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->key_waldhaus     = false;
 			$this->key_wh_badge     = false;
 			$this->key_wh_schluessel = false;
 		}
 
 		// Schlüsselrechte Beverin
-		if ($this->key_beverin && ($this->key_be_badge || $this->key_be_schluessel)) {
+		if ($this->key_beverin && ($this->key_be_badge || $this->key_be_schluessel)) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->key_beverin     = false;
 			$this->key_be_badge    = false;
 			$this->key_be_schluessel = false;
 		}
 
 		// Schlüsselrechte Rothenbrunnen
-		if ($this->key_rothenbr && ($this->key_rb_badge || $this->key_rb_schluessel)) {
+		if ($this->key_rothenbr && ($this->key_rb_badge || $this->key_rb_schluessel)) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->key_rothenbr    = false;
 			$this->key_rb_badge    = false;
 			$this->key_rb_schluessel = false;
 		}
 
 		// Berufsbekleidung / Garderobe
-		if ($this->berufskleider || $this->garderobe) {
+		if ($this->berufskleider || $this->garderobe) 
+		{
 			$this->setStatus('status_auftrag', true);
-		} else {
+		} 
+		else 
+		{
 			$this->berufskleider = false;
 			$this->garderobe     = false;
 		}

@@ -73,17 +73,40 @@ class OtoboService
 				// Werte aus Relationen wie "antragsteller.display_name"
 				$value = data_get($model, $key);
 
+				if ($value instanceof \DateTimeInterface) $value = $value->format('d.m.Y');
+
 				if (!empty($value)) 
 				{
 					$body .= "{$label}: {$value}\n";
 				}
 			}
 
+			$vertragsbeginn = $model->vertragsbeginn->format('d.m.Y');
+
+			switch ($type) 
+			{
+				case \App\Models\Eroeffnung::class:
+					$title = "{$config['title_prefix']} {$model->nachname} {$model->vorname}";
+					break;
+
+				case \App\Models\Mutation::class:
+				case \App\Models\Austritt::class:
+					$displayName = $model->adUser->display_name ?? "{$model->nachname} {$model->vorname}";
+					$title = "{$config['title_prefix']} {$displayName}";
+					break;
+
+				default:
+					$title = "{$config['title_prefix']} #{$model->id}";
+					break;
+			}
+
+			$title .= " per {$vertragsbeginn}";
+
 			$data = [
 				"UserLogin" => $this->username,
 				"Password" => $this->password,
 				"Ticket" => [
-					"Title" => "{$config["title_prefix"]} {$model->nachname} {$model->vorname}",
+					"Title" => $title,
 					"QueueID" => $config["queue_id"],
 					"CustomerUser" => optional($model->antragsteller)->email ?? "-",
 					"StateID" => $config["state_id"],

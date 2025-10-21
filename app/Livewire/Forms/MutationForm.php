@@ -381,29 +381,41 @@ class MutationForm extends Form
             $data["tel_alarmierung"] = false;
             $data["tel_headset"] = null;
         }
-
+		
+		$this->clearDisabledFields($data);
         return $data;
     }
 
-	public function loadArbeitsorte(?Mutation $mutation = null): void
+	public function loadArbeitsorte(?\App\Models\Mutation $context = null): void
 	{
-		$this->loadDropdown(\App\Models\Arbeitsort::class, $mutation?->arbeitsort_id, 'arbeitsorte');
+		$mutation = $context instanceof \App\Models\Mutation ? $context : null;
+
+		$this->loadDropdown(
+			\App\Models\Arbeitsort::class,
+			$mutation?->arbeitsort_id,
+			'arbeitsorte'
+		);
 	}
 
-	public function loadUnternehmenseinheiten(?Mutation $mutation = null): void
+	public function loadUnternehmenseinheiten(?\App\Models\Mutation $context = null): void
 	{
+		$mutation = $context instanceof \App\Models\Mutation ? $context : null;
+
 		$this->loadDropdown(
 			\App\Models\Unternehmenseinheit::class,
 			$mutation?->unternehmenseinheit_id,
 			'unternehmenseinheiten',
 			scope: fn($q) => $this->arbeitsort_id
-				? $q->whereHas('konstellationen', fn($s) => $s->where('arbeitsort_id', $this->arbeitsort_id))
+				? $q->whereHas('konstellationen', fn($s) =>
+					$s->where('arbeitsort_id', $this->arbeitsort_id))
 				: $q
 		);
 	}
 
-	public function loadAbteilungen(?Mutation $mutation = null): void
+	public function loadAbteilungen(?\App\Models\Mutation $context = null): void
 	{
+		$mutation = $context instanceof \App\Models\Mutation ? $context : null;
+
 		$this->loadDropdown(
 			\App\Models\Abteilung::class,
 			[$mutation?->abteilung_id, $mutation?->abteilung2_id],
@@ -416,18 +428,29 @@ class MutationForm extends Form
 		);
 	}
 
-	public function loadFunktionen(?Mutation $mutation = null): void
+	public function loadFunktionen(?\App\Models\Mutation $context = null): void
 	{
+		$mutation = $context instanceof \App\Models\Mutation ? $context : null;
+
 		$this->loadDropdown(
 			\App\Models\Funktion::class,
 			$mutation?->funktion_id,
 			'funktionen',
-			scope: fn($q) => ($this->arbeitsort_id && $this->unternehmenseinheit_id && $this->abteilung_id)
-				? $q->whereHas('konstellationen', fn($s) =>
-					$s->where('arbeitsort_id', $this->arbeitsort_id)
-					  ->where('unternehmenseinheit_id', $this->unternehmenseinheit_id)
-					  ->where('abteilung_id', $this->abteilung_id))
-				: $q
+			scope: function ($q) {
+				if ($this->neue_konstellation) {
+					return $q;
+				}
+
+				if ($this->arbeitsort_id && $this->unternehmenseinheit_id && $this->abteilung_id) {
+					return $q->whereHas('konstellationen', function ($s) {
+						$s->where('arbeitsort_id', $this->arbeitsort_id)
+						  ->where('unternehmenseinheit_id', $this->unternehmenseinheit_id)
+						  ->where('abteilung_id', $this->abteilung_id);
+					});
+				}
+
+				return $q;
+			}
 		);
 	}
 
@@ -450,27 +473,71 @@ class MutationForm extends Form
 		];
 	}
 
-	public function loadAdusers(?\App\Models\Mutation $mutation = null): void
+public function loadAdusers(\App\Models\Mutation|int|null $context = null): void
+{
+    // Wenn Abteilungs-ID übergeben wurde (int)
+    if (is_int($context)) {
+        $this->adusers = \App\Models\AdUser::query()
+            ->with('funktion')
+            ->where('abteilung_id', $context)
+            ->where('is_existing', true)
+            ->where('is_enabled', true)
+            ->orderBy('display_name')
+            ->get()
+            ->map(fn($user) => [
+                'id' => $user->id,
+                'display_name' => \Illuminate\Support\Str::limit(
+                    $user->funktion
+                        ? "{$user->display_name} ({$user->funktion->name})"
+                        : $user->display_name,
+                    40
+                ),
+            ])
+            ->toArray();
+        return;
+    }
+
+    // Standardfall: Mutation-Objekt oder kein Argument
+    $extraIds = collect([
+        $context instanceof \App\Models\Mutation ? $context->vorlage_benutzer_id : $this->vorlage_benutzer_id,
+    ])->filter()->unique()->values()->toArray();
+
+    $this->loadAdUserDropdown($extraIds, 'adusers');
+}
+
+
+	public function loadAdUser(\App\Models\Mutation|int|null $context = null): void
 	{
-		// Gespeicherte Benutzer-IDs sammeln (aus DB oder Formular)
-		$extraIds = collect([
-			$mutation?->vorlage_benutzer_id,
-			$this->vorlage_benutzer_id,
-		])->filter()->unique()->values()->toArray();
+		// Aehnliche Logik aber fuers andere Ziel ('adusersForSelection')
+		if (is_int($context)) 
+		{
+			$this->adusersForSelection = \App\Models\AdUser::query()
+				->with('funktion')
+				->where('abteilung_id', $context)
+				->where('is_existing', true)
+				->where('is_enabled', true)
+				->orderBy('display_name')
+				->get()
+				->map(fn($user) => [
+					'id' => $user->id,
+					'display_name' => \Illuminate\Support\Str::limit(
+						$user->funktion
+							? "{$user->display_name} ({$user->funktion->name})"
+							: $user->display_name,
+						40
+					),
+				])
+				->toArray();
 
-		// Trait-Funktion aufrufen (holt aktive + gespeicherte)
-		$this->loadAdUserDropdown($extraIds, 'adusers');
-	}
+			return;
+		}
 
-	public function loadAdUser(?\App\Models\Mutation $mutation = null): void
-	{
-		// Gespeicherte Benutzer-ID aus Mutation oder Formular übernehmen
-		$extraIds = collect([
-			$mutation?->ad_user_id,
-			$this->ad_user_id,
-		])->filter()->unique()->values()->toArray();
+		$extraIds = $context instanceof \App\Models\Mutation
+			? [$context->ad_user_id]
+			: [$this->ad_user_id];
 
-		// Trait-Loader für AdUser verwenden
+		$extraIds = collect($extraIds)->filter()->unique()->values()->toArray();
+
 		$this->loadAdUserDropdown($extraIds, 'adusersForSelection');
 	}
 
@@ -537,7 +604,7 @@ class MutationForm extends Form
 		// SAP-Benutzer löschen
 		if ($this->sap_delete) 
 		{
-			$this->setStatus('status_sap', true);
+			// $this->setStatus('status_sap', true);
 			$this->setStatus('status_auftrag', true);
 		}
 
@@ -667,36 +734,114 @@ class MutationForm extends Form
 		}
 	}
 
-    public function fillFromModel(Mutation $mutation): void
-    {
-        $this->fill($mutation->toArray());
-        $this->has_abteilung2 = !empty($mutation->abteilung2_id);
-		$this->vertragsbeginn = $mutation->vertragsbeginn ? $mutation->vertragsbeginn->format('Y-m-d') : null;
+public function fillFromModel(\App\Models\Mutation $mutation): void
+{
+    // Mutation-Daten laden
+    $this->fill($mutation->toArray());
+    $this->has_abteilung2 = !empty($mutation->abteilung2_id);
+    $this->vertragsbeginn = $mutation->vertragsbeginn ? $mutation->vertragsbeginn->format('Y-m-d') : null;
 
-        $this->sap_status = (bool)$mutation->status_sap;
-        $this->sap_rolle_id = $mutation->sap_rolle_id;
-        $this->tel_status = (bool)$mutation->status_tel;
-        $this->raumbeschriftung_flag = !empty($mutation->raumbeschriftung);
-        $this->key_waldhaus = (bool)$mutation->key_wh_badge || (bool)$mutation->key_wh_schluessel;
-        $this->key_beverin = (bool)$mutation->key_be_badge || (bool)$mutation->key_be_schluessel;
-        $this->key_rothenbr = (bool)$mutation->key_rb_badge || (bool)$mutation->key_rb_schluessel;
-        $this->berufskleider = (bool)$mutation->berufskleider;
-        $this->garderobe = (bool)$mutation->garderobe;
-        $this->buerowechsel = (bool)$mutation->buerowechsel;
+    // Flags, ob Feld in DB vorhanden war
+    $hadArbeitsort = !empty($mutation->arbeitsort_id);
+    $hadUE = !empty($mutation->unternehmenseinheit_id);
+    $hadAbteilung = !empty($mutation->abteilung_id);
+    $hadFunktion = !empty($mutation->funktion_id);
+    $hadAnrede = !empty($mutation->anrede_id);
+    $hadTitel = !empty($mutation->titel_id);
+    $hadMailendung = !empty($mutation->mailendung);
+    $hadVorlage = !empty($mutation->vorlage_benutzer_id);
 
-        $this->komm_lei = $mutation->komm_lei;
-        $this->komm_berufskleider = $mutation->komm_berufskleider;
-        $this->komm_garderobe = $mutation->komm_garderobe;
-        $this->komm_buerowechsel = $mutation->komm_buerowechsel;
+    // Zugehörigen Benutzer laden für Fallbacks
+    $user = $mutation->adUser()->with([
+        'arbeitsort', 'unternehmenseinheit', 'abteilung', 'funktion', 'anrede', 'titel'
+    ])->first();
 
-		$this->enable_anrede = !empty($mutation->anrede_id);
-		$this->enable_titel = !empty($mutation->titel_id);
-		$this->enable_mailendung = !empty($mutation->mailendung);
-        $this->enable_arbeitsort = !empty($mutation->arbeitsort_id);
-        $this->enable_unternehmenseinheit = !empty($mutation->unternehmenseinheit_id);
-        $this->enable_abteilung = !empty($mutation->abteilung_id);
-        $this->enable_funktion = !empty($mutation->funktion_id);
-        $this->enable_vorlage = !empty($mutation->vorlage_benutzer_id);
+    if ($user) {
+        // Fehlende Werte aus ADUser übernehmen
+        if (!$this->arbeitsort_id) {
+            $this->arbeitsort_id = $user->arbeitsort_id;
+        }
+        if (!$this->unternehmenseinheit_id) {
+            $this->unternehmenseinheit_id = $user->unternehmenseinheit_id;
+        }
+        if (!$this->abteilung_id) {
+            $this->abteilung_id = $user->abteilung_id;
+        }
+        if (!$this->funktion_id) {
+            $this->funktion_id = $user->funktion_id;
+        }
+        if (!$this->anrede_id) {
+            $this->anrede_id = $user->anrede_id;
+        }
+        if (!$this->titel_id) {
+            $this->titel_id = $user->titel_id;
+        }
     }
+
+    // Checkboxen NUR aktivieren, wenn Mutation-Daten existierten
+    $this->enable_arbeitsort = $hadArbeitsort;
+    $this->enable_unternehmenseinheit = $hadUE;
+    $this->enable_abteilung = $hadAbteilung;
+    $this->enable_funktion = $hadFunktion;
+    $this->enable_anrede = $hadAnrede;
+    $this->enable_titel = $hadTitel;
+    $this->enable_mailendung = $hadMailendung;
+    $this->enable_vorlage = $hadVorlage;
+
+    // Weitere Felder
+    $this->sap_status = (bool)$mutation->status_sap;
+    $this->sap_rolle_id = $mutation->sap_rolle_id;
+    $this->tel_status = (bool)$mutation->status_tel;
+    $this->raumbeschriftung_flag = !empty($mutation->raumbeschriftung);
+    $this->key_waldhaus = (bool)$mutation->key_wh_badge || (bool)$mutation->key_wh_schluessel;
+    $this->key_beverin = (bool)$mutation->key_be_badge || (bool)$mutation->key_be_schluessel;
+    $this->key_rothenbr = (bool)$mutation->key_rb_badge || (bool)$mutation->key_rb_schluessel;
+    $this->berufskleider = (bool)$mutation->berufskleider;
+    $this->garderobe = (bool)$mutation->garderobe;
+    $this->buerowechsel = (bool)$mutation->buerowechsel;
+
+    $this->komm_lei = $mutation->komm_lei;
+    $this->komm_berufskleider = $mutation->komm_berufskleider;
+    $this->komm_garderobe = $mutation->komm_garderobe;
+    $this->komm_buerowechsel = $mutation->komm_buerowechsel;
+}
+
+
+	private function clearDisabledFields(array &$data): void
+	{
+		// Nur speichern, wenn das zugehoerige enable_* aktiv ist
+		if (!$this->enable_arbeitsort) {
+			$data["arbeitsort_id"] = null;
+		}
+
+		if (!$this->enable_unternehmenseinheit) {
+			$data["unternehmenseinheit_id"] = null;
+		}
+
+		if (!$this->enable_abteilung) {
+			$data["abteilung_id"] = null;
+			$data["abteilung2_id"] = null;
+		}
+
+		if (!$this->enable_funktion) {
+			$data["funktion_id"] = null;
+		}
+
+		if (!$this->enable_anrede) {
+			$data["anrede_id"] = null;
+		}
+
+		if (!$this->enable_titel) {
+			$data["titel_id"] = null;
+		}
+
+		if (!$this->enable_mailendung) {
+			$data["mailendung"] = null;
+		}
+
+		if (!$this->enable_vorlage) {
+			$data["vorlage_benutzer_id"] = null;
+		}
+	}
 
 }

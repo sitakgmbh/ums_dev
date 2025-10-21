@@ -95,6 +95,13 @@ class LogsTable extends BaseTable
 		{
 			$query->where("created_at", "<=", $this->dateTo);
 		}
+
+		// Suche nur in der Spalte "message"
+		if (!empty($this->search)) 
+		{
+			$search = mb_strtolower($this->search, 'UTF-8');
+			$query->whereRaw("LOWER(message) LIKE ?", ["%{$search}%"]);
+		}
 	}
 
     public function resetFilters(): void
@@ -117,10 +124,6 @@ class LogsTable extends BaseTable
 				"info" => [
 					"label" => LogLevel::Info->label(),
 					"class" => "info",
-				],
-				"debug" => [
-					"label" => LogLevel::Debug->label(),
-					"class" => "secondary",
 				],
 			],
 		];

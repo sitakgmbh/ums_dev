@@ -36,8 +36,6 @@ class Create extends Component
 		$this->form->loadTitel();
 		$this->form->loadMailendungen();
 		$this->form->loadSapRollen();
-
-		// AD-Benutzer (mutierte Person) laden
 		$this->form->loadAdusers();
 
 		// Select2 initialisieren

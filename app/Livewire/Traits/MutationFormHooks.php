@@ -18,7 +18,7 @@ trait MutationFormHooks
         $this->form->abteilung_id = null;
         $this->form->funktion_id = null;
 
-        $this->form->loadUnternehmenseinheiten($this->form->neue_konstellation);
+		$this->form->loadUnternehmenseinheiten();
 
         $this->dispatch("select2-options", id: "unternehmenseinheit_id", options: $this->form->unternehmenseinheiten, value: null);
         $this->dispatch("select2-options", id: "abteilung_id", options: [], value: null);
@@ -36,7 +36,7 @@ trait MutationFormHooks
         $this->form->abteilung_id = null;
         $this->form->funktion_id = null;
 
-        $this->form->loadAbteilungen($this->form->neue_konstellation);
+		$this->form->loadAbteilungen();
 
         $this->dispatch("select2-options", id: "abteilung_id", options: $this->form->abteilungen, value: null);
         $this->dispatch("select2-options", id: "funktion_id", options: [], value: null);
@@ -48,21 +48,30 @@ trait MutationFormHooks
     }
 
     // Event Abteilung geändert
-    public function updatedFormAbteilungId($value): void
-    {
-        $this->form->funktion_id = null;
-        $this->form->loadFunktionen($this->form->neue_konstellation);
+	public function updatedFormAbteilungId($value): void
+	{
+		$this->form->funktion_id = null;
+		$this->form->loadFunktionen();
 
-        $this->form->loadAdusers($this->form->filter_mitarbeiter ? $value : null);
-
-        $this->dispatch("select2-options", id: "funktion_id", options: $this->form->funktionen, value: $this->form->funktion_id);
-        $this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
-
-        if ($this->form->has_abteilung2) 
+		// Mitarbeiterliste korrekt filtern oder leeren
+		if ($this->form->filter_mitarbeiter && $value) 
 		{
-            $this->dispatch("select2-options", id: "abteilung2_id", options: $this->form->abteilungen, value: $this->form->abteilung2_id);
-        }
-    }
+			$this->form->loadAdusers($value);
+		} 
+		else 
+		{
+			$this->form->loadAdusers(null);
+		}
+
+		$this->dispatch("select2-options", id: "funktion_id", options: $this->form->funktionen, value: $this->form->funktion_id);
+		$this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
+
+		if ($this->form->has_abteilung2) 
+		{
+			$this->dispatch("select2-options", id: "abteilung2_id", options: $this->form->abteilungen, value: $this->form->abteilung2_id);
+		}
+	}
+
 
     // Checkbox: Neue Konstellation
     public function updatedFormNeueKonstellation($value)
@@ -94,10 +103,7 @@ trait MutationFormHooks
         $this->dispatch("select2-options", id: "funktion_id", options: $this->form->funktionen, value: $this->form->funktion_id);
         $this->dispatch("select2-options", id: "abteilung2_id", options: $this->form->abteilungen, value: $this->form->abteilung2_id);
 
-        $this->form->filter_mitarbeiter && !$this->form->abteilung_id
-            ? $this->form->adusers = []
-            : $this->form->loadAdusers($this->form->filter_mitarbeiter ? $this->form->abteilung_id : null);
-
+        $this->form->filter_mitarbeiter && !$this->form->abteilung_id ? $this->form->adusers = [] : $this->form->loadAdusers($this->form->filter_mitarbeiter ? $this->form->abteilung_id : null);
         $this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
     }
 
@@ -121,10 +127,13 @@ trait MutationFormHooks
     // Checkbox Zweite Abteilung angegklickt
     public function updatedFormHasAbteilung2($value)
     {
-        if (!$value) {
+        if (!$value) 
+		{
             $this->form->abteilung2_id = null;
             $this->dispatch("select2-options", id: "abteilung2_id", options: [], value: null);
-        } else {
+        } 
+		else 
+		{
             $this->form->abteilung2_id = null;
             $this->dispatch("select2-options", id: "abteilung2_id", options: $this->form->abteilungen, value: null);
         }
@@ -169,16 +178,12 @@ trait MutationFormHooks
 
 	public function updatedFormAdUserId($value): void
 	{
-		if (!$value) {
-			return;
-		}
+		if (!$value) return;
 
 		$user = \App\Models\AdUser::with(['funktion', 'abteilung', 'unternehmenseinheit', 'arbeitsort', 'anrede', 'titel'])
 			->find($value);
 
-		if (!$user) {
-			return;
-		}
+		if (!$user) return;
 
 		// Stammdaten übernehmen
 		$this->form->anrede_id = $user->anrede_id;
@@ -222,6 +227,30 @@ trait MutationFormHooks
 			return; // Abbruch, keine Stammdaten übernehmen
 		}
 
+		if ($this->form->filter_mitarbeiter) 
+		{
+			if (!empty($this->form->abteilung_id)) 
+			{
+				$this->form->loadAdusers($this->form->abteilung_id);
+			} 
+			else 
+			{
+				$this->form->adusers = [];
+			}
+		} 
+		else 
+		{
+			$this->form->loadAdusers(null);
+		}
+
+		if ($this->form->vorlage_benutzer_id && !collect($this->form->adusers)->pluck('id')->contains($this->form->vorlage_benutzer_id)) 
+		{
+			$this->form->vorlage_benutzer_id = null;
+			$this->dispatch("select2-clear", id: "vorlage_benutzer_id");
+		}
+
+		// Select2-Options fuer "Berechtigungen übernehmen von" aktualisieren
+		$this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
 	}
 
 	public function updatedFormEnableAnrede($value): void
@@ -236,22 +265,114 @@ trait MutationFormHooks
 
 	public function updatedFormEnableArbeitsort($value): void
 	{
-		$this->dispatch("toggle-select", id: "arbeitsort_id", enabled: (bool)$value && !$this->form->isReadonly);
+		$enabled = (bool)$value && !$this->form->isReadonly;
+		$this->dispatch("toggle-select", id: "arbeitsort_id", enabled: $enabled);
+
+		if ($enabled && empty($this->form->arbeitsort_id)) 
+		{
+			$fallback = null;
+
+			if (!empty($this->form->ad_user_id)) 
+			{
+				$ad = \App\Models\AdUser::find($this->form->ad_user_id);
+				$fallback = $ad?->arbeitsort_id;
+			} 
+			elseif (property_exists($this, 'mutation') && $this->mutation?->adUser) 
+			{
+				$fallback = $this->mutation->adUser->arbeitsort_id ?? null;
+			}
+
+			if ($fallback) 
+			{
+				$this->form->arbeitsort_id = $fallback;
+				$this->form->loadArbeitsorte();
+				$this->dispatch('select2-options', id: 'arbeitsort_id', options: $this->form->arbeitsorte, value: $fallback);
+			}
+		}
 	}
 
 	public function updatedFormEnableUnternehmenseinheit($value): void
 	{
-		$this->dispatch("toggle-select", id: "unternehmenseinheit_id", enabled: (bool)$value && !$this->form->isReadonly);
+		$enabled = (bool)$value && !$this->form->isReadonly;
+		$this->dispatch("toggle-select", id: "unternehmenseinheit_id", enabled: $enabled);
+
+		if ($enabled && empty($this->form->unternehmenseinheit_id)) 
+		{
+			$fallback = null;
+
+			if (!empty($this->form->ad_user_id)) 
+			{
+				$ad = \App\Models\AdUser::find($this->form->ad_user_id);
+				$fallback = $ad?->unternehmenseinheit_id;
+			} 
+			elseif (property_exists($this, 'mutation') && $this->mutation?->adUser) 
+			{
+				$fallback = $this->mutation->adUser->unternehmenseinheit_id ?? null;
+			}
+
+			if ($fallback) 
+			{
+				$this->form->unternehmenseinheit_id = $fallback;
+				$this->form->loadUnternehmenseinheiten();
+				$this->dispatch('select2-options', id: 'unternehmenseinheit_id', options: $this->form->unternehmenseinheiten, value: $fallback);
+			}
+		}
 	}
 
 	public function updatedFormEnableAbteilung($value): void
 	{
-		$this->dispatch("toggle-select", id: "abteilung_id", enabled: (bool)$value && !$this->form->isReadonly);
+		$enabled = (bool)$value && !$this->form->isReadonly;
+		$this->dispatch("toggle-select", id: "abteilung_id", enabled: $enabled);
+
+		if ($enabled && empty($this->form->abteilung_id)) 
+		{
+			$fallback = null;
+
+			if (!empty($this->form->ad_user_id)) 
+			{
+				$ad = \App\Models\AdUser::find($this->form->ad_user_id);
+				$fallback = $ad?->abteilung_id;
+			} 
+			elseif (property_exists($this, 'mutation') && $this->mutation?->adUser) 
+			{
+				$fallback = $this->mutation->adUser->abteilung_id ?? null;
+			}
+
+			if ($fallback) 
+			{
+				$this->form->abteilung_id = $fallback;
+				$this->form->loadAbteilungen();
+				$this->dispatch('select2-options', id: 'abteilung_id', options: $this->form->abteilungen, value: $fallback);
+			}
+		}
 	}
 
 	public function updatedFormEnableFunktion($value): void
 	{
-		$this->dispatch("toggle-select", id: "funktion_id", enabled: (bool)$value && !$this->form->isReadonly);
+		$enabled = (bool)$value && !$this->form->isReadonly;
+		$this->dispatch("toggle-select", id: "funktion_id", enabled: $enabled);
+
+		if ($enabled && empty($this->form->funktion_id)) 
+		{
+			$fallback = null;
+
+			if (!empty($this->form->ad_user_id)) 
+			{
+				$ad = \App\Models\AdUser::find($this->form->ad_user_id);
+				$fallback = $ad?->funktion_id;
+			} 
+			elseif (property_exists($this, 'mutation') && $this->mutation?->adUser) 
+			{
+				$fallback = $this->mutation->adUser->funktion_id ?? null;
+			}
+
+			if ($fallback) 
+			{
+				$this->form->funktion_id = $fallback;
+				$this->form->loadFunktionen();
+				$this->dispatch('select2-options', id: 'funktion_id', options: $this->form->funktionen, value: $fallback);
+			}
+		}
 	}
 
 	public function updatedFormEnableMailendung($value): void

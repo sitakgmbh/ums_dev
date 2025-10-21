@@ -61,28 +61,19 @@ trait EroeffnungDropdownHandlers
 	{
 		$extraIds = collect($extraIds)->filter()->unique()->values()->toArray();
 
-		// Aktive Benutzer
 		$activeQuery = \App\Models\AdUser::query()
 			->with('funktion')
-			->orderBy('display_name');
+			->orderBy('display_name')
+			->where('is_existing', true)
+			->where($enabledField, true);
 
-		if ($this->neue_konstellation || $this->isCreate) 
+		// Mitarbeiter-Filter (immer prüfen, egal ob neue Konstellation)
+		if ($this->filter_mitarbeiter && $this->abteilung_id && $targetProperty !== 'adusersKalender') 
 		{
-			$activeQuery->where('is_existing', true)->where($enabledField, true);
-		} 
-		else 
-		{
-			if ($this->filter_mitarbeiter && $this->abteilung_id && $targetProperty !== 'adusersKalender') 
-			{
-				$activeQuery->where('abteilung_id', $this->abteilung_id);
-			}
-			
-			$activeQuery->where('is_existing', true)->where($enabledField, true);
+			$activeQuery->where('abteilung_id', $this->abteilung_id);
 		}
 
 		$active = $activeQuery->get();
-
-		// Gespeicherte Benutzer (ohne Filter)
 		$extras = collect();
 		
 		if (!empty($extraIds)) 
@@ -92,18 +83,16 @@ trait EroeffnungDropdownHandlers
 				->get();
 		}
 
-		// Merge + unique
 		$records = $extras->merge($active)->unique('id');
 
-		// Mapping
 		$this->{$targetProperty} = $records
 			->map(fn($user) => [
 				'id' => $user->id,
 				'display_name' => \Illuminate\Support\Str::limit(
 					$user->funktion
-						? $user->display_name . ' (' . $user->funktion->name . ')'
+						? "{$user->display_name} ({$user->funktion->name})"
 						: $user->display_name,
-					40 // Max. Zeichen
+					40
 				),
 			])
 			->toArray();

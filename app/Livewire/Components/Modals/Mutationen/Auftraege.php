@@ -125,7 +125,7 @@ class Auftraege extends BaseModal
                     "entry" => $this->entry->id,
                 ]);
 
-                Mail::to($recipients)->cc($cc)->send($mailable);
+				SafeMail::send($mailable, $recipients, $cc);
             } 
 			catch (\Exception $e) 
 			{

@@ -7,7 +7,6 @@ enum LogLevel: string
     case Error   = "error";
     case Warning = "warning";
     case Info    = "info";
-    case Debug   = "debug";
 
     public function label(): string
     {
@@ -15,7 +14,6 @@ enum LogLevel: string
             self::Error   => "Fehler",
             self::Warning => "Warnung",
             self::Info    => "Info",
-            self::Debug   => "Debug",
         };
     }
 

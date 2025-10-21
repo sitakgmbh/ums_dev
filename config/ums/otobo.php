@@ -48,6 +48,7 @@ return [
 		"state_id" => 4, // offen
 		"priority_id" => 3, // normal
 		"field_mapping" => [
+			"id" => "ID UMS",
 			"adUser.display_name" => "Benutzer",
 			"antragsteller.display_name" => "Antragsteller",
 			"vertragsbeginn" => "Vertragsbeginn",
@@ -56,11 +57,11 @@ return [
 
     Austritt::class => [
         "title_prefix" => "Austritt",
-			"queue_id" => 21, // Personal
-			"service_id" => 205, // Identity & Access Management
-			"ticket_type_id" => 9, // Anfrage
-			"state_id" => 4, // offen
-			"priority_id" => 3, // normal
+		"queue_id" => 21, // Personal
+		"service_id" => 205, // Identity & Access Management
+		"ticket_type_id" => 9, // Anfrage
+		"state_id" => 4, // offen
+		"priority_id" => 3, // normal
         "field_mapping" => [
 			"adUser.display_name" => "Benutzer",
             "adUser.initials" => "Personalnummer",
