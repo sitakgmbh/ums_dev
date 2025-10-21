@@ -35,7 +35,7 @@ return [
             "abteilung.name" => "Abteilung",
             "funktion.name" => "Funktion",
             "vertragsbeginn" => "Eintrittsdatum",
-            "benutzername" => "Vorlaeufiger Benutzername",
+            "benutzername" => "Vorläufiger Benutzername"
             "email" => "Vorläufige E-Mail-Adresse",
         ],
     ],
