@@ -57,9 +57,11 @@ class MutationenAdminTable extends BaseTable
                 "raw"        => true,
             ],
             "owner.display_name" => [ "label" => "Besitzer", "sortable" => true ],
-            "vertragsbeginn"     => [ "label" => "Eintrittsdatum", "sortable" => true ],
+            "vertragsbeginn"     => [ "label" => "Änderungsdatum", "sortable" => true ],
+            "adUser.display_name"=> [ "label" => "Name", "sortable" => true ],
+			"adUser.username"=> [ "label" => "Benutzername", "sortable" => true ],
+			"adUser.initials"=> [ "label" => "Personalnummer", "sortable" => true ],
             "antragsteller.display_name"   => [ "label" => "Antragsteller", "sortable" => true ],
-            "vorlageBenutzer.display_name"=> [ "label" => "Berechtigungen", "sortable" => true ],
             "actions" => [ "label" => "Aktionen", "sortable" => false, "class" => "shrink" ],
         ];
     }
@@ -73,8 +75,6 @@ class MutationenAdminTable extends BaseTable
     {
         return "desc";
     }
-
-    protected array $searchable = ["vorname", "nachname", "email"];
 
     protected function applyFilters(Builder $query): void
     {
@@ -98,28 +98,34 @@ class MutationenAdminTable extends BaseTable
             $query->whereNull("mutationen.owner_id");
         }
 
-        if ($this->search) 
+		if ($this->search) 
 		{
-            $search = strtolower($this->search);
+			$search = strtolower($this->search);
 
-            $query->where(function ($q) use ($search) {
-                $q->orWhereRaw("LOWER(mutationen.vertragsbeginn) LIKE ?", ["%{$search}%"])
-                  ->orWhereRaw("LOWER(mutationen.nachname) LIKE ?", ["%{$search}%"])
-                  ->orWhereRaw("LOWER(mutationen.vorname) LIKE ?", ["%{$search}%"])
-                  ->orWhereHas("anrede", fn($sub) =>
-                      $sub->whereRaw("LOWER(anreden.name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("titel", fn($sub) =>
-                      $sub->whereRaw("LOWER(titel.name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("arbeitsort", fn($sub) =>
-                      $sub->whereRaw("LOWER(arbeitsorte.name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("funktion", fn($sub) =>
-                      $sub->whereRaw("LOWER(funktionen.name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("bezugsperson", fn($sub) =>
-                      $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("vorlageBenutzer", fn($sub) =>
-                      $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]));
-            });
-        }
+			$query->where(function ($q) use ($search) {
+				$q->orWhereRaw("LOWER(mutationen.vertragsbeginn) LIKE ?", ["%{$search}%"])
+				  ->orWhereRaw("LOWER(mutationen.nachname) LIKE ?", ["%{$search}%"])
+				  ->orWhereRaw("LOWER(mutationen.vorname) LIKE ?", ["%{$search}%"])
+				  ->orWhereHas("adUser", fn($sub) =>
+					  $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"])
+						  ->orWhereRaw("LOWER(ad_users.username) LIKE ?", ["%{$search}%"])
+						  ->orWhereRaw("LOWER(ad_users.initials) LIKE ?", ["%{$search}%"]))
+				  ->orWhereHas("owner", fn($sub) =>
+					  $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
+				  ->orWhereHas("antragsteller", fn($sub) =>
+					  $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
+				  ->orWhereHas("anrede", fn($sub) =>
+					  $sub->whereRaw("LOWER(anreden.name) LIKE ?", ["%{$search}%"]))
+				  ->orWhereHas("titel", fn($sub) =>
+					  $sub->whereRaw("LOWER(titel.name) LIKE ?", ["%{$search}%"]))
+				  ->orWhereHas("arbeitsort", fn($sub) =>
+					  $sub->whereRaw("LOWER(arbeitsorte.name) LIKE ?", ["%{$search}%"]))
+				  ->orWhereHas("funktion", fn($sub) =>
+					  $sub->whereRaw("LOWER(funktionen.name) LIKE ?", ["%{$search}%"]))
+				  ->orWhereHas("vorlageBenutzer", fn($sub) =>
+					  $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]));
+			});
+		}
     }
 
     protected function getCustomSorts(): array
@@ -149,24 +155,42 @@ class MutationenAdminTable extends BaseTable
                     ->orderBy("funktionen.name", $direction)
                     ->select("mutationen.*");
             },
-            "bezugsperson.display_name" => function ($query, $direction) {
-                return $query
-                    ->leftJoin("ad_users as bezug", "mutationen.bezugsperson_id", "=", "bezug.id")
-                    ->orderBy("bezug.display_name", $direction)
-                    ->select("mutationen.*");
-            },
             "vorlageBenutzer.display_name" => function ($query, $direction) {
                 return $query
                     ->leftJoin("ad_users as vorlage", "mutationen.vorlage_benutzer_id", "=", "vorlage.id")
                     ->orderBy("vorlage.display_name", $direction)
                     ->select("mutationen.*");
             },
-            "owner.display_name" => function ($query, $direction) {
-                return $query
-                    ->leftJoin("ad_users as owner", "mutationen.owner_id", "=", "owner.id")
-                    ->orderBy("owner.display_name", $direction)
-                    ->select("mutationen.*");
-            },
+			"owner.display_name" => function ($query, $direction) {
+				return $query
+					->leftJoin("ad_users as owner", "mutationen.owner_id", "=", "owner.id")
+					->orderBy("owner.display_name", $direction)
+					->select("mutationen.*");
+			},
+			"adUser.display_name" => function ($query, $direction) {
+				return $query
+					->leftJoin("ad_users as adUser", "mutationen.ad_user_id", "=", "adUser.id")
+					->orderBy("adUser.display_name", $direction)
+					->select("mutationen.*");
+			},
+			"adUser.username" => function ($query, $direction) {
+				return $query
+					->leftJoin("ad_users as adUserUser", "mutationen.ad_user_id", "=", "adUserUser.id")
+					->orderBy("adUserUser.username", $direction)
+					->select("mutationen.*");
+			},
+			"adUser.initials" => function ($query, $direction) {
+				return $query
+					->leftJoin("ad_users as adUserInit", "mutationen.ad_user_id", "=", "adUserInit.id")
+					->orderBy("adUserInit.initials", $direction)
+					->select("mutationen.*");
+			},
+			"antragsteller.display_name" => function ($query, $direction) {
+				return $query
+					->leftJoin("ad_users as antragsteller", "mutationen.antragsteller_id", "=", "antragsteller.id")
+					->orderBy("antragsteller.display_name", $direction)
+					->select("mutationen.*");
+			},
         ];
     }
 

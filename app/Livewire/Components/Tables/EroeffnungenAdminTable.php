@@ -80,8 +80,6 @@ class EroeffnungenAdminTable extends BaseTable
         return "desc";
     }
 
-    protected array $searchable = ["vorname", "nachname", "email"];
-
 	protected function applyFilters(Builder $query): void
 	{
 		if ($this->onlyMine && auth()->check()) 

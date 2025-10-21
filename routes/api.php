@@ -19,7 +19,7 @@ use App\Http\Controllers\Api\AustrittController;
 
 Route::post("/login", [AuthController::class, "login"]);
 
-Route::middleware("api.auth")->group(function () 
+Route::middleware(['auth:sanctum', 'api.auth'])->group(function () 
 {
     Route::get("/me", [AuthController::class, "me"]);
 

@@ -57,11 +57,10 @@ class AustritteAdminTable extends BaseTable
                 "raw"        => true,
             ],
             "owner.display_name"  => [ "label" => "Besitzer", "sortable" => true ],
-            "vertragsende"        => [ "label" => "Vertragsende", "sortable" => true ],
-            "adUser.firstname"    => [ "label" => "Vorname", "sortable" => true ],
-            "adUser.lastname"     => [ "label" => "Name", "sortable" => true ],
-            "adUser.initials"     => [ "label" => "Personalnummer", "sortable" => true ],
+            "vertragsende"        => [ "label" => "Austrittsdatum", "sortable" => true ],
+            "adUser.display_name"    => [ "label" => "Name", "sortable" => true ],
             "adUser.username"     => [ "label" => "Benutzername", "sortable" => true ],
+			"adUser.initials"     => [ "label" => "Personalnummer", "sortable" => true ],
             "actions"             => [ "label" => "Aktionen", "sortable" => false, "class" => "shrink" ],
         ];
     }
@@ -75,8 +74,6 @@ class AustritteAdminTable extends BaseTable
     {
         return "desc";
     }
-
-    protected array $searchable = ["adUser.firstname", "adUser.lastname", "adUser.initials", "adUser.username"];
 
     protected function applyFilters(Builder $query): void
     {
@@ -100,57 +97,54 @@ class AustritteAdminTable extends BaseTable
             $query->whereNull("austritte.owner_id");
         }
 
-        if ($this->search) 
+		if ($this->search) 
 		{
-            $search = strtolower($this->search);
-			
-            $query->where(function ($q) use ($search) {
-                $q->orWhereRaw("LOWER(austritte.vertragsende) LIKE ?", ["%{$search}%"])
-                  ->orWhereHas("adUser", function ($sub) use ($search) {
-                      $sub->whereRaw("LOWER(ad_users.firstname) LIKE ?", ["%{$search}%"])
-                          ->orWhereRaw("LOWER(ad_users.lastname) LIKE ?", ["%{$search}%"])
-                          ->orWhereRaw("LOWER(ad_users.initials) LIKE ?", ["%{$search}%"])
-                          ->orWhereRaw("LOWER(ad_users.username) LIKE ?", ["%{$search}%"]);
-                  });
-            });
-        }
+			$search = strtolower($this->search);
+
+			$query->where(function ($q) use ($search) {
+				$q->orWhereRaw("LOWER(austritte.vertragsende) LIKE ?", ["%{$search}%"])
+				  ->orWhereHas("adUser", function ($sub) use ($search) {
+					  $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"])
+						  ->orWhereRaw("LOWER(ad_users.username) LIKE ?", ["%{$search}%"])
+						  ->orWhereRaw("LOWER(ad_users.initials) LIKE ?", ["%{$search}%"]);
+				  })
+				  ->orWhereHas("owner", function ($sub) use ($search) {
+					  $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]);
+				  });
+			});
+		}
     }
 
-    protected function getCustomSorts(): array
-    {
-        return [
-            "owner.display_name" => function ($query, $direction) {
-                return $query
-                    ->leftJoin("ad_users as owner", "austritte.owner_id", "=", "owner.id")
-                    ->orderBy("owner.display_name", $direction)
-                    ->select("austritte.*");
-            },
-            "adUser.firstname" => function ($query, $direction) {
-                return $query
-                    ->leftJoin("ad_users", "austritte.ad_user_id", "=", "ad_users.id")
-                    ->orderBy("ad_users.firstname", $direction)
-                    ->select("austritte.*");
-            },
-            "adUser.lastname" => function ($query, $direction) {
-                return $query
-                    ->leftJoin("ad_users", "austritte.ad_user_id", "=", "ad_users.id")
-                    ->orderBy("ad_users.lastname", $direction)
-                    ->select("austritte.*");
-            },
-            "adUser.initials" => function ($query, $direction) {
-                return $query
-                    ->leftJoin("ad_users", "austritte.ad_user_id", "=", "ad_users.id")
-                    ->orderBy("ad_users.initials", $direction)
-                    ->select("austritte.*");
-            },
-            "adUser.username" => function ($query, $direction) {
-                return $query
-                    ->leftJoin("ad_users", "austritte.ad_user_id", "=", "ad_users.id")
-                    ->orderBy("ad_users.username", $direction)
-                    ->select("austritte.*");
-            },
-        ];
-    }
+	protected function getCustomSorts(): array
+	{
+		return [
+			"owner.display_name" => function ($query, $direction) {
+				return $query
+					->leftJoin("ad_users as owner", "austritte.owner_id", "=", "owner.id")
+					->orderBy("owner.display_name", $direction)
+					->select("austritte.*");
+			},
+			"adUser.display_name" => function ($query, $direction) {
+				return $query
+					->leftJoin("ad_users as adUserName", "austritte.ad_user_id", "=", "adUserName.id")
+					->orderBy("adUserName.display_name", $direction)
+					->select("austritte.*");
+			},
+			"adUser.username" => function ($query, $direction) {
+				return $query
+					->leftJoin("ad_users as adUserLogin", "austritte.ad_user_id", "=", "adUserLogin.id")
+					->orderBy("adUserLogin.username", $direction)
+					->select("austritte.*");
+			},
+			"adUser.initials" => function ($query, $direction) {
+				return $query
+					->leftJoin("ad_users as adUserPers", "austritte.ad_user_id", "=", "adUserPers.id")
+					->orderBy("adUserPers.initials", $direction)
+					->select("austritte.*");
+			},
+		];
+	}
+
 
     protected function getColumnFormatters(): array
     {

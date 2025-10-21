@@ -12,7 +12,7 @@ class EroeffnungController extends Controller
      * @OA\Get(
      *     path="/api/eroeffnungen/open",
      *     summary="Liste aller offenen Eröffnungen",
-     *     description="Gibt alle Eröffnungen zurück, die nicht archiviert sind (archiviert = 0).",
+     *     description="Gibt alle Eröffnungen zurück, die nicht archiviert sind.",
      *     tags={"Eröffnungen"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Response(
@@ -30,19 +30,7 @@ class EroeffnungController extends Controller
     public function open(Request $request)
     {
         $eroeffnungen = Eroeffnung::query()
-            ->where('archiviert', 0)
-            ->with([
-                'sapRolle',
-                'antragsteller',
-                'bezugsperson',
-                'vorlageBenutzer',
-                'arbeitsort',
-                'unternehmenseinheit',
-                'abteilung',
-                'abteilung2',
-                'funktion',
-                'owner',
-            ])
+            ->where('archiviert', false)
             ->orderBy('vertragsbeginn', 'asc')
             ->get();
 
