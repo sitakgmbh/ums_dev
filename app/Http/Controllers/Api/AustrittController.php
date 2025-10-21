@@ -14,28 +14,27 @@ class AustrittController extends Controller
      *     path="/api/austritte",
      *     summary="Austritt erstellen",
      *     tags={"Austritte"},
-     *     security={{"bearerAuth":{}}},
+     *     security={{"basicAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"sid","vertragsende"},
      *             @OA\Property(property="sid", type="string", example="S-1-5-21-2398345284-2631563733-2041457708-1318"),
-     *             @OA\Property(property="vertragsende", type="string", format="date", example="2025-10-17"),
+     *             @OA\Property(property="vertragsende", type="string", format="date", example="yyyy-mm-dd"),
      *             @OA\Property(property="status_pep", type="boolean", example=true),
      *             @OA\Property(property="status_kis", type="boolean", example=false),
      *             @OA\Property(property="status_streamline", type="boolean", example=true),
      *             @OA\Property(property="status_tel", type="boolean", example=false),
      *             @OA\Property(property="status_alarmierung", type="boolean", example=false),
      *             @OA\Property(property="status_logimen", type="boolean", example=false),
-     *             @OA\Property(property="ticket_nr", type="string", example="TCK12345")
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Austritt erfolgreich erstellt",
+     *         description="Austritt erstellt",
      *         @OA\JsonContent(ref="#/components/schemas/Austritt")
      *     ),
-     *     @OA\Response(response=404, description="AD-User nicht gefunden"),
+     *     @OA\Response(response=404, description="Kein AD-Benutzer mit der angegebenen SID gefunden."),
      *     @OA\Response(response=422, description="Validierungsfehler")
      * )
      */
@@ -56,9 +55,10 @@ class AustrittController extends Controller
 
         // AD-User suchen
         $adUser = AdUser::where("sid", $validated["sid"])->first();
+		
         if (!$adUser) {
             return response()->json([
-                "message" => "Kein Benutzer mit der angegebenen SID gefunden."
+                "message" => "Kein AD-Benutzer mit der angegebenen SID gefunden."
             ], 404);
         }
 

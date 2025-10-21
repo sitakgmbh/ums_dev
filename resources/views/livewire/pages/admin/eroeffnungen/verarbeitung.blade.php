@@ -270,10 +270,14 @@
                     </div>
                 @endif
 
-
-
-
-
+				@if($entry->kommentar)
+					<div>
+						<div class="fw-bold mb-2">Kommentar</div>
+						<div class="text-muted">
+							{!! nl2br(e($entry->kommentar)) !!}
+						</div>
+					</div>
+				@endif
 
                 </div>
             </div>

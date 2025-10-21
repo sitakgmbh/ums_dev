@@ -145,7 +145,7 @@
 <script>
     document.addEventListener("livewire:init", () => {
         window.Livewire.on("open-modal", (modal, payload) => {
-            console.log("🔎 Livewire open-modal Event:", modal, payload);
+            console.log("Livewire open-modal Event:", modal, payload);
         });
     });
 </script>
@@ -265,10 +265,14 @@
                     </div>
                 @endif
 
-
-
-
-
+				@if($entry->kommentar)
+					<div>
+						<div class="fw-bold mb-2">Kommentar</div>
+						<div class="text-muted">
+							{!! nl2br(e($entry->kommentar)) !!}
+						</div>
+					</div>
+				@endif
 
                 </div>
             </div>

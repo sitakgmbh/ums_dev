@@ -11,13 +11,13 @@ class EroeffnungController extends Controller
     /**
      * @OA\Get(
      *     path="/api/eroeffnungen/open",
-     *     summary="Liste aller offenen Eröffnungen",
+     *     summary="Liste aller Eröffnungen",
      *     description="Gibt alle Eröffnungen zurück, die nicht archiviert sind.",
      *     tags={"Eröffnungen"},
-     *     security={{"bearerAuth":{}}},
+     *     security={{"basicAuth":{}}},
      *     @OA\Response(
      *         response=200,
-     *         description="Liste der offenen Eröffnungen",
+     *         description="Liste aller Eröffnungen",
      *         @OA\JsonContent(
      *             type="array",
      *             @OA\Items(ref="#/components/schemas/Eroeffnung")
@@ -31,7 +31,7 @@ class EroeffnungController extends Controller
     {
         $eroeffnungen = Eroeffnung::query()
             ->where('archiviert', false)
-            ->orderBy('vertragsbeginn', 'asc')
+            ->orderBy('id', 'asc')
             ->get();
 
         return response()->json($eroeffnungen, 200);

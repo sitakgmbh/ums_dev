@@ -18,6 +18,7 @@ return [
 
     Eroeffnung::class => [
         "title_prefix" => "Grundausstattung",
+		"date_field" => "vertragsbeginn",
         "queue_id" => 21, // Personal
         "service_id" => 205, // Identity & Access Management
         "ticket_type_id" => 9, // Anfrage
@@ -42,6 +43,7 @@ return [
 
     Mutation::class => [
 		"title_prefix" => "Mutation",
+		"date_field" => "vertragsbeginn",
 		"queue_id" => 21, // Personal
 		"service_id" => 205, // Identity & Access Management
 		"ticket_type_id" => 9, // Anfrage
@@ -57,6 +59,7 @@ return [
 
     Austritt::class => [
         "title_prefix" => "Austritt",
+		"date_field" => "vertragsende",
 		"queue_id" => 21, // Personal
 		"service_id" => 205, // Identity & Access Management
 		"ticket_type_id" => 9, // Anfrage

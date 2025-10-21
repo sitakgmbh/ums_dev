@@ -5,6 +5,78 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *     schema="Mutation",
+ *     type="object",
+ *     title="Mutation",
+ *     description="Mutation",
+ *     
+ *     @OA\Property(property="id", type="integer", example=647),
+ *     @OA\Property(property="owner_id", type="integer", nullable=true, example=467),
+ *     @OA\Property(property="vertragsbeginn", type="string", format="date", example="yyyy-mm-dd"),
+ *     @OA\Property(property="antragsteller_id", type="integer", nullable=true, example=5),
+ *     @OA\Property(property="vorlage_benutzer_id", type="integer", nullable=true, example=12),
+ *     @OA\Property(property="neue_konstellation", type="boolean", example=false),
+ *     @OA\Property(property="filter_mitarbeiter", type="boolean", example=true),
+ *     @OA\Property(property="vorname", type="string", example="Max"),
+ *     @OA\Property(property="nachname", type="string", example="Mustermann"),
+ *     @OA\Property(property="anrede_id", type="integer", nullable=true, example=1),
+ *     @OA\Property(property="titel_id", type="integer", nullable=true, example=2),
+ *     @OA\Property(property="arbeitsort_id", type="integer", nullable=true, example=3),
+ *     @OA\Property(property="unternehmenseinheit_id", type="integer", nullable=true, example=4),
+ *     @OA\Property(property="abteilung_id", type="integer", nullable=true, example=5),
+ *     @OA\Property(property="abteilung2_id", type="integer", nullable=true, example=6),
+ *     @OA\Property(property="funktion_id", type="integer", nullable=true, example=7),
+ *     @OA\Property(property="ad_user_id", type="integer", example=53),
+ *     @OA\Property(property="mailendung", type="string", example="@domain.tld"),
+ *     @OA\Property(property="ad_gruppen", type="array", @OA\Items(type="string"), example={"GRP_IT", "GRP_SUPPORT"}),
+ *     @OA\Property(property="tel_nr", type="string", nullable=true, example="081 123 45 67"),
+ *     @OA\Property(property="tel_auswahl", type="string", nullable=true, example="Tischtelefon"),
+ *     @OA\Property(property="tel_tischtel", type="boolean", example=true),
+ *     @OA\Property(property="tel_mobiltel", type="boolean", example=false),
+ *     @OA\Property(property="tel_ucstd", type="boolean", example=false),
+ *     @OA\Property(property="tel_alarmierung", type="boolean", example=true),
+ *     @OA\Property(property="tel_headset", type="boolean", example=false),
+ *     @OA\Property(property="is_lei", type="boolean", example=false, description="Leistungserbringer"),
+ *     @OA\Property(property="key_waldhaus", type="boolean", example=false),
+ *     @OA\Property(property="key_beverin", type="boolean", example=false),
+ *     @OA\Property(property="key_rothenbr", type="boolean", example=false),
+ *     @OA\Property(property="key_wh_badge", type="boolean", example=false),
+ *     @OA\Property(property="key_wh_schluessel", type="boolean", example=false),
+ *     @OA\Property(property="key_be_badge", type="boolean", example=false),
+ *     @OA\Property(property="key_be_schluessel", type="boolean", example=false),
+ *     @OA\Property(property="key_rb_badge", type="boolean", example=false),
+ *     @OA\Property(property="key_rb_schluessel", type="boolean", example=false),
+ *     @OA\Property(property="berufskleider", type="boolean", example=false),
+ *     @OA\Property(property="garderobe", type="boolean", example=false),
+ *     @OA\Property(property="buerowechsel", type="boolean", example=false),
+ *     @OA\Property(property="sap_rolle_id", type="integer", nullable=true, example=8),
+ *     @OA\Property(property="sap_delete", type="boolean", example=false),
+ *     @OA\Property(property="komm_lei", type="string", nullable=true, example="Leistungsänderung"),
+ *     @OA\Property(property="komm_berufskleider", type="string", nullable=true, example="Benötigt neue Berufskleider"),
+ *     @OA\Property(property="komm_garderobe", type="string", nullable=true, example="Garderobenplatz wechseln"),
+ *     @OA\Property(property="komm_key", type="string", nullable=true, example="Neuer Schlüssel für Gebäude X"),
+ *     @OA\Property(property="komm_buerowechsel", type="string", nullable=true, example="Umzug in Raum 123"),
+ *     @OA\Property(property="status_ad", type="integer", example=2),
+ *     @OA\Property(property="status_mail", type="integer", example=1),
+ *     @OA\Property(property="status_tel", type="integer", example=0),
+ *     @OA\Property(property="status_kis", type="integer", example=0),
+ *     @OA\Property(property="status_pep", type="integer", example=0),
+ *     @OA\Property(property="status_sap", type="integer", example=0),
+ *     @OA\Property(property="status_auftrag", type="integer", example=0),
+ *     @OA\Property(property="status_info", type="integer", example=0),
+ *     @OA\Property(property="vorab_lizenzierung", type="boolean", example=false),
+ *     @OA\Property(property="kalender_berechtigungen", type="array", @OA\Items(type="string"), example={"chef@example.ch","team@example.ch"}),
+ *     @OA\Property(property="kommentar", type="string", nullable=true, example="Benötigt ab 01.10. neuen Arbeitsplatz."),
+ *     @OA\Property(property="ticket_nr", type="string", nullable=true, example="TCK-2025-00123"),
+ *     @OA\Property(property="archiviert", type="boolean", example=false),
+ *     
+ *     @OA\Property(property="created_at", type="string", format="date-time", example="2025-10-21T10:00:00Z"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-10-21T10:10:00Z")
+ * )
+ */
+
 class Mutation extends Model
 {
     use HasFactory;

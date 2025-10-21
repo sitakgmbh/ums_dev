@@ -81,7 +81,12 @@ class OtoboService
 				}
 			}
 
-			$vertragsbeginn = $model->vertragsbeginn->format('d.m.Y');
+			$dateField = $config['date_field'] ?? null;
+			$dateString = '';
+
+			if ($dateField && $model->{$dateField} instanceof \DateTimeInterface) {
+				$dateString = " per " . $model->{$dateField}->format('d.m.Y');
+			}
 
 			switch ($type) 
 			{
@@ -100,7 +105,7 @@ class OtoboService
 					break;
 			}
 
-			$title .= " per {$vertragsbeginn}";
+			$title .= $dateString;
 
 			$data = [
 				"UserLogin" => $this->username,

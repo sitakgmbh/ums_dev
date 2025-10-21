@@ -28,14 +28,6 @@ class AdminDashboard extends Component
                     "route"       => "admin.users.index",
                     "is_external" => false,
                 ],
-                [
-                    "title"       => "Logs",
-                    "description" => "Systemlogs und Logfiles einsehen",
-                    "icon"        => "mdi mdi-clipboard-text-outline",
-                    "color"       => "dark",
-                    "route"       => "admin.logs.index",
-                    "is_external" => false,
-                ],
             ],
             "Wartung und Werkzeuge" => [
                 [
@@ -47,16 +39,8 @@ class AdminDashboard extends Component
                     "is_external" => false,
                 ],
                 [
-                    "title"       => "Testmail senden",
-                    "description" => "Konfiguration prüfen",
-                    "icon"        => "mdi mdi-email-fast-outline",
-                    "color"       => "dark",
-                    "route"       => "admin.tools.mail-test",
-                    "is_external" => false,
-                ],
-                [
                     "title"       => "API",
-                    "description" => "Interaktive API mit Swagger",
+                    "description" => "Interaktive API (Swagger)",
                     "icon"        => "mdi mdi-connection",
                     "color"       => "dark",
                     "route"       => "/api/documentation", 
@@ -64,6 +48,14 @@ class AdminDashboard extends Component
                 ],
             ],
             "Info" => [
+                [
+                    "title"       => "Logs",
+                    "description" => "Systemlogs und Logfiles einsehen",
+                    "icon"        => "mdi mdi-clipboard-text-outline",
+                    "color"       => "dark",
+                    "route"       => "admin.logs.index",
+                    "is_external" => false,
+                ],
                 [
                     "title"       => "Server",
                     "description" => "Informationen zum Webserver",
@@ -74,7 +66,7 @@ class AdminDashboard extends Component
                 ],
                 [
                     "title"       => "Changelog",
-                    "description" => "Änderungen einsehen",
+                    "description" => "Änderungen von UMS einsehen",
                     "icon"        => "mdi mdi-newspaper-variant-outline",
                     "color"       => "dark",
                     "route"       => "admin.changelog",

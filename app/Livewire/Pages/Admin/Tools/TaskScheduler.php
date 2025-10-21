@@ -14,8 +14,8 @@ class TaskScheduler extends Component
         "ad:sync-users",
         "sap:import",
         "graph:test-connection",
-        "test:do",
-        "test:do-error",
+        // "test:do",
+        // "test:do-error",
     ];
 
     public array $tasks = [];

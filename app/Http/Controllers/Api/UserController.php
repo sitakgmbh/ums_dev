@@ -14,7 +14,7 @@ class UserController extends Controller
      *     path="/api/users",
      *     summary="Liste aller Benutzer",
      *     tags={"Users"},
-     *     security={{"bearerAuth":{}}},
+     *     security={{"basicAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Liste von Benutzern"
@@ -33,7 +33,7 @@ class UserController extends Controller
      *     path="/api/users/{id}",
      *     summary="Einen Benutzer abrufen",
      *     tags={"Users"},
-     *     security={{"bearerAuth":{}}},
+     *     security={{"basicAuth":{}}},
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(
      *         response=200,
@@ -59,7 +59,7 @@ class UserController extends Controller
      *     path="/api/users",
      *     summary="Lokalen Benutzer erstellen",
      *     tags={"Users"},
-     *     security={{"bearerAuth":{}}},
+     *     security={{"basicAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -110,7 +110,7 @@ class UserController extends Controller
      *     path="/api/users/{id}",
      *     summary="Lokalen Benutzer bearbeiten",
      *     tags={"Users"},
-     *     security={{"bearerAuth":{}}},
+     *     security={{"basicAuth":{}}},
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\RequestBody(
      *         required=true,
@@ -180,7 +180,7 @@ class UserController extends Controller
      *     path="/api/users/{id}",
      *     summary="Benutzer löschen",
      *     tags={"Users"},
-     *     security={{"bearerAuth":{}}},
+     *     security={{"basicAuth":{}}},
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\Response(response=204, description="Benutzer gelöscht"),
      *     @OA\Response(response=404, description="Benutzer nicht gefunden")
