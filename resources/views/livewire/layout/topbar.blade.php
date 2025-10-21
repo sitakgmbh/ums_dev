@@ -65,9 +65,29 @@
             <!-- User -->
             <li class="dropdown">
                 <a class="nav-link dropdown-toggle arrow-none nav-user px-2" data-bs-toggle="dropdown" href="#" role="button">
-                    <span class="account-user-avatar">
-                        <img src="{{ asset('assets/images/users/avatar-1.jpg') }}" alt="user-image" width="32" class="rounded-circle">
-                    </span>
+
+					<span class="account-user-avatar">
+						@php
+							$profilePhoto = auth()->user()?->adUser?->profile_photo_base64;
+						@endphp
+
+						@if ($profilePhoto)
+							<img src="data:image/jpeg;base64,{{ $profilePhoto }}"
+								 alt="Profilbild"
+								 width="32"
+								 height="32"
+								 class="rounded-circle"
+								 style="object-fit: cover; object-position: top;">
+						@else
+							<img src="{{ asset('assets/images/users/avatar-1.jpg') }}"
+								 alt="Profilbild"
+								 width="32"
+								 height="32"
+								 class="rounded-circle"
+								 style="object-fit: cover; object-position: top;">
+						@endif
+					</span>
+
                     <span class="d-lg-flex flex-column gap-1 d-none">
                         <h5 class="my-0">{{ Auth::user()->firstname ?: Auth::user()->username }}</h5>
 

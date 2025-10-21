@@ -1,209 +1,191 @@
 <div>
-    <div class="row g-3">
-        <!-- Stammdaten -->
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header bg-primary text-white py-1">
-                    <strong>Stammdaten</strong>
-                </div>
-                <div class="card-body p-2">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Benutzername</dt>
-                        <dd class="col-sm-8">{{ $adUser->username }}</dd>
 
-                        <dt class="col-sm-4">Anrede</dt>
-                        <dd class="col-sm-8">{{ $adUser->anrede?->name ?? '-' }}</dd>
+<div class="row">
+    {{-- Linke Seite: Profilbild & Stammdaten --}}
+<div class="col-xl-4 col-lg-5">
+    <div class="card">
+        <div class="card-body text-center">
 
-                        <dt class="col-sm-4">Titel</dt>
-                        <dd class="col-sm-8">{{ $adUser->titel?->name ?? $adUser->title ?? '-' }}</dd>
+            {{-- Profilbild --}}
+			@if ($adUser->profile_photo_base64)
+				<img
+					src="data:image/jpeg;base64,{{ $adUser->profile_photo_base64 }}"
+					alt="Profilbild"
+					width="150"
+					height="150"
+					class="rounded-circle avatar-xl img-thumbnail mb-2"
+					style="object-fit: cover; object-position: top;">
+			@else
+				<img
+					src="{{ asset('assets/images/users/avatar-1.jpg') }}"
+					alt="Profilbild"
+					width="150"
+					height="150"
+					class="rounded-circle mb-2"
+					style="object-fit: cover; object-position: top;">
+			@endif
 
-                        <dt class="col-sm-4">Vorname</dt>
-                        <dd class="col-sm-8">{{ $adUser->firstname }}</dd>
+            {{-- Name + Titel --}}
+            <h4 class="mb-0 mt-2">{{ $adUser->display_name ?? $adUser->username }}</h4>
+            <p class="text-muted font-14">{{ $adUser->titel?->name ?? $adUser->title ?? '' }}</p>
 
-                        <dt class="col-sm-4">Nachname</dt>
-                        <dd class="col-sm-8">{{ $adUser->lastname }}</dd>
+            <div class="pt-3 text-start">
+                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Personalien</h6>
+                <dl class="row mb-0">
+                    <dt class="col-3">Anrede</dt>
+                    <dd class="col-9">{{ $adUser->anrede?->name ?? '-' }}</dd>
 
-						<dt class="col-sm-4">E-Mail</dt>
-						<dd class="col-sm-8">
-							{{ $adUser->email }}
-							@if(!empty($adUser->proxy_addresses))
-								@foreach($adUser->proxy_addresses as $addr)
-									@php
-										$lower = strtolower($addr);
-									@endphp
-									@if(Str::startsWith($lower, 'smtp:') && !Str::startsWith($addr, 'SMTP:'))
-										<small class="text-muted d-block">{{ substr($addr, 5) }}</small>
-									@endif
-								@endforeach
-							@endif
-						</dd>
-                    </dl>
-                </div>
+                    <dt class="col-3">Titel</dt>
+                    <dd class="col-9">{{ $adUser->titel?->name ?? $adUser->title ?? '-' }}</dd>
+
+                    <dt class="col-3">Vorname</dt>
+                    <dd class="col-9">{{ $adUser->firstname }}</dd>
+
+                    <dt class="col-3">Nachname</dt>
+                    <dd class="col-9">{{ $adUser->lastname }}</dd>
+                </dl>
             </div>
-        </div>
 
-        <!-- Intern -->
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header bg-primary text-white py-1">
-                    <strong>Intern</strong>
-                </div>
-                <div class="card-body p-2">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Arbeitsort</dt>
-                        <dd class="col-sm-8">{{ $adUser->arbeitsort?->name ?? '-' }}</dd>
+            <div class="pt-2 text-start">
+                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-3">Intern</h6>
+                <dl class="row mb-0">
+                    <dt class="col-3">Arbeitsort</dt>
+                    <dd class="col-9">{{ $adUser->arbeitsort?->name ?? '-' }}</dd>
 
-                        <dt class="col-sm-4">Einheit</dt>
-                        <dd class="col-sm-8">{{ $adUser->unternehmenseinheit?->name ?? '-' }}</dd>
+                    <dt class="col-3">UE</dt>
+                    <dd class="col-9">{{ $adUser->unternehmenseinheit?->name ?? '-' }}</dd>
 
-                        <dt class="col-sm-4">Abteilung</dt>
-                        <dd class="col-sm-8">{{ $adUser->abteilung?->name ?? $adUser->department ?? '-' }}</dd>
+                    <dt class="col-3">Abteilung</dt>
+                    <dd class="col-9">{{ $adUser->abteilung?->name ?? $adUser->department ?? '-' }}</dd>
 
-                        <dt class="col-sm-4">Funktion</dt>
-                        <dd class="col-sm-8">{{ $adUser->funktion?->name ?? '-' }}</dd>
-                    </dl>
-                </div>
+                    <dt class="col-3">Funktion</dt>
+                    <dd class="col-9">{{ $adUser->funktion?->name ?? '-' }}</dd>
+                </dl>
             </div>
-        </div>
 
-        <!-- Organisation -->
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header bg-primary text-white py-1">
-                    <strong>Organisation</strong>
-                </div>
-                <div class="card-body p-2">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Firma</dt>
-                        <dd class="col-sm-8">{{ $adUser->company }}</dd>
+            <div class="pt-2 text-start">
+                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-3">Kontakt</h6>
+                <dl class="row mb-0">
+					<dt class="col-3">E-Mail</dt>
+					<dd class="col-9">
+						@if ($adUser->email)
+							<a href="mailto:{{ $adUser->email }}">{{ $adUser->email }}</a>
+						@else
+							-
+						@endif
+					</dd>
 
-                        <dt class="col-sm-4">Abteilung</dt>
-                        <dd class="col-sm-8">{{ $adUser->department }}</dd>
-
-                        <dt class="col-sm-4">Tel</dt>
-                        <dd class="col-sm-8">{{ $adUser->office_phone }}</dd>
-                    </dl>
-                </div>
+					<dt class="col-3">Telefon</dt>
+					<dd class="col-9 mb-0">
+						@if ($adUser->office_phone)
+							<a href="tel:{{ preg_replace('/[^0-9+]/', '', $adUser->office_phone) }}">{{ $adUser->office_phone }}</a>
+						@else
+							-
+						@endif
+					</dd>
+                </dl>
             </div>
+
         </div>
-
-        <!-- Account -->
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header bg-primary text-white py-1">
-                    <strong>Account</strong>
-                </div>
-                <div class="card-body p-2">
-                    @if(!$adUser->is_existing)
-                        <div class="alert alert-danger py-1 mb-2">
-                            Benutzer ist nicht (mehr) im Active Directory vorhanden.
-                        </div>
-                    @endif
-
-                    <dl class="row mb-0">
-                        <dt class="col-sm-8">Status</dt>
-                        <dd class="col-sm-4">
-                            {!! $adUser->is_enabled 
-                                ? '<span class="badge bg-success">Aktiviert</span>' 
-                                : '<span class="badge bg-secondary">Deaktiviert</span>' !!}
-                        </dd>
-
-                        <dt class="col-sm-8">Passwort läuft nie ab</dt>
-                        <dd class="col-sm-4">
-                            {!! $adUser->password_never_expires 
-                                ? '<span class="badge bg-success">Ja</span>' 
-                                : '<span class="badge bg-secondary">Nein</span>' !!}
-                        </dd>
-
-                        <dt class="col-sm-8">Anmeldungen</dt>
-                        <dd class="col-sm-4">{{ $adUser->logon_count }}</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-
-        <!-- Adresse -->
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 mb-0">
-                <div class="card-header bg-primary text-white py-1">
-                    <strong>Adresse</strong>
-                </div>
-                <div class="card-body p-2">
-                    {{ $adUser->street_address }}<br>
-                    {{ $adUser->postal_code }} {{ $adUser->city }}<br>
-                    {{ $adUser->state }} {{ $adUser->country }}
-                </div>
-            </div>
-        </div>
-
-        <!-- Zeiten -->
-		<div class="col-12 col-md-6 col-lg-4">
-			<div class="card h-100 mb-0">
-				<div class="card-header bg-primary text-white py-1">
-					<strong>Zeiten</strong>
-				</div>
-				<div class="card-body p-2">
-					<dl class="row mb-0">
-						<dt class="col-sm-6">Letzte Anmeldung</dt>
-						<dd class="col-sm-6">
-							{{ $adUser->last_logon_date ? $adUser->last_logon_date->format('d.m.Y H:i') : '-' }}
-						</dd>
-
-						<dt class="col-sm-6">Account Ablaufdatum</dt>
-						<dd class="col-sm-6">
-							{{ $adUser->account_expiration_date ? $adUser->account_expiration_date->format('d.m.Y H:i') : '-' }}
-						</dd>
-
-						<dt class="col-sm-6">Passwort zuletzt geändert</dt>
-						<dd class="col-sm-6">
-							{{ $adUser->password_last_set ? $adUser->password_last_set->format('d.m.Y H:i') : '-' }}
-						</dd>
-
-						<dt class="col-sm-6">Letzter falscher Login</dt>
-						<dd class="col-sm-6">
-							{{ $adUser->last_bad_password_attempt ? $adUser->last_bad_password_attempt->format('d.m.Y H:i') : '-' }}
-						</dd>
-
-						<dt class="col-sm-6">Erstellt</dt>
-						<dd class="col-sm-6">
-							{{ $adUser->created ? $adUser->created->format('d.m.Y H:i') : '-' }}
-						</dd>
-
-						<dt class="col-sm-6">Geändert</dt>
-						<dd class="col-sm-6">
-							{{ $adUser->modified ? $adUser->modified->format('d.m.Y H:i') : '-' }}
-						</dd>
-					</dl>
-				</div>
-			</div>
-		</div>
-
-
-        <!-- Gruppen -->
-		<div class="col-12 col-md-6 col-lg-4">
-			<div class="card h-100 mb-0">
-				<div class="card-header bg-primary text-white py-1">
-					<strong>Gruppenmitgliedschaften</strong>
-				</div>
-				<div class="card-body p-2">
-					@if(!empty($adUser->member_of))
-						<ul class="list-group list-group-flush list-group-sm">
-							@foreach(collect($adUser->member_of)->sort()->values() as $group)
-								<li class="list-group-item py-1 px-2">{{ $group }}</li>
-							@endforeach
-						</ul>
-					@else
-						<em class="text-muted">Keine Gruppen gefunden</em>
-					@endif
-				</div>
-			</div>
-		</div>
-
     </div>
 
-    <div class="mt-3 mb-3">
+    <div class="mb-3">
         <a href="{{ route('admin.ad-users.index') }}" class="btn btn-primary">
             <i class="mdi mdi-arrow-left"></i> Zurück
         </a>
     </div>
+
+</div>
+
+
+
+    {{-- Rechte Seite: Tabs --}}
+{{-- Rechte Seite: Tabs --}}
+<div class="col-xl-8 col-lg-7">
+    <div class="card">
+        <div class="card-body">
+            <ul class="nav nav-pills bg-nav-pills nav-justified mb-3">
+                <li class="nav-item">
+                    <a href="#account" data-bs-toggle="tab" aria-expanded="true" class="nav-link rounded-0 active">
+                        Accountinformationen
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#groups" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0">
+                        Gruppenmitgliedschaften
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#extensions" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0">
+                        Extension Attributes
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+
+                {{-- Accountinformationen --}}
+                <div class="tab-pane fade show active" id="account">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Letzte Anmeldung</dt>
+                        <dd class="col-sm-6">{{ $adUser->last_logon_date?->format('d.m.Y H:i') ?? '-' }}</dd>
+
+                        <dt class="col-sm-4">Ablaufdatum</dt>
+                        <dd class="col-sm-6">{{ $adUser->account_expiration_date?->format('d.m.Y H:i') ?? '-' }}</dd>
+
+                        <dt class="col-sm-4">Passwort zuletzt geändert</dt>
+                        <dd class="col-sm-6">{{ $adUser->password_last_set?->format('d.m.Y H:i') ?? '-' }}</dd>
+
+                        <dt class="col-sm-4">Letzte fehlgeschlagene Anmeldung</dt>
+                        <dd class="col-sm-6">{{ $adUser->last_bad_password_attempt?->format('d.m.Y H:i') ?? '-' }}</dd>
+
+                        <dt class="col-sm-4">Anmeldungen</dt>
+                        <dd class="col-sm-6">{{ $adUser->logon_count }}</dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-6">{!! $adUser->is_enabled ? '<span class="badge bg-success">Aktiviert</span>' : '<span class="badge bg-secondary">Deaktiviert</span>' !!}
+                        </dd>
+
+                        <dt class="col-sm-4">Passwort läuft nie ab</dt>
+                        <dd class="col-sm-6 mb-0">{!! $adUser->password_never_expires ? '<span class="badge bg-success">Ja</span>' : '<span class="badge bg-secondary">Nein</span>' !!}</dd>
+                    </dl>
+                </div>
+
+                {{-- Gruppenmitgliedschaften --}}
+                <div class="tab-pane fade" id="groups">
+                    @if (!empty($adUser->member_of))
+                        <ul class="list-group list-group-flush mb-0">
+                            @foreach (collect($adUser->member_of)->sort()->values() as $group)
+                                <li class="list-group-item py-1 px-2">{{ $group }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-muted mb-0">Keine Gruppenmitgliedschaften gefunden.</p>
+                    @endif
+                </div>
+
+                {{-- Erweiterte Attribute --}}
+				<div class="tab-pane fade" id="extensions">
+					<dl class="row mb-0">
+						@foreach(range(1, 15) as $i)
+							@php $key = "extensionattribute{$i}"; @endphp
+
+							<dt class="col-sm-2 {{ $loop->last ? 'mb-0' : '' }}">extensionAttribute{{ $i }}</dt>
+							<dd class="col-sm-10 {{ $loop->last ? 'mb-0' : 'mb-1' }}">
+								{{ $adUser->$key ?? '-' }}
+							</dd>
+						@endforeach
+					</dl>
+				</div>
+
+
+            </div> <!-- end tab-content -->
+        </div>
+    </div>
+</div>
+
+</div>
+
+
+
 </div>
