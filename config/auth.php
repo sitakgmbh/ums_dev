@@ -56,10 +56,10 @@ return [
             'provider' => 'users',
         ],
 
-        'api' => [
-            'driver' => 'sanctum',
-            'provider' => 'users',
-        ],
+		'api' => [
+			'driver' => 'session', // nur Platzhalter, Auth läuft über Auth::setUser in Middleware ApiAuthSwitcher
+			'provider' => 'users',
+		],
     ],
 
     /*

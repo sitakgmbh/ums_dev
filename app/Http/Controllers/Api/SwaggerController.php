@@ -17,10 +17,9 @@ use App\Http\Controllers\Controller;
  * )
  *
   * @OA\SecurityScheme(
- *     securityScheme="bearerAuth",
+ *     securityScheme="basicAuth",
  *     type="http",
- *     scheme="bearer",
- *     bearerFormat="JWT"
+ *     scheme="basic",
  * )
  */
 class SwaggerController extends Controller
