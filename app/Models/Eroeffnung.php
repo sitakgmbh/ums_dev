@@ -161,6 +161,19 @@ class Eroeffnung extends Model
         "archiviert" => "boolean",
     ];
 
+	protected bool $suppressObserver = false;
+
+	public function suppressObserver(bool $value = true): static
+	{
+		$this->suppressObserver = $value;
+		return $this;
+	}
+
+	public function shouldSuppressObserver(): bool
+	{
+		return $this->suppressObserver;
+	}
+
 	protected $attributes = [
 		"kalender_berechtigungen" => "[]",
 	];

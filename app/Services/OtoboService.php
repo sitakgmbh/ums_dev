@@ -136,7 +136,8 @@ class OtoboService
 				return false;
 			}
 
-			$model->update(["ticket_nr" => $response["TicketNumber"]]);
+
+			$model->suppressObserver()->update(["ticket_nr" => $response["TicketNumber"]]);
 
 			Logger::db("otobo", "info", "Ticket {$response["TicketNumber"]} erstellt", [
 				"model" => $type,

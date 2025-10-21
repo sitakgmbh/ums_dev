@@ -59,6 +59,10 @@ class EroeffnungObserver
 
     public function updated(Eroeffnung $eroeffnung): void
     {
+		if ($eroeffnung->shouldSuppressObserver()) {
+			return;
+		}
+
         $user = Auth::user();
         $username = $user?->username ?? "unbekannt";
         $fullname = $user?->name ?? ($user?->firstname." ".$user?->lastname);

@@ -52,6 +52,19 @@ class Austritt extends Model
         "archiviert"        => "boolean",
     ];
 
+	protected bool $suppressObserver = false;
+
+	public function suppressObserver(bool $value = true): static
+	{
+		$this->suppressObserver = $value;
+		return $this;
+	}
+
+	public function shouldSuppressObserver(): bool
+	{
+		return $this->suppressObserver;
+	}
+
     public function owner()
     {
         return $this->belongsTo(AdUser::class, "owner_id");
