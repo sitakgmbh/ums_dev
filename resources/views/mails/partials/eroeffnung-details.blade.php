@@ -25,7 +25,7 @@
     </tr>
     <tr>
         <td style="padding:5px; font-weight:bold; white-space:nowrap; border-bottom:1px solid #ddd;">Eintrittsdatum:</td>
-        <td style="padding:5px; border-bottom:1px solid #ddd;">{{ $eroeffnung->vertragsbeginn }}</td>
+        <td style="padding:5px; border-bottom:1px solid #ddd;">{{ $eroeffnung->vertragsbeginn->format("d.m.Y") }}</td>
     </tr>
     <tr>
         <td style="padding:5px; font-weight:bold; white-space:nowrap; border-bottom:1px solid #ddd;">Benutzername:</td>
@@ -45,7 +45,7 @@
     </tr>
     <tr>
         <td style="padding:5px; font-weight:bold; white-space:nowrap; border-bottom:1px solid #ddd;">Bezugsperson E-Mail:</td>
-        <td style="padding:5px; border-bottom:1px solid #ddd;">{{ $eroeffnung->bezugsperson?->mail }}</td>
+        <td style="padding:5px; border-bottom:1px solid #ddd;">{{ $eroeffnung->bezugsperson?->email }}</td>
     </tr>
     <tr>
         <td style="padding:5px; font-weight:bold; white-space:nowrap; border-bottom:1px solid #ddd;">Antragsteller:</td>
@@ -53,6 +53,6 @@
     </tr>
     <tr>
         <td style="padding:5px; font-weight:bold; white-space:nowrap; border-bottom:1px solid #ddd;">Antragsteller E-Mail:</td>
-        <td style="padding:5px; border-bottom:1px solid #ddd;">{{ $eroeffnung->antragsteller?->mail }}</td>
+        <td style="padding:5px; border-bottom:1px solid #ddd;">{{ $eroeffnung->antragsteller?->email }}</td>
     </tr>
 </table>

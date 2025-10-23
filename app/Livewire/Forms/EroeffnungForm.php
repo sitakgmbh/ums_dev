@@ -531,14 +531,15 @@ public function loadFunktionen(?Eroeffnung $eroeffnung = null): void
 	public function applyStatus(?Eroeffnung $existing = null): void
 	{
 		// KIS
-		if ($this->kis_status || $this->is_lei) {
+		# if ($this->kis_status || $this->is_lei) {
+		if ($this->kis_status) {
 			$this->setStatus('status_kis', true);
 		} 
 		else 
 		{
 			$this->setStatus('status_kis', false);
 			$this->kis_status = false;
-			$this->is_lei     = false;
+			# $this->is_lei     = false;
 		}
 
 		// SAP

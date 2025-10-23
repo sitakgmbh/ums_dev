@@ -27,14 +27,7 @@ class Bestaetigung extends Mailable
 	{
 		$vertragsbeginn = $this->eroeffnung->vertragsbeginn ? $this->eroeffnung->vertragsbeginn->format("d.m.Y") : "Kein Datum";
 
-		$subject = sprintf(
-			"Bestätigung Antrag Eröffnung %s %s per %s",
-			$this->eroeffnung->vorname,
-			$this->eroeffnung->nachname,
-			$vertragsbeginn
-		);
-
-		return $this->subject($subject)
+		return $this->subject("Bestätigung Antrag Eröffnung {$this->eroeffnung->vorname} {$this->eroeffnung->nachname} per {$vertragsbeginn}")
 			->view("mails.eroeffnungen.bestaetigung")
 			->with([
 				"eroeffnung" => $this->eroeffnung,

@@ -1,7 +1,7 @@
 @extends('layouts.mail')
 
 @section('header')
-    <h2 style="margin:0;">🔑 Passwort zurücksetzen</h2>
+    <h2 style="margin:0;">Passwort zurücksetzen</h2>
 @endsection
 
 @section('intro')

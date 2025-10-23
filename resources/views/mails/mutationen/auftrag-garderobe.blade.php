@@ -5,14 +5,15 @@
 @endsection
 
 @section('intro')
-    <p>Sehr geehrte Damen und Herren,</p>
-    <p>Bitte richte eine Garderobe für einen neuen Mitarbeiter ein:</p>
+    <p>Hallo</p>
+    <p>Bitte bearbeite folgende Anfrage bzgl. einer Garderobe:</p>
+	<p>{{ $mutation->komm_garderobe }}</p>
 @endsection
 
 @section('body')
-    @include('mails.partials.eroeffnung-details', ['eroeffnung' => $eroeffnung])
+    @include('mails.partials.mutation-details', ['mutation' => $mutation])
 @endsection
 
 @section('outro')
-    <p>Vielen Dank und freundliche Gruesse,<br>Ihre ICT</p>
+    @include('mails.partials.outro-standard')
 @endsection

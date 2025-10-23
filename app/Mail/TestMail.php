@@ -10,19 +10,23 @@ class TestMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public string $toAddress;
+    public string $recipient;
+    public string $previewUrl;
 
-    public function __construct(string $toAddress)
+    public function __construct(string $recipient, string $previewUrl)
     {
-        $this->toAddress = $toAddress;
+        $this->recipient = $recipient;
+        $this->previewUrl = $previewUrl;
     }
 
     public function build()
     {
-        return $this->subject("Testmail")
-            ->view("mails.test")
+        return $this->to($this->recipient)
+            ->subject('Testmail')
+            ->view('mails.test-mail')
             ->with([
-                "toAddress" => $this->toAddress,
+                'recipient' => $this->recipient,
+                'previewUrl' => $this->previewUrl,
             ]);
     }
 }

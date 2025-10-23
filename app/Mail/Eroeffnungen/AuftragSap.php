@@ -20,18 +20,8 @@ class AuftragSap extends Mailable
 
     public function build()
     {
-        $subject = sprintf(
-            "Auftrag SAP-Eröffnung %s %s",
-            $this->eroeffnung->vorname,
-            $this->eroeffnung->nachname
-        );
-
-        return $this->subject($subject)
+        return $this->subject("Auftrag SAP-Eröffnung {$this->eroeffnung->nachname} {$this->eroeffnung->vorname}")
             ->view("mails.eroeffnungen.auftrag-sap")
-            ->with([
-                "eroeffnung"  => $this->eroeffnung,
-                "hasSapUser"  => !empty($this->eroeffnung->sap_rolle_id),
-                "hasSapLei"   => !empty($this->eroeffnung->is_lei),
-            ]);
+            ->with(["eroeffnung" => $this->eroeffnung]);
     }
 }

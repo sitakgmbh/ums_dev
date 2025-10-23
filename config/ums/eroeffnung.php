@@ -112,6 +112,9 @@ return [
 			'to' => ['patrik@sitak.ch'],
 			'cc' => ['patrik@senti.bz'],
 		],
+		'info-hr' => [
+			'to' => ['patrik@sitak.ch'],
+		],
 	],
     'detailsSections' => [
         'Personalien' => [

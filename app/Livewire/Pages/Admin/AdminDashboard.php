@@ -29,7 +29,7 @@ class AdminDashboard extends Component
                     "is_external" => false,
                 ],
             ],
-            "Wartung und Werkzeuge" => [
+            "Werkzeuge" => [
                 [
                     "title"       => "Aufgabenplaner",
                     "description" => "Tasks einsehen und ausführen",
@@ -39,8 +39,16 @@ class AdminDashboard extends Component
                     "is_external" => false,
                 ],
                 [
+                    "title"       => "Mail-Tool",
+                    "description" => "Mailables rendern und senden",
+                    "icon"        => "mdi mdi-email-outline",
+                    "color"       => "dark",
+                    "route"       => "admin.tools.mail-tool",
+                    "is_external" => false,
+                ],
+                [
                     "title"       => "API",
-                    "description" => "Interaktive API (Swagger)",
+                    "description" => "Interaktive API mit Swagger",
                     "icon"        => "mdi mdi-connection",
                     "color"       => "dark",
                     "route"       => "/api/documentation", 
@@ -58,7 +66,7 @@ class AdminDashboard extends Component
                 ],
                 [
                     "title"       => "Server",
-                    "description" => "Informationen zum Webserver",
+                    "description" => "Informationen zum System",
                     "icon"        => "mdi mdi-server-outline",
                     "color"       => "dark",
                     "route"       => "admin.server-info",

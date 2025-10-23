@@ -18,18 +18,14 @@ class AuftragRaumbeschriftung extends Mailable
         $this->mutation = $mutation;
     }
 
-    public function build()
-    {
-        $subject = sprintf(
-            "Auftrag Raumbeschriftung %s %s",
-            $this->mutation->vorname,
-            $this->mutation->nachname
-        );
+	public function build()
+	{
+		$subject = "Auftrag Raumbeschriftung {$this->mutation->adUser->display_name}";
 
-        return $this->subject($subject)
-            ->view("mails.mutationen.auftrag-raumbeschriftung")
-            ->with([
-                "mutation" => $this->mutation,
-            ]);
-    }
+		return $this->subject($subject)
+			->view("mails.mutationen.auftrag-raumbeschriftung")
+			->with([
+				"mutation" => $this->mutation,
+			]);
+	}
 }

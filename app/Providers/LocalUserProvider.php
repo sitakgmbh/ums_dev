@@ -44,19 +44,29 @@ class LocalUserProvider implements UserProvider
         }
     }
 
-    public function retrieveByCredentials(array $credentials)
-    {
-        $mode = config("auth.mode", "local");
+	public function retrieveByCredentials(array $credentials)
+	{
+		$mode = config("auth.mode", "local");
 
-        if ($mode === "sso") return null;
+		if ($mode === "sso") return null;
 
-        $username = trim($credentials["username"] ?? "");
-        Logger::debug("Suche lokalen Benutzer '{$username}'");
+		$username = trim($credentials["username"] ?? "");
+		Logger::debug("Suche lokalen Benutzer '{$username}'");
 
-        return User::where("username", $username)
-            ->where("auth_type", "local")
-            ->first();
-    }
+		$user = User::where("username", $username)
+			->where("auth_type", "local")
+			->first();
+
+		if ($user) {
+			Logger::debug("Benutzer gefunden – ID: {$user->id}, username: {$user->username}, auth_type: {$user->auth_type}");
+		}
+
+		if (! $user) {
+			Logger::debug("Kein lokaler Benutzer gefunden für '{$username}'");
+		}
+
+		return $user;
+	}
 
     public function validateCredentials(Authenticatable $user, array $credentials)
     {

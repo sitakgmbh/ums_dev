@@ -27,8 +27,10 @@ class ApiAuthSwitcher
 
         $user = User::where('username', $username)->first();
 
-        if (! $user) {
+        if (! $user) 
+		{
             $ldapUser = LdapUser::query()->where('samaccountname', '=', $username)->first();
+			
             if (! $ldapUser) {
                 return response()->json(['message' => 'User not found in AD'], 403);
             }

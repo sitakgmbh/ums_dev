@@ -16,7 +16,7 @@ class AuftragBerufskleider extends Mailable
 
     public function build()
     {
-        return $this->subject("Auftrag Berufskleider {$this->mutation->vorname} {$this->mutation->nachname}")
+        return $this->subject("Auftrag Berufskleider {$this->mutation->adUser->display_name}")
             ->view("mails.mutationen.auftrag-berufskleider")
             ->with(["mutation" => $this->mutation]);
     }

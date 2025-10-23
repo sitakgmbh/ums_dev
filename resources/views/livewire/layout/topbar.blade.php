@@ -89,7 +89,7 @@
 					</span>
 
                     <span class="d-lg-flex flex-column gap-1 d-none">
-                        <h5 class="my-0">{{ Auth::user()->firstname ?: Auth::user()->username }}</h5>
+                        <h5 class="my-0">{{ Auth::user()->firstname }}</h5>
 
 						<h6 class="my-0 fw-normal">
 							{{ Auth::user()->username }}

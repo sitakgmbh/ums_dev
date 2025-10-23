@@ -25,22 +25,18 @@ class Bestaetigung extends Mailable
 
 	public function build()
 	{
-		$vertragsbeginn = $this->mutation->vertragsbeginn ? $this->mutation->vertragsbeginn->format("d.m.Y") : "Kein Datum";
+		$vertragsbeginn = $this->mutation->vertragsbeginn
+			? $this->mutation->vertragsbeginn->format("d.m.Y")
+			: "Kein Datum";
 
-		$subject = sprintf(
-			"Bestätigung Antrag Eröffnung %s %s per %s",
-			$this->mutation->vorname,
-			$this->mutation->nachname,
-			$vertragsbeginn
-		);
+		$subject = "Bestätigung Antrag Eröffnung {$this->mutation->adUser->display_name} per {$vertragsbeginn}";
 
 		return $this->subject($subject)
 			->view("mails.mutationen.bestaetigung")
 			->with([
 				"mutation" => $this->mutation,
-				"isSoon"     => $this->mutation->vertragsbeginn &&
-								$this->mutation->vertragsbeginn->isBetween(now(), now()->addWeeks(3)),
+				"isSoon"   => $this->mutation->vertragsbeginn &&
+							  $this->mutation->vertragsbeginn->isBetween(now(), now()->addWeeks(3)),
 			]);
 	}
-
 }

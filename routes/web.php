@@ -14,8 +14,9 @@ use App\Livewire\Pages\Admin\Users\Create as UsersCreate;
 use App\Livewire\Pages\Admin\Users\Edit as UsersEdit;
 use App\Livewire\Pages\Admin\AdUsers\Index as AdUsersIndex;
 use App\Livewire\Pages\Admin\AdUsers\Show as AdUsersShow;
-use App\Livewire\Pages\Admin\Tools\Index as ToolsIndex;
 use App\Livewire\Pages\Admin\Tools\TaskScheduler;
+use App\Livewire\Pages\Admin\Tools\MailTool;
+use App\Http\Controllers\Admin\Tools\MailPreviewController;
 use App\Livewire\Pages\Admin\AdminDashboard;
 use Illuminate\Support\Facades\Auth;
 
@@ -79,8 +80,9 @@ Route::middleware(["auth", "verified"])->group(function () {
 
         // Admin Tools
         Route::prefix("tools")->name("admin.tools.")->group(function () {
-            Route::get("/", ToolsIndex::class)->name("index");
             Route::get("/task-scheduler", TaskScheduler::class)->name("task-scheduler");
+			Route::get('/mail-preview/render', [MailPreviewController::class, 'render'])->name('mail-preview.render');
+			Route::get('/mail-tool', MailTool::class)->name('mail-tool');
         });
 
 		Route::prefix("eroeffnungen")->name("admin.eroeffnungen.")->group(function () {

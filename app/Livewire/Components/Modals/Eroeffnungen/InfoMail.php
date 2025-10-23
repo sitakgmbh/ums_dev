@@ -40,11 +40,18 @@ class InfoMail extends BaseModal
 		{
             $recipients = config("ums.eroeffnung.mail.info.to", []);
             $cc         = config("ums.eroeffnung.mail.info.cc", []);
+			$toHr       = config("ums.eroeffnung.mail.info-hr.to", []);
 
             if (empty($recipients) && empty($cc)) 
 			{
                 $this->addError("general", "Keine Empfänger für Info-Mail definiert");
                 return;
+            }
+
+            // Falls ein KIS-Benutzer bestellt wurde, HR in CC setzen
+            if ($this->entry->status_info !== 2 && $this->entry->status_kis == 2) 
+			{
+                $cc = array_merge($cc, (array) $toHr);
             }
 
             SafeMail::send(new InfoMailMailable($this->entry), $recipients, $cc);

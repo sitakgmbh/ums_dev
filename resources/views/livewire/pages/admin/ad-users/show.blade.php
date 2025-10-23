@@ -27,7 +27,7 @@
 
             {{-- Name + Titel --}}
             <h4 class="mb-0 mt-2">{{ $adUser->display_name ?? $adUser->username }}</h4>
-            <p class="text-muted font-14">{{ $adUser->titel?->name ?? $adUser->title ?? '' }}</p>
+            <p class="text-muted font-14">{{ $adUser->funktion?->name ?? '-' }}</p>
 
             <div class="pt-3 text-start">
                 <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Personalien</h6>
@@ -36,7 +36,7 @@
                     <dd class="col-9">{{ $adUser->anrede?->name ?? '-' }}</dd>
 
                     <dt class="col-3">Titel</dt>
-                    <dd class="col-9">{{ $adUser->titel?->name ?? $adUser->title ?? '-' }}</dd>
+                    <dd class="col-9">{{ $adUser->titel?->name ?? '-' }}</dd>
 
                     <dt class="col-3">Vorname</dt>
                     <dd class="col-9">{{ $adUser->firstname }}</dd>

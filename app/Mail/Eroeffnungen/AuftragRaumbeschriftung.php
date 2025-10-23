@@ -20,16 +20,8 @@ class AuftragRaumbeschriftung extends Mailable
 
     public function build()
     {
-        $subject = sprintf(
-            "Auftrag Raumbeschriftung %s %s",
-            $this->eroeffnung->vorname,
-            $this->eroeffnung->nachname
-        );
-
-        return $this->subject($subject)
+        return $this->subject("Auftrag Raumbeschriftung {$this->eroeffnung->vorname} {$this->eroeffnung->nachname}")
             ->view("mails.eroeffnungen.auftrag-raumbeschriftung")
-            ->with([
-                "eroeffnung" => $this->eroeffnung,
-            ]);
+            ->with(["eroeffnung" => $this->eroeffnung]);
     }
 }

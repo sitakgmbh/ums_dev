@@ -5,37 +5,40 @@
 @endsection
 
 @section('intro')
-    <p>Sehr geehrte Damen und Herren,</p>
-    <p>nachfolgend finden Sie die PC-Login-Daten für den neuen Mitarbeiter:</p>
+    <p>Hallo</p>
+	<p>Nachfolgend findest du das PC-Login für <strong>{{ $eroeffnung->nachname }} {{ $eroeffnung->vorname }}</strong>. Dieses Login ist auch für NICE und PEP gültig.
+	<p>Bitte behandle diese Informationen vertraulich.</p>
 @endsection
 
 @section('body')
-	<table style="width:100%; border-collapse:collapse;">
-		<tr>
-			<td style="width:200px; padding:2px 6px; font-weight:bold;">Vorname</td>
-			<td>{{ $eroeffnung->vorname }}</td>
-		</tr>
-		<tr>
-			<td style="padding:2px 6px; font-weight:bold;">Nachname</td>
-			<td>{{ $eroeffnung->nachname }}</td>
-		</tr>
-		<tr>
-			<td style="padding:2px 6px; font-weight:bold;">Benutzername</td>
-			<td>{{ $eroeffnung->benutzername }}</td>
-		</tr>
-		<tr>
-			<td style="padding:2px 6px; font-weight:bold;">Passwort</td>
-			<td><code style="font-family:'Courier New', monospace; font-size:16px;">{{ $eroeffnung->passwort }}</code></td>
-		</tr>
-		<tr>
-			<td style="padding:2px 6px; font-weight:bold;">E-Mail</td>
-			<td>{{ $eroeffnung->email }}</td>
-		</tr>
-	</table>
-
+    <table style="width:100%; border-collapse:collapse;">
+        <tr>
+            <td style="width:200px; padding:5px; font-weight:bold; white-space:nowrap; border-bottom:1px solid #ddd;">Vorname:</td>
+            <td style="padding:5px; border-bottom:1px solid #ddd;">{{ $eroeffnung->vorname }}</td>
+        </tr>
+        <tr>
+            <td style="padding:5px; font-weight:bold; white-space:nowrap; border-bottom:1px solid #ddd;">Nachname:</td>
+            <td style="padding:5px; border-bottom:1px solid #ddd;">{{ $eroeffnung->nachname }}</td>
+        </tr>
+        <tr>
+            <td style="padding:5px; font-weight:bold; white-space:nowrap; border-bottom:1px solid #ddd;">Benutzername:</td>
+            <td style="padding:5px; border-bottom:1px solid #ddd;">{{ $eroeffnung->benutzername }}</td>
+        </tr>
+        <tr>
+            <td style="padding:5px; font-weight:bold; white-space:nowrap; border-bottom:1px solid #ddd;">Passwort:</td>
+            <td style="padding:5px; border-bottom:1px solid #ddd;">
+                <code style="font-family:'Courier New', monospace; font-size:16px;">{{ $eroeffnung->passwort }}</code>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:5px; font-weight:bold; white-space:nowrap; border-bottom:1px solid #ddd;">E-Mail:</td>
+            <td style="padding:5px; border-bottom:1px solid #ddd;">
+                <a href="mailto:{{ $eroeffnung->email }}" style="color:#000000; text-decoration:none;">{{ $eroeffnung->email }}</a>
+            </td>
+        </tr>
+    </table>
 @endsection
 
 @section('outro')
-    <p>Bitte geben Sie diese Informationen vertraulich an den Mitarbeiter weiter.</p>
-    <p>Vielen Dank und freundliche Gruesse,<br>Ihre ICT</p>
+    @include('mails.partials.outro-standard')
 @endsection

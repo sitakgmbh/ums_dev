@@ -15,10 +15,10 @@ class AdUsersTable extends BaseTable
 	protected function getColumns(): array
 	{
 		return [
-			"username"       => ["label" => "Benutzername", "sortable" => true, "searchable" => true],
 			"display_name"   => ["label" => "Anzeigename", "sortable" => true, "searchable" => true],
 			"firstname"      => ["label" => "Vorname", "sortable" => true, "searchable" => true],
 			"lastname"       => ["label" => "Nachname", "sortable" => true, "searchable" => true],
+			"username"       => ["label" => "Benutzername", "sortable" => true, "searchable" => true],
 			"email"          => ["label" => "E-Mail", "sortable" => true, "searchable" => true],
 			"is_enabled"     => ["label" => "Status", "sortable" => true, "searchable" => false],
 			"last_synced_at" => ["label" => "Zuletzt synchronisiert", "sortable" => true, "searchable" => false],
@@ -28,7 +28,7 @@ class AdUsersTable extends BaseTable
 
 	protected function defaultSortField(): string
 	{
-		return "username";
+		return "display_name";
 	}
 
 	protected function defaultSortDirection(): string

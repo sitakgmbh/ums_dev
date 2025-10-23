@@ -21,9 +21,8 @@ class InfoMail extends Mailable
     public function build()
     {
         $subject = sprintf(
-            "PC-Login %s %s",
-            $this->mutation->vorname,
-            $this->mutation->nachname
+            "Mutation %s abgeschlossen",
+            $this->mutation->adUser->display_name
         );
 
         return $this->subject($subject)

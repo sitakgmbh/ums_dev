@@ -34,7 +34,7 @@ class MutationController extends Controller
      *         @OA\JsonContent(ref="#/components/schemas/Mutation")
      *     ),
      *     @OA\Response(response=404, description="Kein AD-Benutzer mit der angegebenen SID gefunden."),
-     *     @OA\Response(response=422, description="Validierungsfehler")
+     *     @OA\Response(response=422, description="Ungültige Eingabe")
      * )
      */
     public function store(Request $request)
@@ -76,4 +76,55 @@ class MutationController extends Controller
 
         return response()->json($mutation, 201);
     }
+
+	/**
+	 * @OA\Patch(
+	 *     path="/api/mutationen/{id}",
+	 *     summary="Aktualisiert ein oder mehrere Attribute einer Mutation.",
+	 *     tags={"Mutationen"},
+	 *     security={{"basicAuth":{}}},
+	 *     @OA\Parameter(
+	 *         name="id",
+	 *         in="path",
+	 *         required=true,
+	 *         description="ID der Mutation",
+	 *         @OA\Schema(type="integer")
+	 *     ),
+	 *     @OA\RequestBody(
+	 *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             example={"status_ad":2}
+     *         )
+	 *     ),
+	 *     @OA\Response(response=200, description="Mutation aktualisiert"),
+	 *     @OA\Response(response=404, description="Nicht gefunden"),
+	 *     @OA\Response(response=422, description="Ungültige Eingabe")
+	 * )
+	 */
+	public function update(Request $request, int $id)
+	{
+		$mutation = Mutation::find($id);
+
+		if (! $mutation) {
+			return response()->json(["error" => "Mutation nicht gefunden"], 404);
+		}
+
+		$allowed = [
+			"status_ad",
+			"status_mail",
+		];
+
+		$data = $request->only($allowed);
+
+		if (empty($data)) {
+			return response()->json(["error" => "Keine gültigen Attribute übergeben"], 422);
+		}
+
+		$mutation->fill($data);
+		$mutation->save();
+
+		return response()->json($mutation, 200);
+	}
+
 }
