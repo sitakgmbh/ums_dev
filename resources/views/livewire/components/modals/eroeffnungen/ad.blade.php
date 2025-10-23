@@ -22,5 +22,5 @@
 
 @section('footer')
     <button type="button" class="btn btn-secondary" wire:click="closeModal">Abbrechen</button>
-    <button type="button" class="btn btn-primary" wire:click="confirm">Benutzer erstellen</button>
+    <x-action-button action="confirm" type="button" class="btn btn-primary" wire:click="confirm">Benutzer erstellen</x-action-button>
 @endsection

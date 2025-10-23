@@ -35,7 +35,7 @@
 
             {{-- Auswahl Model --}}
             <div id="model-wrapper" class="col-md-6" style="display: none;">
-                <label class="form-label" id="model-label">Datensatz auswählen</label>
+                <label class="form-label" id="model-label">Model auswählen</label>
                 <select id="model" class="form-select" wire:model="selectedModelId">
                     <option value="">Bitte wählen</option>
                 </select>
@@ -45,7 +45,7 @@
         {{-- Vorschau & Testversand --}}
         <div class="row mt-4" id="testmail-section" style="display: none;">
 			<div class="col-md-6">
-				<label class="form-label">Empfaenger</label>
+				<label class="form-label">Empfänger</label>
 				<input type="email" wire:model="recipient" class="form-control" placeholder="test@example.ch">
 			</div>
 			<div class="col-md-6 d-flex align-items-end gap-2">
