@@ -19,10 +19,6 @@ use App\Http\Controllers\Admin\Tools\MailPreviewController;
 use App\Livewire\Pages\Admin\AdminDashboard;
 use Illuminate\Support\Facades\Auth;
 
-Route::get('/test-error', function () {
-    return $undefinedVariable; // Variable existiert nicht
-});
-
 Route::redirect("/", "/dashboard");
 Route::get("/login", Login::class)->name("login");
 
