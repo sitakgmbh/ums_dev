@@ -178,9 +178,9 @@ class EroeffnungenTable extends BaseTable
 			},
 			"status" => function ($row) {
 				$statusLabels = [
-					1 => ["label" => "Neu",          "class" => "badge bg-secondary"],
-					2 => ["label" => "Bearbeitung",  "class" => "badge bg-info"],
-					3 => ["label" => "Abgeschlossen","class" => "badge bg-success"],
+					1 => ["label" => "Neu",          "class" => "badge bg-secondary py-1"],
+					2 => ["label" => "Bearbeitung",  "class" => "badge bg-info py-1"],
+					3 => ["label" => "Abgeschlossen","class" => "badge bg-success py-1"],
 				];
 
 				$status = $statusLabels[$row->status_info ?? 1] ?? ["label" => "-", "class" => "badge bg-light text-dark"];

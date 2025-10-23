@@ -158,14 +158,16 @@
             </div>
         @endif
 
-        {{-- Submit --}}
-        <div class="mt-3">
-            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
-                <span wire:loading.remove wire:target="save">Speichern</span>
-                <span wire:loading wire:target="save">
-                    <i class="mdi mdi-loading mdi-spin me-1"></i>Bitte warten...
-                </span>
-            </button>
-        </div>
+        @if(!$isLdap)
+			<div class="mt-3">
+				<button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+					<span wire:loading.remove wire:target="save">Speichern</span>
+					<span wire:loading wire:target="save">
+						<i class="mdi mdi-loading mdi-spin me-1"></i>Bitte warten...
+					</span>
+				</button>
+			</div>
+        @endif
+		
     </form>
 </div>
