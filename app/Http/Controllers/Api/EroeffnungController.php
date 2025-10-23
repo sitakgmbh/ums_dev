@@ -30,7 +30,7 @@ class EroeffnungController extends Controller
     public function open(Request $request)
     {
 		$eroeffnungen = Eroeffnung::query()
-			->with(['arbeitsort', 'unternehmenseinheit', 'abteilung', 'funktion'])
+			->with(['arbeitsort', 'unternehmenseinheit', 'abteilung', 'funktion', 'adUser'])
 			->where("archiviert", false)
 			->orderBy("id", "asc")
 			->get()
