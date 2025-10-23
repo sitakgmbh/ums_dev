@@ -52,11 +52,11 @@ class EmailBearbeiten extends BaseModal
 		{
             $proxies = $adUser->getAttribute("proxyAddresses", []);
 			
-            $this->aliases = collect($proxies)
-                ->filter(fn($v) => stripos($v, "smtp:") === 0)
-                ->map(fn($v) => strtolower(str_ireplace("smtp:", "", $v)))
-                ->values()
-                ->toArray();
+			$this->aliases = collect($proxies)
+				->filter(fn($v) => substr($v, 0, 5) === 'smtp:') // case-sensitiv
+				->map(fn($v) => strtolower(substr($v, 5)))
+				->values()
+				->toArray();
         }
 
         // prüfen, ob Mail neu generiert werden soll

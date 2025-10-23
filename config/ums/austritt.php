@@ -42,7 +42,6 @@ return [
     'detailsSections' => [
         'Austritt' => [
             'Vertragsende' => 'vertragsende',
-            'Ticket'       => 'ticket_nr',
         ],
         'Personalien' => [
 			'Anrede'   => 'adUser.anrede.name',
