@@ -10,7 +10,6 @@ class Abteilung extends Model
 
     protected $fillable = [
 		"name", 
-		"unternehmenseinheit_id",
 		"enabled"
 	];
 

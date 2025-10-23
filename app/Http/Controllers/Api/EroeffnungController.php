@@ -29,10 +29,16 @@ class EroeffnungController extends Controller
      */
     public function open(Request $request)
     {
-        $eroeffnungen = Eroeffnung::query()
-            ->where("archiviert", false)
-            ->orderBy("id", "asc")
-            ->get();
+		$eroeffnungen = Eroeffnung::query()
+			->with(['arbeitsort', 'unternehmenseinheit', 'abteilung', 'funktion'])
+			->where("archiviert", false)
+			->orderBy("id", "asc")
+			->get()
+			->map(function ($eroeffnung) {
+				$data = $eroeffnung->toArray();
+				return $data;
+			});
+
 
         return response()->json($eroeffnungen, 200);
     }

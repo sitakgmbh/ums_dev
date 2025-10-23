@@ -28,10 +28,6 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->boolean('enabled')->default(true)->index();
-            $table->foreignId('unternehmenseinheit_id')
-                ->nullable()
-                ->constrained('unternehmenseinheiten')
-                ->nullOnDelete();
             $table->timestamps();
         });
 
