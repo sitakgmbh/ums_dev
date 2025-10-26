@@ -25,8 +25,8 @@ class BevorstehendeAustritte extends BaseModal
 				'titel',
 			])
 			->whereNotNull('account_expiration_date')
-            // ->where('is_existing', false)
-            // ->where('is_enabled', true)
+            ->where('is_existing', true)
+            ->where('is_enabled', true)
 			->orderBy('account_expiration_date', 'asc')
 			->get();
 

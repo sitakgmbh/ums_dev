@@ -30,11 +30,11 @@ class SapImportService
             throw new \RuntimeException("SAP Export nicht gefunden: {$this->filePath}");
         }
 
-        $raw = file($this->filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $lines = array_map(fn($line) => mb_convert_encoding($line, "UTF-8", "Windows-1252"), $raw);
-        $header = array_map("trim", explode(";", array_shift($lines)));
-        $rows = [];
-		
+		$raw = file($this->filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		$lines = $raw;
+		$header = array_map("trim", explode(";", array_shift($lines)));
+		$rows = [];
+
         foreach ($lines as $line) 
 		{
             $values = array_map("trim", explode(";", $line));
@@ -137,7 +137,8 @@ class SapImportService
         Konstellation::whereIn("id", $konstellationenSeen)->where("enabled", false)->update(["enabled" => true]);
 
 		// AD User Abgleich
-		foreach ($rows as $row) {
+		foreach ($rows as $row) 
+		{
 			$funktionName   = trim($row["d_0032_batchbez"] ?? "");
 			$abteilungName  = trim($row["d_abt_txt"] ?? "");
 			$ueName         = trim($row["d_pers_txt"] ?? "");

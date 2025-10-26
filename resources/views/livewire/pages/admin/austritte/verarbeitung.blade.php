@@ -129,12 +129,13 @@
 								class="btn btn-sm btn-secondary"
 								wire:click="$dispatch('open-modal', { modal: '{{ $task['modal'] }}', payload: { entryId: {{ $entry->id }} } })"
 								@disabled($disabled)
-								title="Ausführen">
-								<i class="mdi mdi-hammer-screwdriver"></i>
+								title="Ausführen"
+								x-data="{ loading: false }"
+								@click="loading = true; setTimeout(() => loading = false, 1000)">
+								
+								<i class="mdi mdi-hammer-screwdriver" x-show="!loading"></i>
+								<span class="spinner-border spinner-border-sm" x-show="loading" x-cloak></span>
 							</button>
-
-
-
                         </li>
                     @endforeach
                 </ul>
