@@ -10,7 +10,7 @@ use App\Services\ActiveDirectory\UserSyncService;
 class SyncUsers extends Command
 {
     protected $signature = "ad:sync-users";
-    protected $description = "Synchronisiert alle AD-Benutzer in die Datenbank";
+    protected $description = "Synchronisiert alle AD-Benutzer in die Datenbank.";
 
     protected UserSyncService $syncService;
 

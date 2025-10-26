@@ -78,6 +78,9 @@ return [
 			'to' => ['patrik@sitak.ch'],
 			'cc' => ['patrik@senti.bz'],
 		],
+		'sap_lei' => [
+			'to' => ['patrik@sitak.ch'],
+		],
 		'raumbeschriftung_wh' => [
 			'to' => ['patrik@sitak.ch'],
 			'cc' => [],

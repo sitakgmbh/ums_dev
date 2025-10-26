@@ -109,4 +109,11 @@ class User extends Authenticatable
 	{
 		return $this->hasOne(AdUser::class, "sid", "ad_sid");
 	}
+
+	public function iRepresentUsers()
+	{
+		$myAdUserId = $this->adUser?->id;
+		if (!$myAdUserId) return collect();
+		return User::whereJsonContains('settings->representations', $myAdUserId)->get();
+	}
 }

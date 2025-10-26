@@ -4,7 +4,7 @@
         {{-- Filterleiste --}}
         <div class="row mb-3 align-items-center">
             <div class="col-md-2 mb-2 mb-md-0">
-                <select wire:model.live="perPage" class="form-select">
+                <select wire:model.live="perPage" class="form-select form-select-sm">
                     <option value="10">10 pro Seite</option>
                     <option value="25">25 pro Seite</option>
                     <option value="50">50 pro Seite</option>
@@ -15,7 +15,7 @@
             <div class="col-md-4 mb-2 mb-md-0">
                 <input type="text"
                        wire:model.live.debounce.500ms="search"
-                       class="form-control"
+                       class="form-control form-control-sm"
                        placeholder="Suchen...">
             </div>
 
@@ -29,7 +29,7 @@
                                 @if(isset($action['method']))
                                     wire:click="{{ $action['method'] }}"
                                 @endif
-                                class="btn {{ $action['class'] ?? 'btn-outline-secondary' }}"
+                                class="btn btn-sm {{ $action['class'] ?? 'btn-outline-secondary' }}"
                                 title="{{ $action['title'] ?? $action['label'] ?? '' }}">
                                 @if(!empty($action['icon']))
                                     <i class="{{ $action['icon'] }} {{ $action['iconClass'] ?? '' }}"></i>

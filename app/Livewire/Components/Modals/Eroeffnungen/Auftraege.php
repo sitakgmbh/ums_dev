@@ -11,6 +11,7 @@ class Auftraege extends BaseModal
 {
     public ?Eroeffnung $entry = null;
     public array $pendingAuftraege = [];
+	public array $auftraegeDetails = [];
 
     protected function openWith(array $payload): bool
     {
@@ -31,23 +32,41 @@ class Auftraege extends BaseModal
         $this->headerText = "text-white";
 
         $this->pendingAuftraege = $this->determineAuftraege();
-
+		$this->auftraegeDetails = $this->getAuftraegeDetails();
+		
         return true;
     }
 
-    private function determineAuftraege(): array
-    {
-        return array_filter([
-            "sap"    => ($this->entry->sap_rolle_id || $this->entry->is_lei) ? "SAP" : null,
-            "raumbeschriftung"=> $this->entry->raumbeschriftung  ? "Raumbeschriftung"       : null,
-            "berufskleider"   => $this->entry->berufskleider     ? "Berufskleider"          : null,
-            "garderobe"       => $this->entry->garderobe         ? "Garderobe"              : null,
-            "zutrittsrechte"  => ($this->entry->key_wh_badge || $this->entry->key_wh_schluessel ||
-                                  $this->entry->key_be_badge || $this->entry->key_be_schluessel ||
-                                  $this->entry->key_rb_badge || $this->entry->key_rb_schluessel
-            ) ? "Zutrittsrechte" : null,
-        ]);
-    }
+	private function determineAuftraege(): array
+	{
+		return array_filter([
+			"sap" => ($this->entry->sap_rolle_id) ? "SAP" : null,
+			"raumbeschriftung"=> $this->entry->raumbeschriftung  ? "Raumbeschriftung" : null,
+			"berufskleider"   => $this->entry->berufskleider     ? "Berufskleider"    : null,
+			"garderobe"       => $this->entry->garderobe         ? "Garderobe"        : null,
+			"zutrittsrechte"  => ($this->entry->key_wh_badge || $this->entry->key_wh_schluessel ||
+								  $this->entry->key_be_badge || $this->entry->key_be_schluessel ||
+								  $this->entry->key_rb_badge || $this->entry->key_rb_schluessel
+			) ? "Zutrittsrechte" : null,
+		]);
+	}
+
+	private function getAuftraegeDetails(): array
+	{
+		$details = [];
+		
+		foreach ($this->pendingAuftraege as $key => $label) {
+			[$recipients, $cc, $mailable] = $this->resolveMailConfig($key);
+			
+			$details[$key] = [
+				'label' => $label,
+				'to' => $recipients,
+				'cc' => $cc,
+			];
+		}
+		
+		return $details;
+	}
 
 	public function confirm(): void
 	{
@@ -112,17 +131,18 @@ class Auftraege extends BaseModal
 
         switch ($key) 
 		{
-            case "sap":
-                $recipients = config("ums.eroeffnung.mail.sap.to", []);
-                $cc         = config("ums.eroeffnung.mail.sap.cc", []);
-                $mailable   = new \App\Mail\Eroeffnungen\AuftragSap($this->entry);
-                break;
-
-            case "sap_lei":
-                $recipients = config("ums.eroeffnung.mail.sap_lei.to", []);
-                $cc         = config("ums.eroeffnung.mail.sap_lei.cc", []);
-                $mailable   = new \App\Mail\Eroeffnungen\AuftragSapLei($this->entry);
-                break;
+			case "sap":
+				$recipients = config("ums.eroeffnung.mail.sap.to", []);
+				$cc         = config("ums.eroeffnung.mail.sap.cc", []);
+				
+				// Wenn LEI, dann sap_lei.to zu CC hinzufügen
+				if ($this->entry->is_lei) {
+					$leiRecipients = config("ums.eroeffnung.mail.sap_lei.to", []);
+					$cc = array_merge($cc, $leiRecipients);
+				}
+				
+				$mailable = new \App\Mail\Eroeffnungen\AuftragSap($this->entry);
+				break;
 
             case "raumbeschriftung":
                 if ($arbeitsort === "Chur") 

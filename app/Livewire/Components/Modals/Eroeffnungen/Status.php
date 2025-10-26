@@ -35,7 +35,6 @@ class Status extends BaseModal
             "status_tel"     => "Telefonie",
             "status_pep"     => "PEP",
             "status_kis"     => "KIS",
-            "status_sap"     => "SAP",
             "status_auftrag" => "Versand Aufträge",
             "status_info"    => "Versand Info-Mail",
         ];

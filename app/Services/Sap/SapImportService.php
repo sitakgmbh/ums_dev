@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Sap;
 
 use App\Models\Funktion;
 use App\Models\Abteilung;

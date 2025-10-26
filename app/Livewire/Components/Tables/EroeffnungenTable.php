@@ -11,9 +11,11 @@ class EroeffnungenTable extends BaseTable
     protected $listeners = ['eroeffnung-deleted' => '$refresh'];
 
     public bool $showArchived = false;
+    public bool $showAllAntraege = false; // NEU
 
     protected $queryString = [
         "showArchived"  => ["except" => false],
+        "showAllAntraege" => ["except" => false], // NEU
         "search"        => ["except" => ""],
         "perPage"       => ["except" => 10],
         "sortField"     => ["except" => null],
@@ -26,6 +28,12 @@ class EroeffnungenTable extends BaseTable
         $this->resetPage();
     }
 
+    public function toggleAllAntraege(): void // NEU
+    {
+        $this->showAllAntraege = ! $this->showAllAntraege;
+        $this->resetPage();
+    }
+
     protected function model(): string
     {
         return Eroeffnung::class;
@@ -34,7 +42,7 @@ class EroeffnungenTable extends BaseTable
     protected function getColumns(): array
     {
         return [
-            "status" => ["label" => "Status", "sortable" => true, "searchable" => true],
+            "status" => ["label" => "Status", "sortable" => false, "searchable" => false],
             "vertragsbeginn" => ["label" => "Eintrittsdatum", "sortable" => true, "searchable" => false],
             "anrede.name" => ["label" => "Anrede", "sortable" => true, "searchable" => true],
             "titel.name" => ["label" => "Titel", "sortable" => true, "searchable" => true],
@@ -42,6 +50,7 @@ class EroeffnungenTable extends BaseTable
             "vorname" => ["label" => "Vorname", "sortable" => true, "searchable" => true],
             "arbeitsort.name" => ["label" => "Arbeitsort", "sortable" => true, "searchable" => true],
             "funktion.name" => ["label" => "Funktion", "sortable" => true, "searchable" => true],
+            "antragsteller.display_name" => ["label" => "Antragsteller", "sortable" => true, "searchable" => true],
             "bezugsperson.display_name" => ["label" => "Bezugsperson", "sortable" => true, "searchable" => true],
             "vorlageBenutzer.display_name" => ["label" => "Berechtigungen", "sortable" => true, "searchable" => true],
             "actions" => ["label" => "Aktionen", "sortable" => false, "class" => "shrink"],
@@ -63,15 +72,6 @@ class EroeffnungenTable extends BaseTable
     protected function getCustomSorts(): array
     {
         return [
-            "status" => function ($query, $direction) {
-                return $query->orderByRaw("
-                    CASE
-                        WHEN status_info = 2 THEN 3
-                        WHEN GREATEST(status_ad, status_tel, status_pep, status_kis, status_sap, status_auftrag) > 1 THEN 2
-                        ELSE 1
-                    END {$direction}
-                ");
-            },
             "anrede.name" => function ($query, $direction) {
                 return $query
                     ->leftJoin("anreden", "eroeffnungen.anrede_id", "=", "anreden.id")
@@ -96,6 +96,12 @@ class EroeffnungenTable extends BaseTable
                     ->orderBy("funktionen.name", $direction)
                     ->select("eroeffnungen.*");
             },
+            "antragsteller.display_name" => function ($query, $direction) {
+                return $query
+                    ->leftJoin("ad_users as antragsteller", "eroeffnungen.antragsteller_id", "=", "antragsteller.id")
+                    ->orderBy("antragsteller.display_name", $direction)
+                    ->select("eroeffnungen.*");
+            },
             "bezugsperson.display_name" => function ($query, $direction) {
                 return $query
                     ->leftJoin("ad_users as bezug", "eroeffnungen.bezugsperson_id", "=", "bezug.id")
@@ -113,20 +119,40 @@ class EroeffnungenTable extends BaseTable
 
     protected function applyFilters(Builder $query): void
     {
-        $adUserId = auth()->user()?->adUser?->id;
-
-        if ($adUserId) 
+		$adUserId = auth()->user()?->adUser?->id;
+		
+		if (!$adUserId) 
 		{
-            $query->where("eroeffnungen.antragsteller_id", $adUserId);
-        }
+			$query->whereRaw("1 = 0"); // immer falsch
+			return;
+		}
+		
+		if ($this->showAllAntraege)
+		{
+			$usersIRepresent = auth()->user()->iRepresentUsers();
+			
+			$iRepresentAdUserIds = $usersIRepresent->pluck("adUser.id")->filter()->toArray();
+			
+			$query->where(function($q) use ($adUserId, $iRepresentAdUserIds) {
+				$q->where("eroeffnungen.antragsteller_id", $adUserId);
+				
+				if (!empty($iRepresentAdUserIds)) {
+					$q->orWhereIn("eroeffnungen.antragsteller_id", $iRepresentAdUserIds);
+				}
+			});
+		} 
+		else 
+		{
+			$query->where("eroeffnungen.antragsteller_id", $adUserId);
+		}
 
         if (! $this->showArchived) 
-		{
+        {
             $query->where("eroeffnungen.archiviert", false);
         }
 
         if ($this->search) 
-		{
+        {
             $search = strtolower($this->search);
 
             $query->where(function ($q) use ($search) {
@@ -142,30 +168,12 @@ class EroeffnungenTable extends BaseTable
                     $sub->whereRaw("LOWER(arbeitsorte.name) LIKE ?", ["%{$search}%"]))
                   ->orWhereHas("funktion", fn($sub) =>
                     $sub->whereRaw("LOWER(funktionen.name) LIKE ?", ["%{$search}%"]))
+                  ->orWhereHas("antragsteller", fn($sub) =>
+                    $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
                   ->orWhereHas("bezugsperson", fn($sub) =>
                     $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
                   ->orWhereHas("vorlageBenutzer", fn($sub) =>
                     $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]));
-
-                $statusLabels = [
-                    1 => "neu",
-                    2 => "bearbeitung",
-                    3 => "abgeschlossen",
-                ];
-
-                foreach ($statusLabels as $code => $label) 
-				{
-                    if (str_contains($label, $search)) 
-					{
-                        $q->orWhereRaw("
-                            CASE
-                                WHEN status_info = 2 THEN 3
-                                WHEN GREATEST(status_ad, status_tel, status_pep, status_kis, status_sap, status_auftrag) > 1 THEN 2
-                                ELSE 1
-                            END = ?
-                        ", [$code]);
-                    }
-                }
             });
         }
     }
@@ -177,52 +185,45 @@ class EroeffnungenTable extends BaseTable
 				return $row->vertragsbeginn?->format("d.m.Y");
 			},
 			"status" => function ($row) {
-				$statusLabels = [
-					1 => ["label" => "Neu",          "class" => "badge bg-secondary py-1"],
-					2 => ["label" => "Bearbeitung",  "class" => "badge bg-info py-1"],
-					3 => ["label" => "Abgeschlossen","class" => "badge bg-success py-1"],
-				];
-
-				$status = $statusLabels[$row->status_info ?? 1] ?? ["label" => "-", "class" => "badge bg-light text-dark"];
-				$html = "<span class='{$status["class"]}'>{$status["label"]}</span>";
-
+				$status = \App\Utils\AntragHelper::getStatusBadge($row);
+				$html = "<span class='{$status["class"]} d-inline-block text-center' style='min-width: 100px;'>{$status["label"]}</span>";
+				
 				if ($row->archiviert) 
 				{
 					$html .= " <span class='badge bg-light text-dark p-1' title='Archiviert'>Archiv</span>";
 				}
-
+				
 				return "<div class='d-inline-flex align-items-center gap-1 flex-nowrap' style='white-space:nowrap;'>{$html}</div>";
 			},
 		];
 	}
 
-	protected function getColumnButtons(): array
-	{
-		return [
-			"actions" => [
-				[
-					"url"    => fn($row) => route("eroeffnungen.edit", $row->id),
-					"icon"   => "mdi mdi-square-edit-outline",
-					"showIf" => fn($row) => $row->status === 1, // Neu
-					"title"  => "Antrag bearbeiten",
-				],
-				[
-					"method"  => "openDeleteModal",
-					"idParam" => "id",
-					"icon"    => "mdi mdi-delete",
-					"showIf"  => fn($row) => $row->status === 1, // Neu
-					"title"   => "Antrag löschen",
-				],
-				[
-					"url"    => fn($row) => route("eroeffnungen.show", $row->id),
-					"icon"   => "mdi mdi-eye",
-					"showIf" => fn($row) => $row->status !== 1, // nicht Neu
-					"title"  => "Antrag einsehen",
-				],
-			],
-		];
-	}
-
+    protected function getColumnButtons(): array
+    {
+        return [
+            "actions" => [
+                [
+                    "url"    => fn($row) => route("eroeffnungen.edit", $row->id),
+                    "icon"   => "mdi mdi-square-edit-outline",
+                    "showIf" => fn($row) => $row->status === 1,
+                    "title"  => "Antrag bearbeiten",
+                ],
+                [
+                    "method"  => "openDeleteModal",
+                    "idParam" => "id",
+                    "icon"    => "mdi mdi-delete",
+                    "showIf"  => fn($row) => $row->status === 1,
+                    "title"   => "Antrag löschen",
+                ],
+                [
+                    "url"    => fn($row) => route("eroeffnungen.show", $row->id),
+                    "icon"   => "mdi mdi-eye",
+                    "showIf" => fn($row) => $row->status !== 1,
+                    "title"  => "Antrag einsehen",
+                ],
+            ],
+        ];
+    }
 
     public function openDeleteModal(int $id): void
     {
@@ -231,21 +232,32 @@ class EroeffnungenTable extends BaseTable
 
     protected function getTableActions(): array
     {
-        return [
-            [
-                "method" => "toggleArchived",
-                "icon"   => $this->showArchived ? "mdi mdi-archive-eye" : "mdi mdi-archive",
-                "iconClass" => "text-secondary",
-                "class"  => $this->showArchived ? "btn-light" : "btn-outline-light",
-                "title" => $this->showArchived ? "Archivierte Anträge ausblenden" : "Archivierte Anträge anzeigen",
-            ],
-            [
-                "method" => "exportCsv",
-                "icon"   => "mdi mdi-tray-arrow-down",
-                "iconClass" => "text-secondary",
-                "class"  => "btn-outline-light",
-                "title"  => "Tabelle als CSV-Datei exportieren",
-            ],
+        $actions = [];
+
+		$actions[] = [
+			"method" => "toggleAllAntraege",
+			"icon"   => "mdi mdi-account-multiple",
+			"iconClass" => "text-secondary",
+			"class"  => $this->showAllAntraege ? "btn-light" : "btn-outline-light",
+			"title"  => $this->showAllAntraege ? "Nur eigene Anträge anzeigen" : "Alle Anträge (inkl. Stellvertreter) anzeigen",
+		];
+
+        $actions[] = [
+            "method" => "toggleArchived",
+            "icon"   => $this->showArchived ? "mdi mdi-archive-eye" : "mdi mdi-archive",
+            "iconClass" => "text-secondary",
+            "class"  => $this->showArchived ? "btn-light" : "btn-outline-light",
+            "title" => $this->showArchived ? "Archivierte Anträge ausblenden" : "Archivierte Anträge anzeigen",
         ];
+
+        $actions[] = [
+            "method" => "exportCsv",
+            "icon"   => "mdi mdi-tray-arrow-down",
+            "iconClass" => "text-secondary",
+            "class"  => "btn-outline-light",
+            "title"  => "Tabelle als CSV-Datei exportieren",
+        ];
+
+        return $actions;
     }
 }

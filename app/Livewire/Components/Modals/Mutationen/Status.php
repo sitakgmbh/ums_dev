@@ -32,7 +32,6 @@ class Status extends BaseModal
             "status_ad"      => "PC Login",
             "status_tel"     => "Telefonie",
             "status_kis"     => "KIS",
-            "status_sap"     => "SAP",
             "status_auftrag" => "Versand Aufträge",
         ];
 

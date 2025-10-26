@@ -13,6 +13,7 @@ class EroeffnungenAdminTable extends BaseTable
 	public bool $onlyMine = false;
     public bool $showArchived = false;
 	public bool $onlyUnassigned = false;
+	public bool $onlyVorabLizenzierung = false;
 
     protected $queryString = [
 	    "onlyMine" => ["except" => false],
@@ -42,6 +43,12 @@ class EroeffnungenAdminTable extends BaseTable
 		$this->resetPage();
 	}
 
+	public function toggleVorabLizenzierung(): void
+	{
+		$this->onlyVorabLizenzierung = ! $this->onlyVorabLizenzierung;
+		$this->resetPage();
+	}
+
     protected function model(): string
     {
         return Eroeffnung::class;
@@ -64,6 +71,7 @@ class EroeffnungenAdminTable extends BaseTable
             "vorname" => [ "label" => "Vorname", "sortable" => true ],
             "arbeitsort.name" => [ "label" => "Arbeitsort", "sortable" => true ],
             "funktion.name" => [ "label" => "Funktion", "sortable" => true ],
+			"antragsteller.display_name" => ["label" => "Antragsteller", "sortable" => true, "searchable" => true],
             "bezugsperson.display_name" => [ "label" => "Bezugsperson", "sortable" => true ],
             "vorlageBenutzer.display_name" => [ "label" => "Berechtigungen", "sortable" => true ],
             "actions" => [ "label" => "Aktionen", "sortable" => false, "class" => "shrink" ],
@@ -102,6 +110,11 @@ class EroeffnungenAdminTable extends BaseTable
 			$query->whereNull("eroeffnungen.owner_id");
 		}
 
+		if ($this->onlyVorabLizenzierung) 
+		{
+			$query->where("eroeffnungen.vorab_lizenzierung", true);
+		}
+
 		if ($this->search) 
 		{
 			$search = strtolower($this->search);
@@ -118,6 +131,8 @@ class EroeffnungenAdminTable extends BaseTable
 					  $sub->whereRaw("LOWER(arbeitsorte.name) LIKE ?", ["%{$search}%"]))
 				  ->orWhereHas("funktion", fn($sub) => 
 					  $sub->whereRaw("LOWER(funktionen.name) LIKE ?", ["%{$search}%"]))
+				  ->orWhereHas("antragsteller", fn($sub) => 
+					  $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
 				  ->orWhereHas("bezugsperson", fn($sub) => 
 					  $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
 				  ->orWhereHas("vorlageBenutzer", fn($sub) => 
@@ -151,6 +166,12 @@ class EroeffnungenAdminTable extends BaseTable
                 return $query
                     ->leftJoin("funktionen", "eroeffnungen.funktion_id", "=", "funktionen.id")
                     ->orderBy("funktionen.name", $direction)
+                    ->select("eroeffnungen.*");
+            },
+            "antragsteller.display_name" => function ($query, $direction) {
+                return $query
+                    ->leftJoin("ad_users as antragsteller", "eroeffnungen.antragsteller_id", "=", "antragsteller.id")
+                    ->orderBy("antragsteller.display_name", $direction)
                     ->select("eroeffnungen.*");
             },
             "bezugsperson.display_name" => function ($query, $direction) {
@@ -196,7 +217,6 @@ class EroeffnungenAdminTable extends BaseTable
 				if ($row->status_pep)      $badges[] = $createBadge($row->status_pep, "mdi-clock", "PEP");
 				if ($row->status_kis)      $badges[] = $createBadge($row->status_kis, "mdi-doctor", "KIS");
 				if ($row->status_tel)      $badges[] = $createBadge($row->status_tel, "mdi-phone", "Telefonie");
-				if ($row->status_sap)      $badges[] = $createBadge($row->status_sap, "mdi-hospital-building", "SAP");
 				if ($row->status_auftrag)  $badges[] = $createBadge($row->status_auftrag, "mdi-clipboard-text", "Aufträge");
 				if ($row->status_info)     $badges[] = $createBadge($row->status_info, "mdi-information-variant", "Info-Mail");
 
@@ -215,18 +235,18 @@ class EroeffnungenAdminTable extends BaseTable
 				if ($row->wiedereintritt) 
 				{
 					$badges[] = "<span title='Wiedereintritt'>
-									<i class='mdi mdi-exclamation-thick text-info'></i>
+									<i class='mdi mdi-exclamation-thick text-danger'></i>
 								 </span>";
 				}
 
 				if ($row->is_lei) 
 				{
 					$badges[] = "<span title='Leistungserbringer'>
-									<i class='mdi mdi-doctor text-info'></i>
+									<i class='mdi mdi-hospital-building text-info'></i>
 								 </span>";
 				}
 
-				if ($row->postfach_erstellen) 
+				if ($row->vorab_lizenzierung) 
 				{
 					$badges[] = "<span title='M365-Lizenz bei Erstellung AD-Benutzer zuweisen'>
 									<i class='mdi mdi-license text-info'></i>
@@ -284,11 +304,11 @@ class EroeffnungenAdminTable extends BaseTable
 				"title"  => $this->onlyMine ? "Alle Anträge anzeigen" : "Nur meine Anträge anzeigen",
 			],
 			[
-				"method" => "toggleArchived",
-				"icon"   => $this->showArchived ? "mdi mdi-archive-eye" : "mdi mdi-archive",
-				"iconClass" => $this->showArchived ? "text-secondary" : "text-secondary",
-				"class"  => $this->showArchived ? "btn-light" : "btn-outline-light",
-				"title" => $this->showArchived ? "Archivierte Anträge ausblenden" : "Archivierte Anträge anzeigen",
+				"method" => "toggleVorabLizenzierung",
+				"icon"   => "mdi mdi-license",
+				"iconClass" => "text-secondary",
+				"class"  => $this->onlyVorabLizenzierung ? "btn-light" : "btn-outline-light",
+				"title"  => $this->onlyVorabLizenzierung ? "Alle Anträge anzeigen" : "Nur Anträge mit vorab Lizenzierung anzeigen",
 			],
 			[
 				"method" => "toggleUnassigned",
@@ -296,6 +316,13 @@ class EroeffnungenAdminTable extends BaseTable
 				"iconClass" => "text-secondary",
 				"class"  => $this->onlyUnassigned ? "btn-light" : "btn-outline-light",
 				"title"  => $this->onlyUnassigned ? "Alle Anträge anzeigen" : "Nur Anträge ohne Besitzer anzeigen",
+			],
+			[
+				"method" => "toggleArchived",
+				"icon"   => $this->showArchived ? "mdi mdi-archive-eye" : "mdi mdi-archive",
+				"iconClass" => $this->showArchived ? "text-secondary" : "text-secondary",
+				"class"  => $this->showArchived ? "btn-light" : "btn-outline-light",
+				"title" => $this->showArchived ? "Archivierte Anträge ausblenden" : "Archivierte Anträge anzeigen",
 			],
 			[
 				"method" => "exportCsv",

@@ -25,7 +25,7 @@ abstract class BaseModal extends Component
 
     #[On("open-modal")]
     public function handleOpen(string $modal, array $payload = []): void
-    {
+    {		
         if ($modal !== $this->getModalId()) 
 		{
             return;

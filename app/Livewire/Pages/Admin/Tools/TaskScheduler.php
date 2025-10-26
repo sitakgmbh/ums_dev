@@ -14,6 +14,8 @@ class TaskScheduler extends Component
         "sap:import",
 		"eroeffnungen:assign-license",
 		"ad:sync-users",
+		"sap:import",
+		"sap:ad-sync",
         "graph:test-connection",
         // "test:do",
         // "test:do-error",
@@ -29,7 +31,6 @@ class TaskScheduler extends Component
 
     private function loadTasks(): void
     {
-        // routes/console.php manuell einbinden
         $consoleFile = base_path("routes/console.php");
 
         if (file_exists($consoleFile)) 

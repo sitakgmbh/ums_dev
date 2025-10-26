@@ -8,7 +8,7 @@
 		<div class="card-body p-0">
 			<div class="list-group list-group-flush">
 				@forelse($tasks as $task)
-					<div class="list-group-item d-flex justify-content-between align-items-start flex-column flex-sm-row gap-2">
+					<div class="list-group-item d-flex justify-content-between align-items-center flex-column flex-sm-row gap-2">
 						<div class="flex-grow-1">
 							<div><strong>{{ $task['command'] }}</strong></div>
 							<div class="small text-muted">
@@ -49,7 +49,7 @@
         <div class="card-body p-0">
             <div class="list-group list-group-flush">
                 @foreach($commands as $cmd => $meta)
-                    <div class="list-group-item d-flex justify-content-between align-items-start flex-column flex-sm-row gap-2">
+                    <div class="list-group-item d-flex justify-content-between align-items-center flex-column flex-sm-row gap-2">
                         <div class="flex-grow-1">
                             <div><strong>{{ $meta['name'] }}</strong></div>
                             <div class="text-muted small">{{ $meta['description'] }}</div>

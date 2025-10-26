@@ -112,20 +112,29 @@
 							$status = $entry->{$task['field']};
 							$disabled = false;
 
-							// 🔹 1. Nur AD darf immer ausgeführt werden
-							if ($task['field'] !== 'status_ad') {
+							// Info-Mail: Nur wenn alle anderen Tasks erledigt sind
+							if ($task['field'] === 'status_info') {
+								// Prüfe ob alle ANDEREN aktiven Tasks auf Status 2 sind
+								$allOthersDone = $activeTasks
+									->reject(fn($t) => $t['field'] === 'status_info')
+									->every(fn($t) => $entry->{$t['field']} === 2);
+								
+								$disabled = !$allOthersDone;
+							}
+							// AD darf immer ausgeführt werden
+							elseif ($task['field'] !== 'status_ad') {
 								// Wenn AD noch nicht abgeschlossen → alles andere sperren
 								if ($entry->status_ad != 2) {
 									$disabled = true;
 								}
 							}
 
-							// 🔹 2. Erledigte Stati sperren (außer Info-Mail)
+							// Erledigte sperren (ausser Info-Mail)
 							if ($task['field'] !== 'status_info') {
 								$disabled = $disabled || in_array($status, [2, 3], true);
 							}
 
-							// 🔹 3. Kein Edit-Recht → alles sperren
+							// Kein Edit-Recht → alles sperren
 							if (! $canEdit) {
 								$disabled = true;
 							}

@@ -6,8 +6,43 @@
     @endif
 
     @if($entry)
-        <p>Möchtest du die Info-Mail für den Antrag von <strong>{{ $entry->vorname }} {{ $entry->nachname }}</strong> versenden?
-        </p>
+        @if($entry->status_info == 2 && $entry->status_kis == 2)
+            <div class="alert alert-info mb-3">Es handelt sich um einen KIS-Benutzer, das HR erhält das PC-Login ebenfalls.</div>
+        @endif
+
+        <div class="mb-3">
+            <label class="form-label" for="recipients">
+                Empfänger <span class="text-danger">*</span>
+            </label>
+            <input 
+                type="text" 
+                class="form-control @error('recipients') is-invalid @enderror" 
+                id="recipients" 
+                wire:model="recipients"
+                placeholder="user1@example.com, user2@example.com"
+            >
+            @error('recipients')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+            <small class="form-text text-muted">Mehrere E-Mail-Adressen mit Komma trennen</small>
+        </div>
+
+        <div class="mb-0">
+            <label class="form-label" for="cc">
+                Kopie (CC)
+            </label>
+            <input 
+                type="text" 
+                class="form-control @error('cc') is-invalid @enderror" 
+                id="cc" 
+                wire:model="cc"
+                placeholder="user1@example.com, user2@example.com"
+            >
+            @error('cc')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+            <small class="form-text text-muted">Mehrere E-Mail-Adressen mit Komma trennen</small>
+        </div>
     @endif
 @endsection
 

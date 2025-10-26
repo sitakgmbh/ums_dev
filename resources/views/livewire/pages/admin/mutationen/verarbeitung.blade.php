@@ -107,23 +107,32 @@
             <div class="card-body">
 
                 <ul class="list-group">
-                    @foreach($activeTasks as $task)
-                        @php
-                            $status = $entry->{$task['field']};
-                            $disabled = false;
+					@foreach($activeTasks as $task)
+						@php
+							$status = $entry->{$task['field']};
+							$disabled = false;
 
-                            if ($task['field'] !== 'status_info') {
-                                // erledigte Stati sperren
-                                $disabled = in_array($status, [2, 3], true);
-                            }
+							// Info-Mail: Nur wenn alle anderen Tasks erledigt sind
+							if ($task['field'] === 'status_info') {
+								// Prüfe ob alle ANDEREN aktiven Tasks auf Status 2 sind
+								$allOthersDone = $activeTasks
+									->reject(fn($t) => $t['field'] === 'status_info')
+									->every(fn($t) => $entry->{$t['field']} === 2);
+								
+								$disabled = !$allOthersDone;
+							}
+							// Erledigte sperren (außer Info-Mail)
+							else {
+								$disabled = in_array($status, [2, 3], true);
+							}
 
-                            // alle sperren, wenn kein Besitzer/Admin
-                            if (! $canEdit) {
-                                $disabled = true;
-                            }
+							// Kein Edit-Recht → alles sperren
+							if (! $canEdit) {
+								$disabled = true;
+							}
 
-                            $itemClass = $disabled ? 'list-group-item disabled text-muted' : 'list-group-item';
-                        @endphp
+							$itemClass = $disabled ? 'list-group-item disabled text-muted' : 'list-group-item';
+						@endphp
 
                         <li class="{{ $itemClass }} d-flex justify-content-between align-items-center">
                             <div>

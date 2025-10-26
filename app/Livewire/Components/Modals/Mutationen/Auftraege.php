@@ -10,6 +10,7 @@ class Auftraege extends BaseModal
 {
     public ?Mutation $entry = null;
     public array $pendingAuftraege = [];
+	public array $auftraegeDetails = [];
 
     protected function openWith(array $payload): bool
     {
@@ -33,6 +34,7 @@ class Auftraege extends BaseModal
         $this->headerText = "text-white";
 
         $this->pendingAuftraege = $this->determineAuftraege();
+		$this->auftraegeDetails = $this->getAuftraegeDetails();
 
         return true;
     }
@@ -51,29 +53,75 @@ class Auftraege extends BaseModal
 		]);
 	}
 
-    private function resolveMailKey(string $baseKey): ?string
-    {
-        $ort = $this->entry->arbeitsort?->name;
+	private function getAuftraegeDetails(): array
+	{
+		$details = [];
+		
+		foreach ($this->pendingAuftraege as $key => $label) {
+			[$recipients, $cc, $mailable] = $this->resolveMailConfig($key);
+			
+			$details[$key] = [
+				'label' => $label,
+				'to' => $recipients,
+				'cc' => $cc,
+			];
+		}
+		
+		return $details;
+	}
 
-        if (! $ort) 
+	private function resolveMailKey(string $baseKey): ?string
+	{
+		$ort = $this->entry->arbeitsort?->name;
+
+		if (! $ort) 
 		{
-            return null;
-        }
+			return null;
+		}
 
-        return match ($baseKey) {
-            "raumbeschriftung" => match ($ort) {
-                "Chur"                     => "raumbeschriftung_wh",
-                "Cazis", "Rothenbrunnen"   => "raumbeschriftung_be",
-                default                    => "raumbeschriftung_rb",
-            },
-            "zutrittsrechte" => match ($ort) {
-                "Chur"                     => "zutrittsrechte_wh",
-                "Cazis", "Rothenbrunnen"   => "zutrittsrechte_be",
-                default                    => "zutrittsrechte_rb",
-            },
-            default => $baseKey,
-        };
-    }
+		return match ($baseKey) {
+			"raumbeschriftung" => match ($ort) {
+				"Chur"                     => "raumbeschriftung_wh",
+				"Cazis", "Rothenbrunnen"   => "raumbeschriftung_be",
+				default                    => "raumbeschriftung_rb",
+			},
+			"zutrittsrechte" => match ($ort) {
+				"Chur"                     => "zutrittsrechte_wh",
+				"Cazis", "Rothenbrunnen"   => "zutrittsrechte_be",
+				default                    => "zutrittsrechte_rb",
+			},
+			default => $baseKey,
+		};
+	}
+
+	private function resolveMailConfig(string $key): array
+	{
+		$mailKey = $this->resolveMailKey($key);
+		
+		if (!$mailKey) {
+			return [[], [], null];
+		}
+		
+		$recipients = config("ums.mutation.mail.{$mailKey}.to", []);
+		$cc = config("ums.mutation.mail.{$mailKey}.cc", []);
+		
+		// LEI zu CC hinzufügen falls nötig
+		if ($key === "sap" && $this->entry->komm_lei) {
+			$leiRecipients = config("ums.mutation.mail.sap_lei.to", []);
+			$cc = array_merge($cc, $leiRecipients);
+		}
+		
+		$mailable = match ($key) {
+			"sap"   => new \App\Mail\Mutationen\AuftragSap($this->entry),
+			"raumbeschriftung"=> new \App\Mail\Mutationen\AuftragRaumbeschriftung($this->entry),
+			"berufskleider"   => new \App\Mail\Mutationen\AuftragBerufskleider($this->entry),
+			"garderobe"       => new \App\Mail\Mutationen\AuftragGarderobe($this->entry),
+			"zutrittsrechte"  => new \App\Mail\Mutationen\AuftragZutrittsrechte($this->entry),
+			default           => null,
+		};
+		
+		return [$recipients, $cc, $mailable];
+	}
 
     public function confirm(): void
     {
@@ -87,7 +135,7 @@ class Auftraege extends BaseModal
 		{
             try 
 			{
-                $mailKey = $this->resolveMailKey($key);
+                $mailKey = $this->resolveMailConfig($key);
 
                 if (! $mailKey) 
 				{
@@ -97,6 +145,13 @@ class Auftraege extends BaseModal
 
                 $recipients = config("ums.mutation.mail.{$mailKey}.to", []);
                 $cc         = config("ums.mutation.mail.{$mailKey}.cc", []);
+
+				// Wenn SAP und komm_lei, dann sap_lei.to zu CC hinzufügen
+				if ($key === "sap" && $this->entry->komm_lei) 
+				{
+					$leiRecipients = config("ums.mutation.mail.sap_lei.to", []);
+					$cc = array_merge($cc, $leiRecipients);
+				}
 
                 if (empty($recipients) && empty($cc)) 
 				{

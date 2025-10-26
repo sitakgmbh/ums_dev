@@ -5,9 +5,9 @@ namespace App\Console\Commands\Sap;
 use Illuminate\Console\Command;
 use Throwable;
 use App\Utils\Logging\Logger;
-use App\Services\SapImportService;
+use App\Services\Sap\SapImportService;
 
-class ImportSap extends Command
+class SapImport extends Command
 {
     protected $signature = "sap:import";
     protected $description = "Importiert den SAP-Export und aktualisiert Stammdaten sowie Konstellationen.";
@@ -20,7 +20,7 @@ class ImportSap extends Command
 		{
             $service->import();
 
-            $this->info("SAP-Import erfolgreich abgeschlossen.");
+            $this->info("SAP-Import abgeschlossen");
 
             Logger::info("SAP-Import abgeschlossen", [
                 "user" => auth()->user()->username ?? "cli",
@@ -33,7 +33,7 @@ class ImportSap extends Command
 		{
             $this->error("Fehler: " . $e->getMessage());
 
-			Logger::db('sap', 'error', "SAP-Import fehlgeschlagen", [
+			Logger::db("sap", "error", "SAP-Import fehlgeschlagen", [
                 "user" => auth()->user()->username ?? "cli",
                 "exception" => $e,
 			]);

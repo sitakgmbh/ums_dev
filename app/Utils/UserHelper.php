@@ -8,7 +8,7 @@ use App\Utils\Logging\Logger;
 
 class UserHelper
 {
-    private static function normalize(string $value): string
+    public static function normalize(string $value): string
     {
         $replacements = [
             "ä"=>"ae","ö"=>"oe","ü"=>"ue","ß"=>"ss",

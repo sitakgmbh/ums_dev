@@ -165,7 +165,7 @@ class AustritteAdminTable extends BaseTable
                 $badges = [];
                 if ($row->status_pep)         $badges[] = $createBadge($row->status_pep, "mdi-clock", "PEP");
                 if ($row->status_kis)         $badges[] = $createBadge($row->status_kis, "mdi-doctor", "KIS");
-                if ($row->status_streamline)  $badges[] = $createBadge($row->status_streamline, "mdi-database", "Streamline");
+                if ($row->status_streamline)  $badges[] = $createBadge($row->status_streamline, "mdi-badge-account-horizontal", "Streamline");
                 if ($row->status_tel)         $badges[] = $createBadge($row->status_tel, "mdi-phone", "Telefonie");
                 if ($row->status_alarmierung) $badges[] = $createBadge($row->status_alarmierung, "mdi-bell", "Alarmierung");
                 if ($row->status_logimen)     $badges[] = $createBadge($row->status_logimen, "mdi-clipboard-text", "Logimen");

@@ -4,13 +4,14 @@ namespace App\Enums;
 
 enum LogCategory: string
 {
-    case System = "system";
+	case System = "system";
     case Database = "database";
     case Auth = "auth";
     case Api = "api";
 	case Email = "mail";
-	case Sap = "sap";
+	case Ad = "ad";
 	case Antraege = "antraege";
+	case Sap = "sap";
 	case Otobo = "otobo";
 	case Graph = "graph";
 
@@ -27,6 +28,7 @@ enum LogCategory: string
 			self::Antraege => "Anträge",
 			self::Otobo => "Otobo",
 			self::Graph => "Microsoft Graph",
+			self::Ad => "Active Directory",
         };
     }
 
