@@ -41,87 +41,81 @@ class SapAdSyncService
         ];
     }
 
-    public function sync(string $filePath): void
+public function sync(string $filePath): void
+{
+    if (!file_exists($filePath)) 
     {
-        if (!file_exists($filePath)) 
+        throw new \RuntimeException("SAP Export nicht gefunden: {$filePath}");
+    }
+
+    $this->changes = [];
+
+    $raw = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $lines = $raw;
+    $header = array_map("trim", explode(";", array_shift($lines)));
+    $rows = [];
+
+    foreach ($lines as $line) 
+    {
+        $values = array_map("trim", explode(";", $line));
+        if (count($values) !== count($header)) continue;
+        $rows[] = array_combine($header, $values);
+    }
+
+    $adUsers = LdapUser::get();
+    
+    Logger::debug("SAP zu AD Sync gestartet", [
+        "csv_rows" => count($rows),
+        "ad_users" => $adUsers->count(),
+        "actor" => $this->actor,
+    ]);
+
+    $rows = array_slice($rows, 0, 1);
+
+    foreach ($rows as $row) 
+    {
+        $personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
+        if (empty($personalnummer)) continue;
+
+        $adUser = $adUsers->first(function ($user) use ($personalnummer) {
+            return $user->getFirstAttribute("initials") === $personalnummer;
+        });
+
+        if (!$adUser) 
         {
-            throw new \RuntimeException("SAP Export nicht gefunden: {$filePath}");
+            Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
+            $this->stats["not_found"]++;
+            continue;
         }
 
-		$raw = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-		$lines = $raw;
-		$header = array_map("trim", explode(";", array_shift($lines)));
-		$rows = [];
-
-        foreach ($lines as $line) 
-        {
-            $values = array_map("trim", explode(";", $line));
-			if (count($values) !== count($header)) continue;
-            $rows[] = array_combine($header, $values);
-        }
-
-        $adUsers = LdapUser::get();
+        $username = $adUser->getFirstAttribute("samaccountname");
+        $this->stats["found"]++;
         
-        Logger::debug("SAP zu AD Sync gestartet", [
-            "csv_rows" => count($rows),
-            "ad_users" => $adUsers->count(),
-            "actor" => $this->actor,
-        ]);
+        $userChanges = [];
 
-		// Erste 1 Zeilen
-		$rows = array_slice($rows, 0, 1);
+        $this->syncNames($adUser, $row, $username, $personalnummer);
+        $this->syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer);
+        $this->syncSimpleAttributes($adUser, $row, $username, $personalnummer);
+        $this->syncManager($adUser, $row, $username, $personalnummer);
 
-        foreach ($rows as $row) 
+        if (!empty($this->changes)) 
         {
-            Logger::debug("Verbeite {$row['d_name']} {$row['d_vname']} {$row['d_pernr']}");
-			
-			$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
-            if (empty($personalnummer)) continue;
-
-            $adUser = $adUsers->first(function ($user) use ($personalnummer) {
-                return $user->getFirstAttribute("initials") === $personalnummer;
-            });
-
-            if (!$adUser) 
-            {
-                Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
-                $this->stats["not_found"]++;
-                continue;
-            }
-
-            $username = $adUser->getFirstAttribute("samaccountname");
-            $this->stats["found"]++;
+            Logger::db("ad", "info", "Benutzer '{$username}' aktualisiert", [
+                "personalnummer" => $personalnummer,
+                "username" => $username,
+                "changes" => $this->changes,
+                "actor" => $this->actor,
+            ]);
+            
+            $this->stats["updated"]++;
+            
+            // Nach dem Loggen für nächsten User leeren
             $this->changes = [];
-
-            $this->syncNames($adUser, $row, $username, $personalnummer);
-            $this->syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer);
-            $this->syncSimpleAttributes($adUser, $row, $username, $personalnummer);
-            $this->syncManager($adUser, $row, $username, $personalnummer);
-
-            if (!empty($this->changes)) 
-            {
-                Logger::db("ad", "info", "Benutzer '{$username}' aktualisiert", [
-                    "personalnummer" => $personalnummer,
-					"username" => $username,
-                    "changes" => $this->changes,
-                    "actor" => $this->actor,
-                ]);
-				
-                $this->stats["updated"]++;
-            } 
-            else 
-            {
-                $this->stats["no_changes"]++;
-            }
+        } 
+        else 
+        {
+            $this->stats["no_changes"]++;
         }
-
-		Logger::debug("SAP zu AD Sync abgeschlossen", [
-			"gefunden" => $this->stats["found"],
-			"nicht_gefunden" => $this->stats["not_found"],
-			"aktualisiert" => $this->stats["updated"],
-			"keine_aenderungen" => $this->stats["no_changes"],
-			"actor" => $this->actor,
-		]);
     }
 
     protected function syncNames($adUser, $row, $username, $personalnummer): void
