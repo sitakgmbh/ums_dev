@@ -11,11 +11,9 @@ use Livewire\Attributes\Layout;
 class TaskScheduler extends Component
 {
     public array $allowed = [
-        "sap:import",
-		"eroeffnungen:assign-license",
 		"ad:sync-users",
-		"sap:import",
-		"sap:ad-sync",
+		"sap:sync",
+		"eroeffnungen:assign-license",
         "graph:test-connection",
         // "test:do",
         // "test:do-error",
@@ -29,25 +27,105 @@ class TaskScheduler extends Component
         $this->loadTasks();
     }
 
-    private function loadTasks(): void
+private function loadTasks(): void
+{
+    $consoleFile = base_path("routes/console.php");
+    if (file_exists($consoleFile)) 
     {
-        $consoleFile = base_path("routes/console.php");
-
-        if (file_exists($consoleFile)) 
-		{
-            require $consoleFile;
-        }
-
-        $schedule = app(Schedule::class);
-        $events = $schedule->events();
-
-        $this->tasks = collect($events)->map(function ($event) {
-            return [
-                "command"  => $this->extractCommandName($event->command),
-                "nextRun"  => optional($event->nextRunDate(now()))?->format("d.m.Y H:i:s") ?? "Unbekannt",
-            ];
-        })->toArray();
+        require $consoleFile;
     }
+    
+    $schedule = app(Schedule::class);
+    $events = $schedule->events();
+    $all = Artisan::all();
+    
+    $this->tasks = collect($events)
+        ->map(function ($event) use ($all) {
+            $commandName = $this->extractCommandName($event->command);
+            $nextRun = optional($event->nextRunDate(now()))->format("Y-m-d H:i:s");
+            
+            return [
+                "command" => $commandName,
+                "description" => isset($all[$commandName]) 
+                    ? $all[$commandName]->getDescription() 
+                    : "Command nicht gefunden",
+                "nextRun" => $nextRun ? \Carbon\Carbon::parse($nextRun)->format("d.m.Y H:i:s") : "Unbekannt",
+                "nextRunSort" => $nextRun ?: "9999-12-31 23:59:59", // Für Sortierung
+                "expression" => $event->expression,
+                "interval" => $this->humanReadableInterval($event->expression),
+            ];
+        })
+        ->sortBy('nextRunSort') // Sortieren nach nächster Ausführung
+        ->values()
+        ->toArray();
+}
+
+private function humanReadableInterval(string $expression): string
+{
+    $parts = explode(' ', $expression);
+    if (count($parts) !== 5) return $expression;
+    
+    [$minute, $hour, $day, $month, $weekday] = $parts;
+    
+    // Jede Minute
+    if ($expression === '* * * * *') {
+        return 'Jede Minute';
+    }
+    
+    // Stündlich
+    if ($minute === '0' && $hour === '*' && $day === '*' && $month === '*' && $weekday === '*') {
+        return 'Stündlich';
+    }
+    
+    // Alle X Stunden
+    if (preg_match('/\*\/(\d+)/', $hour, $matches) && $minute === '0' && $day === '*' && $month === '*' && $weekday === '*') {
+        return "Alle {$matches[1]} Stunden";
+    }
+    
+    // Täglich um HH:MM
+    if ($day === '*' && $month === '*' && $weekday === '*' && is_numeric($hour) && is_numeric($minute)) {
+        $time = sprintf('%02d:%02d', $hour, $minute);
+        
+        if ($time === '00:00') {
+            return 'Täglich um Mitternacht';
+        }
+        
+        return "Täglich um {$time} Uhr";
+    }
+    
+    // Wöchentlich
+    if ($day === '*' && $month === '*' && $weekday !== '*' && is_numeric($hour) && is_numeric($minute)) {
+        $days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+        $dayName = $days[$weekday] ?? $weekday;
+        $time = sprintf('%02d:%02d', $hour, $minute);
+        return "Wöchentlich am {$dayName} um {$time} Uhr";
+    }
+    
+    // Monatlich
+    if (is_numeric($day) && $month === '*' && $weekday === '*' && is_numeric($hour) && is_numeric($minute)) {
+        $time = sprintf('%02d:%02d', $hour, $minute);
+        return "Monatlich am {$day}. Tag um {$time} Uhr";
+    }
+    
+    // Fallback
+    return $expression;
+}
+
+
+	private function parseCronExpression(string $expression): string
+	{
+		$parts = explode(' ', $expression);
+		if (count($parts) !== 5) return $expression;
+		
+		[$minute, $hour, $day, $month, $weekday] = $parts;
+		
+		// Täglich um HH:MM
+		if ($day === '*' && $month === '*' && $weekday === '*' && $hour !== '*' && $minute !== '*') {
+			return sprintf('Täglich um %s:%s Uhr', str_pad($hour, 2, '0', STR_PAD_LEFT), str_pad($minute, 2, '0', STR_PAD_LEFT));
+		}
+		
+		return $expression; // Fallback
+	}
 
     private function extractCommandName(string $command): string
     {
@@ -111,23 +189,25 @@ class TaskScheduler extends Component
         }
     }
 
-    public function render()
-    {
-        $all = Artisan::all();
+public function render()
+{
+    $all = Artisan::all();
+    
+    // Commands in der Reihenfolge des Arrays (nicht sortieren)
+    $commands = collect($this->allowed)
+        ->mapWithKeys(fn($cmd) => [
+            $cmd => [
+                "name" => $cmd,
+                "description" => isset($all[$cmd]) ? $all[$cmd]->getDescription() : "Command nicht gefunden",
+            ]
+        ])->toArray();
+    
+    return view("livewire.pages.admin.tools.task-scheduler", [
+        "commands" => $commands,
+        "tasks"    => $this->tasks,
+    ])->layoutData([
+        "pageTitle" => "Aufgabenplanung",
+    ]);
+}
 
-        $commands = collect($this->allowed)
-            ->mapWithKeys(fn($cmd) => [
-                $cmd => [
-                    "name" => $cmd,
-                    "description" => $all[$cmd]->getDescription() ?? "",
-                ]
-            ])->toArray();
-
-        return view("livewire.pages.admin.tools.task-scheduler", [
-            "commands" => $commands,
-            "tasks"    => $this->tasks,
-        ])->layoutData([
-            "pageTitle" => "Aufgabenplanung",
-        ]);
-    }
 }

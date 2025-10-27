@@ -12,7 +12,7 @@ use Throwable;
 class AssignLicense extends Command
 {
     protected $signature = 'eroeffnungen:assign-license';
-    protected $description = 'Weist Mitarbeitenden, die am heutigen Tag eintreten, eine M365-Lizenz zu (alle anderen entfernt).';
+    protected $description = 'Weist Mitarbeitenden, die am heutigen Tag eintreten, eine M365-Lizenz zu.';
 
     public function handle(): int
     {

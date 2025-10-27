@@ -14,23 +14,21 @@ use App\Utils\Logging\Logger;
 
 class SapImportService
 {
-    protected string $filePath;
     protected string $actor;
 
     public function __construct()
     {
-        $this->filePath = storage_path("app/private/export.csv");
         $this->actor = auth()->user()->username ?? "cli";
     }
 
-    public function import(): void
+    public function import(string $filePath): void
     {
-        if (!file_exists($this->filePath)) 
-		{
-            throw new \RuntimeException("SAP Export nicht gefunden: {$this->filePath}");
+        if (!file_exists($filePath)) 
+        {
+            throw new \RuntimeException("SAP Export nicht gefunden: {$filePath}");
         }
 
-		$raw = file($this->filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		$raw = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		$lines = $raw;
 		$header = array_map("trim", explode(";", array_shift($lines)));
 		$rows = [];
