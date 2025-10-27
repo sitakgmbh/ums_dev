@@ -162,6 +162,8 @@ class SapAdSyncService
 			}
 		}
 		
+		$this->syncMissingInitials($adUsers, $rows);
+		
 		// Logger::debug("═══════════════════════════════════════════════════════════════");
 		// Logger::debug("SAP zu AD Sync abgeschlossen", $this->stats);
 	}
@@ -663,4 +665,86 @@ class SapAdSyncService
 		
 		// Logger::debug("→ createMutation() Ende");
 	}
+
+	protected function syncMissingInitials($adUsers, $rows): void
+	{
+		Logger::debug("═══════════════════════════════════════════════════════════════");
+		Logger::debug("→ syncMissingInitials() Start - Suche nach Benutzern mit initials = 99999");
+		
+		// Alle AD-Benutzer mit initials = 99999 finden
+		$usersWithoutInitials = $adUsers->filter(function ($user) {
+			return $user->getFirstAttribute("initials") === "99999";
+		});
+		
+		Logger::debug("  Gefundene Benutzer mit initials = 99999: " . $usersWithoutInitials->count());
+		
+		foreach ($usersWithoutInitials as $adUser) {
+			$username = $adUser->getFirstAttribute("samaccountname");
+			$vornameAD = $adUser->getFirstAttribute("givenname");
+			$nachnameAD = $adUser->getFirstAttribute("sn");
+			$descriptionAD = $adUser->getFirstAttribute("description");
+			
+			Logger::debug("  Prüfe Benutzer: {$username}", [
+				"vorname_ad" => $vornameAD,
+				"nachname_ad" => $nachnameAD,
+				"description_ad" => $descriptionAD ?? "(leer)",
+			]);
+			
+			// Im SAP Export nach passendem Eintrag suchen
+			foreach ($rows as $row) {
+				$vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
+				$nachnameSAP = trim($row["d_name"] ?? "");
+				$batchbezSAP = trim($row["d_0032_batchbez"] ?? "");
+				
+				// Prüfen ob Vorname, Nachname und Description übereinstimmen
+				if ($vornameAD === $vornameSAP && 
+					$nachnameAD === $nachnameSAP && 
+					$descriptionAD === $batchbezSAP) 
+				{
+					$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
+					
+					Logger::debug("  ✓ Übereinstimmung gefunden!", [
+						"vorname" => $vornameSAP,
+						"nachname" => $nachnameSAP,
+						"description" => $batchbezSAP,
+						"personalnummer" => $personalnummer,
+					]);
+					
+					try {
+						// Personalnummer im AD setzen
+						// $adUser->setFirstAttribute("initials", $personalnummer);
+						// $adUser->save();
+						
+						Logger::db("ad", "info", "Personalnummer für Benutzer '{$username}' gesetzt", [
+							"username" => $username,
+							"alte_initials" => "99999",
+							"neue_initials" => $personalnummer,
+							"matched_by" => [
+								"vorname" => $vornameSAP,
+								"nachname" => $nachnameSAP,
+								"description" => $batchbezSAP,
+							],
+							"actor" => $this->actor,
+						]);
+						
+						$this->stats["initials_updated"] = ($this->stats["initials_updated"] ?? 0) + 1;
+						
+						// Nach erstem Match abbrechen
+						break;
+					} 
+					catch (\Exception $e) {
+						Logger::db("ad", "error", "Fehler beim Setzen der Personalnummer für Benutzer '{$username}'", [
+							"username" => $username,
+							"personalnummer" => $personalnummer,
+							"error" => $e->getMessage(),
+							"actor" => $this->actor,
+						]);
+					}
+				}
+			}
+		}
+		
+		Logger::debug("→ syncMissingInitials() Ende - " . ($this->stats["initials_updated"] ?? 0) . " Personalnummern gesetzt");
+	}
+
 }
