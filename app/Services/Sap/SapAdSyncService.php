@@ -117,6 +117,7 @@ public function sync(string $filePath): void
             $this->stats["no_changes"]++;
         }
     }
+}
 
     protected function syncNames($adUser, $row, $username, $personalnummer): void
     {
