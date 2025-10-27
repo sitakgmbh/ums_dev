@@ -11,13 +11,16 @@ class KeinePersonalnummer extends BaseModal
 
     protected function openWith(array $payload): bool
     {	
-		$this->userOhnePersNr = AdUser::whereNull("initials")
-            // ->where('is_existing', true)
-			->orderBy('display_name', 'asc')
+		$this->userOhnePersNr = AdUser::where(function($query) {
+				$query->whereNull("initials")
+					  ->orWhere("initials", "99999");
+			})
+			->where("is_existing", true)
+			->orderBy("display_name", "asc")
 			->get();
 
         $this->title = "Benutzer ohne Personalnummer";
-        $this->size = "lg";
+        $this->size = "full-width";
         $this->position = "centered";
         $this->backdrop = false;
         $this->headerBg = "bg-primary";

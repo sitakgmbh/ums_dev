@@ -1,6 +1,6 @@
-@extends('livewire.components.modals.base-modal')
+@extends("livewire.components.modals.base-modal")
 
-@section('body')
+@section("body")
     @if(empty($userOhnePersNr))
         <div class="alert alert-info mb-0">Keine Benutzer ohne Personalnummer gefunden.</div>
     @else
@@ -10,6 +10,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Beschreibung</th>
+						<th>Personalnummer</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -20,10 +21,11 @@
                         @endphp
                         <tr>
                             <td>
-                                <strong>{{ $adUser->display_name ?? '-' }}</strong><br>
-                                <small class="text-muted">{{ $adUser->username ?? '-' }}</small>
+                                <strong>{{ $adUser->display_name ?? "-" }}</strong><br>
+                                <small class="text-muted">{{ $adUser->username ?? "-" }}</small>
                             </td>
-                            <td>{{ $adUser->description ?? '-' }}</td>
+                            <td>{{ $adUser->description ?? "-" }}</td>
+                            <td>{{ $adUser->initials ?? "-" }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -38,6 +40,6 @@
     @endif
 @endsection
 
-@section('footer')
+@section("footer")
     <button type="button" class="btn btn-secondary" wire:click="closeModal">Schliessen</button>
 @endsection
