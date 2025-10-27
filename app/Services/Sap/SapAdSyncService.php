@@ -77,6 +77,16 @@ class SapAdSyncService
 			$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
 			if (empty($personalnummer)) continue;
 
+			Logger::debug("═══════════════════════════════════════════════════════════════");
+			Logger::debug("Verarbeite Personalnummer: {$personalnummer}");
+			Logger::debug("SAP-Rohdaten:", [
+				"d_pernr" => $row["d_pernr"] ?? "",
+				"d_vname" => $row["d_vname"] ?? "",
+				"d_rufnm" => $row["d_rufnm"] ?? "",
+				"d_name" => $row["d_name"] ?? "",
+				"d_leader" => $row["d_leader"] ?? "",
+			]);
+
 			$adUser = $adUsers->first(function ($user) use ($personalnummer) {
 				return $user->getFirstAttribute("initials") === $personalnummer;
 			});
@@ -88,13 +98,18 @@ class SapAdSyncService
 				continue;
 			}		
 
-			Logger::debug("AD-User: {$adUser->lastname} {$adUser->firstname}");
-
 			$username = $adUser->getFirstAttribute("samaccountname");
+			Logger::debug("AD-User gefunden: {$username}");
+			Logger::debug("AD-Aktuelle Werte:", [
+				"givenname" => $adUser->getFirstAttribute("givenname"),
+				"sn" => $adUser->getFirstAttribute("sn"),
+				"displayname" => $adUser->getFirstAttribute("displayname"),
+				"cn" => $adUser->getFirstAttribute("cn"),
+				"userprincipalname" => $adUser->getFirstAttribute("userprincipalname"),
+			]);
+
 			$this->stats["found"]++;
 			
-			$userChanges = [];
-
 			$this->syncNames($adUser, $row, $username, $personalnummer);
 			$this->syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer);
 			$this->syncSimpleAttributes($adUser, $row, $username, $personalnummer);
@@ -102,6 +117,11 @@ class SapAdSyncService
 
 			if (!empty($this->changes)) 
 			{
+				Logger::debug("✓ Änderungen für '{$username}' erkannt:", [
+					"anzahl_änderungen" => count($this->changes),
+					"änderungen" => $this->changes,
+				]);
+				
 				Logger::db("ad", "info", "Benutzer '{$username}' aktualisiert", [
 					"personalnummer" => $personalnummer,
 					"username" => $username,
@@ -116,17 +136,27 @@ class SapAdSyncService
 			} 
 			else 
 			{
+				Logger::debug("○ Keine Änderungen für '{$username}' erforderlich");
 				$this->stats["no_changes"]++;
 			}
 		}
+		
+		Logger::debug("═══════════════════════════════════════════════════════════════");
+		Logger::debug("SAP zu AD Sync abgeschlossen", $this->stats);
 	}
 
     protected function syncNames($adUser, $row, $username, $personalnummer): void
     {
+		Logger::debug("→ syncNames() Start");
+		
         $vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
         $nachnameSAP = trim($row["d_name"] ?? "");
 		
-		Logger::debug("Verarbeitung {$nachnameSAP} {$vornameSAP}");
+		Logger::debug("  SAP-Namen ermittelt:", [
+			"vorname_sap" => $vornameSAP,
+			"nachname_sap" => $nachnameSAP,
+			"rufname_vorhanden" => !empty($row["d_rufnm"]),
+		]);
 		
         $vornameChanged = false;
         $nachnameChanged = false;
@@ -134,11 +164,22 @@ class SapAdSyncService
         // Vorname prüfen und anpassen
         $vornameAD = $adUser->getFirstAttribute("givenname");
         
+		Logger::debug("  Vorname-Vergleich:", [
+			"ad_wert" => $vornameAD ?? "(null)",
+			"sap_wert" => $vornameSAP,
+			"sind_gleich" => $vornameAD === $vornameSAP,
+			"sap_ist_leer" => empty($vornameSAP),
+		]);
+		
         if ($vornameAD !== $vornameSAP && !empty($vornameSAP)) 
         {
             try 
             {
-				Logger::debug("Änderung Vorname");
+				Logger::debug("  ✓ Vorname wird geändert:", [
+					"von" => $vornameAD ?? "(null)",
+					"nach" => $vornameSAP,
+				]);
+				
 				// $adUser->setFirstAttribute("givenname", $vornameSAP);
                 // $adUser->save();
                 
@@ -159,15 +200,30 @@ class SapAdSyncService
                 ]);
             }
         }
+		else 
+		{
+			Logger::debug("  ○ Vorname bleibt unverändert");
+		}
 
         // Nachname prüfen und anpassen
         $nachnameAD = $adUser->getFirstAttribute("sn");
+
+		Logger::debug("  Nachname-Vergleich:", [
+			"ad_wert" => $nachnameAD ?? "(null)",
+			"sap_wert" => $nachnameSAP,
+			"sind_gleich" => $nachnameAD === $nachnameSAP,
+			"sap_ist_leer" => empty($nachnameSAP),
+		]);
 
         if ($nachnameAD !== $nachnameSAP && !empty($nachnameSAP)) 
         {
             try 
 			{
-                Logger::debug("Änderung Nachname");
+                Logger::debug("  ✓ Nachname wird geändert:", [
+					"von" => $nachnameAD ?? "(null)",
+					"nach" => $nachnameSAP,
+				]);
+				
 				// $adUser->setFirstAttribute("sn", $nachnameSAP);
                 // $adUser->save();
                 
@@ -188,7 +244,16 @@ class SapAdSyncService
                 ]);
             }
         }
+		else 
+		{
+			Logger::debug("  ○ Nachname bleibt unverändert");
+		}
         
+		Logger::debug("→ syncNames() Ende - Änderungen:", [
+			"vorname_geändert" => $vornameChanged,
+			"nachname_geändert" => $nachnameChanged,
+		]);
+		
 		/*
         // Mutation erstellen wenn mindestens ein Name geändert wurde
 		if ($vornameChanged || $nachnameChanged) 
@@ -204,16 +269,29 @@ class SapAdSyncService
 
     protected function syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer): void
     {
+		Logger::debug("→ syncDisplayNameAndUpn() Start");
+		
         $vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
         $nachnameSAP = trim($row["d_name"] ?? "");
         $displayName = trim($vornameSAP . " " . $nachnameSAP);
         $displayNameAD = $adUser->getFirstAttribute("displayname");
 		
+		Logger::debug("  DisplayName-Vergleich:", [
+			"ad_wert" => $displayNameAD ?? "(null)",
+			"sap_wert_berechnet" => $displayName,
+			"sind_gleich" => $displayNameAD === $displayName,
+			"sap_ist_leer" => empty($displayName),
+		]);
+		
         if ($displayNameAD !== $displayName && !empty($displayName)) 
         {
             try 
 			{
-                Logger::debug("Änderung DisplayName");
+                Logger::debug("  ✓ DisplayName wird geändert:", [
+					"von" => $displayNameAD ?? "(null)",
+					"nach" => $displayName,
+				]);
+				
 				// $adUser->setFirstAttribute("displayname", $displayName);
                 // $adUser->save();
                 
@@ -232,24 +310,42 @@ class SapAdSyncService
                 ]);
             }
         }
+		else 
+		{
+			Logger::debug("  ○ DisplayName bleibt unverändert");
+		}
 
         $nameAD = $adUser->getFirstAttribute("cn");
+		
+		Logger::debug("  CN-Vergleich:", [
+			"ad_wert" => $nameAD ?? "(null)",
+			"sap_wert_berechnet" => $displayName,
+			"sind_gleich" => $nameAD === $displayName,
+			"sap_ist_leer" => empty($displayName),
+		]);
 		
         if ($nameAD !== $displayName && !empty($displayName)) 
         {
             try 
 			{
-                Logger::debug("Benutzer umbenennen");
-				// $adUser->rename($displayName);
-
-                $currentUpn = $adUser->getFirstAttribute("userprincipalname");
+				$currentUpn = $adUser->getFirstAttribute("userprincipalname");
                 $upnDomain = explode("@", $currentUpn)[1];
                 
                 $cleanFirstName = UserHelper::normalize($vornameSAP);
                 $cleanLastName = UserHelper::normalize($nachnameSAP);
                 $newUpn = strtolower("{$cleanFirstName}.{$cleanLastName}@{$upnDomain}");
                 
-                // $adUser->setFirstAttribute("userprincipalname", $newUpn);
+				Logger::debug("  ✓ CN und UPN werden geändert:", [
+					"cn_von" => $nameAD ?? "(null)",
+					"cn_nach" => $displayName,
+					"upn_von" => $currentUpn,
+					"upn_nach" => $newUpn,
+					"clean_firstname" => $cleanFirstName,
+					"clean_lastname" => $cleanLastName,
+				]);
+				
+                // $adUser->rename($displayName);
+				// $adUser->setFirstAttribute("userprincipalname", $newUpn);
                 // $adUser->save();
 
                 $this->changes[] = [
@@ -273,25 +369,51 @@ class SapAdSyncService
                 ]);
             }
         }
+		else 
+		{
+			Logger::debug("  ○ CN bleibt unverändert (UPN-Update übersprungen)");
+		}
+		
+		Logger::debug("→ syncDisplayNameAndUpn() Ende");
     }
 
     protected function syncSimpleAttributes($adUser, $row, $username, $personalnummer): void
     {
+		Logger::debug("→ syncSimpleAttributes() Start");
+		
+		$attributeChanges = 0;
+		
 		foreach ($this->attributeMap as $adAttr => $config) 
 		{
 			$sapValue = trim($row[$config["sap"]] ?? "");
 			$adValue = $adUser->getFirstAttribute($adAttr);
+			
+			Logger::debug("  Attribut-Prüfung: {$adAttr}", [
+				"sap_feld" => $config["sap"],
+				"ad_wert" => $adValue ?? "(null)",
+				"sap_wert" => $sapValue ?: "(leer)",
+				"regel_if_sap_and_ad_not_empty" => isset($config["if_sap_and_ad_not_empty"]),
+				"regel_if_sap_not_empty" => isset($config["if_sap_not_empty"]),
+			]);
 
             // Nur ändern wenn SAP und AD nicht leer sind
             if (isset($config["if_sap_and_ad_not_empty"]) && $config["if_sap_and_ad_not_empty"]) 
             {
-                if (empty($adValue) && empty($sapValue)) continue;
+                if (empty($adValue) && empty($sapValue)) 
+				{
+					Logger::debug("    → Übersprungen: Beide Werte leer (Regel: if_sap_and_ad_not_empty)");
+					continue;
+				}
             }
 
             // Nur ändern wenn SAP nicht leer ist
             if (isset($config["if_sap_not_empty"]) && $config["if_sap_not_empty"]) 
             {
-                if (empty($sapValue)) continue;
+                if (empty($sapValue)) 
+				{
+					Logger::debug("    → Übersprungen: SAP-Wert leer (Regel: if_sap_not_empty)");
+					continue;
+				}
             }
 
 			// Vergleich und Update
@@ -301,12 +423,18 @@ class SapAdSyncService
 				{
 					if (empty($sapValue)) 
 					{
-						Logger::debug("Änderung Attribut {$adValue} auf null");
+						Logger::debug("    ✓ Attribut wird auf NULL gesetzt:", [
+							"alter_wert" => $adValue,
+							"neuer_wert" => "(null)",
+						]);
 						// $adUser->setFirstAttribute($adAttr, null);
 					} 
 					else 
 					{
-						Logger::debug("Änderung Attribut {$adValue} auf {$adValue}");
+						Logger::debug("    ✓ Attribut wird geändert:", [
+							"von" => $adValue ?? "(null)",
+							"nach" => $sapValue,
+						]);
 						// $adUser->setFirstAttribute($adAttr, $sapValue);
 					}
 					
@@ -316,7 +444,9 @@ class SapAdSyncService
 						"attribute" => $adAttr,
 						"old" => $adValue,
 						"new" => $sapValue ?: null,
-					]; 
+					];
+					
+					$attributeChanges++;
                 } 
 				catch (\Exception $e) 
 				{
@@ -327,29 +457,67 @@ class SapAdSyncService
                     ]);
                 }
 			}
+			else 
+			{
+				Logger::debug("    ○ Attribut bleibt unverändert (Werte sind identisch)");
+			}
         }
+		
+		Logger::debug("→ syncSimpleAttributes() Ende - {$attributeChanges} Attribute geändert");
     }
 
     protected function syncManager($adUser, $row, $username, $personalnummer): void
     {
+		Logger::debug("→ syncManager() Start");
+		
         $managerPersNr = ltrim(trim($row["d_leader"] ?? ""), "0");
         
-        if (empty($managerPersNr)) return;
+		Logger::debug("  Manager-Personalnummer aus SAP:", [
+			"rohdaten" => $row["d_leader"] ?? "(nicht vorhanden)",
+			"bereinigt" => $managerPersNr ?: "(leer)",
+		]);
+		
+        if (empty($managerPersNr)) 
+		{
+			Logger::debug("  ○ Kein Manager in SAP definiert - Übersprungen");
+			return;
+		}
 
         $managerUser = LdapUser::query()
             ->whereEquals("initials", $managerPersNr)
             ->first();
 
-        if (!$managerUser) return;
+        if (!$managerUser) 
+		{
+			Logger::debug("  ✗ Manager-Benutzer nicht gefunden:", [
+				"gesuchte_personalnummer" => $managerPersNr,
+			]);
+			return;
+		}
 
         $currentManagerDn = $adUser->getFirstAttribute("manager");
         $newManagerDn = $managerUser->getFirstAttribute("distinguishedname");
+		
+		$managerUsername = $managerUser->getFirstAttribute("samaccountname");
+		$managerName = $managerUser->getFirstAttribute("displayname");
+		
+		Logger::debug("  Manager-Vergleich:", [
+			"manager_gefunden" => "{$managerName} ({$managerUsername})",
+			"aktueller_manager_dn" => $currentManagerDn ?? "(null)",
+			"neuer_manager_dn" => $newManagerDn,
+			"sind_gleich" => $currentManagerDn === $newManagerDn,
+		]);
 
         if ($currentManagerDn !== $newManagerDn) 
         {
             try 
 			{
-                Logger::debug("Änderung Manager");
+                Logger::debug("  ✓ Manager wird geändert:", [
+					"von_dn" => $currentManagerDn ?? "(null)",
+					"nach_dn" => $newManagerDn,
+					"manager" => "{$managerName} ({$managerUsername})",
+				]);
+				
 				// $adUser->setFirstAttribute("manager", $newManagerDn);
                 // $adUser->save();
                 
@@ -368,10 +536,22 @@ class SapAdSyncService
                 ]);
             }
         }
+		else 
+		{
+			Logger::debug("  ○ Manager bleibt unverändert");
+		}
+		
+		Logger::debug("→ syncManager() Ende");
     }
 
 	protected function createMutation(string $username, ?string $vorname, ?string $nachname): void
 	{
+		Logger::debug("→ createMutation() Start", [
+			"username" => $username,
+			"vorname" => $vorname ?? "(nicht gesetzt)",
+			"nachname" => $nachname ?? "(nicht gesetzt)",
+		]);
+		
 		try {
 			$adUser = AdUser::where("username", $username)->first();
 			
@@ -405,15 +585,13 @@ class SapAdSyncService
 				$data["nachname"] = $nachname;
 			}
 			
+			Logger::debug("  Mutation-Daten:", $data);
+			
 			Mutation::create($data);
 			
 			$this->stats["mutations_created"]++;
 			
-			Logger::debug("Mutation für '{$username}' erstellt", [
-				"username" => $username,
-				"vorname_neu" => $vorname,
-				"nachname_neu" => $nachname,
-			]);
+			Logger::debug("  ✓ Mutation erfolgreich erstellt");
 		} 
 		catch (\Exception $e) {
 			Logger::db("ad", "error", "Fehler beim Erstellen der Mutation für '{$username}'", [
@@ -422,5 +600,7 @@ class SapAdSyncService
 				"actor" => $this->actor,
 			]);
 		}
+		
+		Logger::debug("→ createMutation() Ende");
 	}
 }
