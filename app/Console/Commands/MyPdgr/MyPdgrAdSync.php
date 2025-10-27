@@ -12,7 +12,7 @@ class MyPdgrAdSync extends Command
     protected $signature = "mypdgr:sync";
     protected $description = "Synchronisiert Addressdaten aus MyPDGR ins AD.";
     
-    public function handle(MyPdgrAdSyncService $syncService): int
+    public function handle(MyPdgrAdSyncService $syncService)
     {       
         try 
         {            
