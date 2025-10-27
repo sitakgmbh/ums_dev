@@ -50,7 +50,21 @@ class SapAdSyncService
 
 		$this->changes = [];
 
-		$raw = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		$content = file_get_contents($filePath);
+
+		// Encoding erkennen und nach UTF-8 konvertieren
+		$encoding = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true);
+		Logger::debug("Datei-Encoding erkannt: " . ($encoding ?: "unbekannt"));
+
+		if ($encoding && $encoding !== 'UTF-8') {
+			$content = mb_convert_encoding($content, 'UTF-8', $encoding);
+			Logger::debug("Datei konvertiert von {$encoding} nach UTF-8");
+		}
+
+		$raw = explode("\n", $content);
+		$raw = array_map('trim', $raw);
+		$raw = array_filter($raw);
+
 		$lines = $raw;
 		$header = array_map("trim", explode(";", array_shift($lines)));
 		$rows = [];
