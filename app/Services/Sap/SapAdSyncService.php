@@ -86,7 +86,9 @@ class SapAdSyncService
 				Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
 				$this->stats["not_found"]++;
 				continue;
-			}
+			}		
+
+			Logger::debug("AD-User: {$adUser->lastname} {$adUser->firstname}");
 
 			$username = $adUser->getFirstAttribute("samaccountname");
 			$this->stats["found"]++;
