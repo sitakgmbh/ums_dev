@@ -73,7 +73,7 @@ class MyPdgrAdSyncService
             }
 
             // MyPdgr-Eintrag suchen
-            $MyPdgrEntry = collect($MyPdgrUsers)->firstWhere('per_Pdgrnummer', $initials);
+            $MyPdgrEntry = collect($MyPdgrUsers)->firstWhere('per_pdgrnummer', $initials);
 
             if (!$MyPdgrEntry) {
                 Logger::warning("Kein MyPdgr-Eintrag für {$displayName} ({$username}) mit Personalnummer {$initials} gefunden");
@@ -82,7 +82,7 @@ class MyPdgrAdSyncService
             }
 
 			Logger::debug("  ✓ MyPdgr-Eintrag gefunden", [
-				"per_Pdgrnummer" => $MyPdgrEntry['per_Pdgrnummer'],
+				"per_pdgrnummer" => $MyPdgrEntry['per_pdgrnummer'],
 				"per_adresszusatz" => $MyPdgrEntry['per_adresszusatz'] ?? "",
 				"per_adresse" => $MyPdgrEntry['per_adresse'] ?? "",
 				"per_plz" => $MyPdgrEntry['per_plz'] ?? "",
