@@ -84,7 +84,7 @@ class SapAdSyncService
 			"actor" => $this->actor,
 		]);
 
-		$rows = array_slice($rows, 0, 1);
+		// $rows = array_slice($rows, 0, 1);
 
 		foreach ($rows as $row) 
 		{
