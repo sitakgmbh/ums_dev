@@ -13,6 +13,7 @@ enum LogCategory: string
 	case Antraege = "antraege";
 	case Sap = "sap";
 	case Otobo = "otobo";
+	case MyPdgr = "mypdgr";
 	case Graph = "graph";
 
     public function label(): string
@@ -27,6 +28,7 @@ enum LogCategory: string
 			self::Sap => "SAP",
 			self::Antraege => "Anträge",
 			self::Otobo => "Otobo",
+			self::MyPdgr => "MyPDGR",
 			self::Graph => "Microsoft Graph",
 			self::Ad => "Active Directory",
         };
