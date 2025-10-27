@@ -41,88 +41,90 @@ class SapAdSyncService
         ];
     }
 
-public function sync(string $filePath): void
-{
-    if (!file_exists($filePath)) 
-    {
-        throw new \RuntimeException("SAP Export nicht gefunden: {$filePath}");
-    }
+	public function sync(string $filePath): void
+	{
+		if (!file_exists($filePath)) 
+		{
+			throw new \RuntimeException("SAP Export nicht gefunden: {$filePath}");
+		}
 
-    $this->changes = [];
+		$this->changes = [];
 
-    $raw = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $lines = $raw;
-    $header = array_map("trim", explode(";", array_shift($lines)));
-    $rows = [];
+		$raw = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		$lines = $raw;
+		$header = array_map("trim", explode(";", array_shift($lines)));
+		$rows = [];
 
-    foreach ($lines as $line) 
-    {
-        $values = array_map("trim", explode(";", $line));
-        if (count($values) !== count($header)) continue;
-        $rows[] = array_combine($header, $values);
-    }
+		foreach ($lines as $line) 
+		{
+			$values = array_map("trim", explode(";", $line));
+			if (count($values) !== count($header)) continue;
+			$rows[] = array_combine($header, $values);
+		}
 
-    $adUsers = LdapUser::get();
-    
-    Logger::debug("SAP zu AD Sync gestartet", [
-        "csv_rows" => count($rows),
-        "ad_users" => $adUsers->count(),
-        "actor" => $this->actor,
-    ]);
+		$adUsers = LdapUser::get();
+		
+		Logger::debug("SAP zu AD Sync gestartet", [
+			"csv_rows" => count($rows),
+			"ad_users" => $adUsers->count(),
+			"actor" => $this->actor,
+		]);
 
-    $rows = array_slice($rows, 0, 1);
+		$rows = array_slice($rows, 0, 1);
 
-    foreach ($rows as $row) 
-    {
-        $personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
-        if (empty($personalnummer)) continue;
+		foreach ($rows as $row) 
+		{
+			$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
+			if (empty($personalnummer)) continue;
 
-        $adUser = $adUsers->first(function ($user) use ($personalnummer) {
-            return $user->getFirstAttribute("initials") === $personalnummer;
-        });
+			$adUser = $adUsers->first(function ($user) use ($personalnummer) {
+				return $user->getFirstAttribute("initials") === $personalnummer;
+			});
 
-        if (!$adUser) 
-        {
-            Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
-            $this->stats["not_found"]++;
-            continue;
-        }
+			if (!$adUser) 
+			{
+				Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
+				$this->stats["not_found"]++;
+				continue;
+			}
 
-        $username = $adUser->getFirstAttribute("samaccountname");
-        $this->stats["found"]++;
-        
-        $userChanges = [];
+			$username = $adUser->getFirstAttribute("samaccountname");
+			$this->stats["found"]++;
+			
+			$userChanges = [];
 
-        $this->syncNames($adUser, $row, $username, $personalnummer);
-        $this->syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer);
-        $this->syncSimpleAttributes($adUser, $row, $username, $personalnummer);
-        $this->syncManager($adUser, $row, $username, $personalnummer);
+			$this->syncNames($adUser, $row, $username, $personalnummer);
+			$this->syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer);
+			$this->syncSimpleAttributes($adUser, $row, $username, $personalnummer);
+			$this->syncManager($adUser, $row, $username, $personalnummer);
 
-        if (!empty($this->changes)) 
-        {
-            Logger::db("ad", "info", "Benutzer '{$username}' aktualisiert", [
-                "personalnummer" => $personalnummer,
-                "username" => $username,
-                "changes" => $this->changes,
-                "actor" => $this->actor,
-            ]);
-            
-            $this->stats["updated"]++;
-            
-            // Nach dem Loggen für nächsten User leeren
-            $this->changes = [];
-        } 
-        else 
-        {
-            $this->stats["no_changes"]++;
-        }
-    }
-}
+			if (!empty($this->changes)) 
+			{
+				Logger::db("ad", "info", "Benutzer '{$username}' aktualisiert", [
+					"personalnummer" => $personalnummer,
+					"username" => $username,
+					"changes" => $this->changes,
+					"actor" => $this->actor,
+				]);
+				
+				$this->stats["updated"]++;
+				
+				// Nach dem Loggen für nächsten User leeren
+				$this->changes = [];
+			} 
+			else 
+			{
+				$this->stats["no_changes"]++;
+			}
+		}
+	}
 
     protected function syncNames($adUser, $row, $username, $personalnummer): void
     {
         $vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
         $nachnameSAP = trim($row["d_name"] ?? "");
+		
+		Logger::debug("Verarbeitung {$nachnameSAP} {$vornameSAP}");
 		
         $vornameChanged = false;
         $nachnameChanged = false;
@@ -134,7 +136,8 @@ public function sync(string $filePath): void
         {
             try 
             {
-                // $adUser->setFirstAttribute("givenname", $vornameSAP);
+				Logger::debug("Änderung Vorname");
+				// $adUser->setFirstAttribute("givenname", $vornameSAP);
                 // $adUser->save();
                 
                 $this->changes[] = [
@@ -162,7 +165,8 @@ public function sync(string $filePath): void
         {
             try 
 			{
-                // $adUser->setFirstAttribute("sn", $nachnameSAP);
+                Logger::debug("Änderung Nachname");
+				// $adUser->setFirstAttribute("sn", $nachnameSAP);
                 // $adUser->save();
                 
                 $this->changes[] = [
@@ -207,7 +211,8 @@ public function sync(string $filePath): void
         {
             try 
 			{
-                // $adUser->setFirstAttribute("displayname", $displayName);
+                Logger::debug("Änderung DisplayName");
+				// $adUser->setFirstAttribute("displayname", $displayName);
                 // $adUser->save();
                 
                 $this->changes[] = [
@@ -232,7 +237,8 @@ public function sync(string $filePath): void
         {
             try 
 			{
-                // $adUser->rename($displayName);
+                Logger::debug("Benutzer umbenennen");
+				// $adUser->rename($displayName);
 
                 $currentUpn = $adUser->getFirstAttribute("userprincipalname");
                 $upnDomain = explode("@", $currentUpn)[1];
@@ -293,10 +299,12 @@ public function sync(string $filePath): void
 				{
 					if (empty($sapValue)) 
 					{
+						Logger::debug("Änderung Attribut {$adValue} auf null");
 						// $adUser->setFirstAttribute($adAttr, null);
 					} 
 					else 
 					{
+						Logger::debug("Änderung Attribut {$adValue} auf {$adValue}");
 						// $adUser->setFirstAttribute($adAttr, $sapValue);
 					}
 					
@@ -339,7 +347,8 @@ public function sync(string $filePath): void
         {
             try 
 			{
-                // $adUser->setFirstAttribute("manager", $newManagerDn);
+                Logger::debug("Änderung Manager");
+				// $adUser->setFirstAttribute("manager", $newManagerDn);
                 // $adUser->save();
                 
                 $this->changes[] = [
