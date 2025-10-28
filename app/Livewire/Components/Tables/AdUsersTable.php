@@ -59,18 +59,32 @@ class AdUsersTable extends BaseTable
         return "asc";
     }
 
-    protected function applyFilters(Builder $query): void
-    {
-        // Filter: Gelöschte ausblenden (Standard)
-        if (!$this->showDeleted) {
-            $query->where('is_existing', true);
-        }
+	protected function applyFilters(Builder $query): void
+	{
+		// Filter: Gelöschte ausblenden (Standard)
+		if (!$this->showDeleted) 
+		{
+			$query->where('is_existing', true);
+		}
 
-        // Filter: Deaktivierte ausblenden (wenn showInactive = false)
-        if (!$this->showInactive) {
-            $query->where('is_enabled', true);
-        }
-    }
+		// Filter: Deaktivierte ausblenden (wenn showInactive = false)
+		if (!$this->showInactive) 
+		{
+			$query->where('is_enabled', true);
+		}
+
+		if ($this->search) 
+		{
+			$search = strtolower($this->search);
+
+			$query->where(function ($q) use ($search) {
+				$q->orWhereRaw("LOWER(display_name) LIKE ?", ["%{$search}%"])
+				  ->orWhereRaw("LOWER(firstname) LIKE ?", ["%{$search}%"])
+				  ->orWhereRaw("LOWER(lastname) LIKE ?", ["%{$search}%"])
+				  ->orWhereRaw("LOWER(username) LIKE ?", ["%{$search}%"]);
+			});
+		}
+	}
 
     protected function getColumnBadges(): array
     {
