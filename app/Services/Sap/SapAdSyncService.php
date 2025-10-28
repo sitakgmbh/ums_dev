@@ -53,16 +53,17 @@ class SapAdSyncService
 		$content = file_get_contents($filePath);
 
 		// Encoding erkennen und nach UTF-8 konvertieren
-		$encoding = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true);
+		$encoding = mb_detect_encoding($content, ["UTF-8", "ISO-8859-1", "Windows-1252", "ASCII"], true);
 		// Logger::debug("Datei-Encoding erkannt: " . ($encoding ?: "unbekannt"));
 
-		if ($encoding && $encoding !== 'UTF-8') {
-			$content = mb_convert_encoding($content, 'UTF-8', $encoding);
+		if ($encoding && $encoding !== "UTF-8") 
+		{
+			$content = mb_convert_encoding($content, "UTF-8", $encoding);
 			// Logger::debug("Datei konvertiert von {$encoding} nach UTF-8");
 		}
 
 		$raw = explode("\n", $content);
-		$raw = array_map('trim', $raw);
+		$raw = array_map("trim", $raw);
 		$raw = array_filter($raw);
 
 		$lines = $raw;
@@ -78,11 +79,13 @@ class SapAdSyncService
 
 		$adUsers = LdapUser::get();
 		
+		/*
 		Logger::debug("SAP zu AD Sync gestartet", [
 			"csv_rows" => count($rows),
 			"ad_users" => $adUsers->count(),
 			"actor" => $this->actor,
 		]);
+		*/
 
 		// $rows = array_slice($rows, 0, 1);
 
@@ -109,7 +112,7 @@ class SapAdSyncService
 
 			if (!$adUser) 
 			{
-				Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
+				// Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
 				$this->stats["not_found"]++;
 				continue;
 			}		
@@ -143,7 +146,7 @@ class SapAdSyncService
 				]);
 				*/
 				
-				Logger::db("ad", "info", "Benutzer '{$username}' aktualisiert", [
+				Logger::db("sap", "info", "Benutzer '{$username}' aktualisiert", [
 					"personalnummer" => $personalnummer,
 					"username" => $username,
 					"changes" => $this->changes,
@@ -222,7 +225,7 @@ class SapAdSyncService
             } 
             catch (\Exception $e) 
             {
-                Logger::db("ad", "error", "Fehler beim Aktualisieren des Vornamens des Benutzers '{$username}'", [
+                Logger::db("sap", "error", "Fehler beim Aktualisieren des Vornamens des Benutzers '{$username}'", [
                     "username" => $username,
                     "error" => $e->getMessage(),
                     "actor" => $this->actor,
@@ -270,7 +273,7 @@ class SapAdSyncService
             } 
 			catch (\Exception $e) 
 			{
-                Logger::db("ad", "error", "Fehler beim Aktualisieren des Nachnamens des Benutzers '{$username}'", [
+                Logger::db("sap", "error", "Fehler beim Aktualisieren des Nachnamens des Benutzers '{$username}'", [
                     "username" => $username,
                     "error" => $e->getMessage(),
                     "actor" => $this->actor,
@@ -342,7 +345,7 @@ class SapAdSyncService
             } 
 			catch (\Exception $e) 
 			{
-                Logger::db("ad", "error", "Fehler beim Aktualisieren des Anzeigenamens des Benutzers '{$username}'", [
+                Logger::db("sap", "error", "Fehler beim Aktualisieren des Anzeigenamens des Benutzers '{$username}'", [
                     "username" => $username,
                     "error" => $e->getMessage(),
                     "actor" => $this->actor,
@@ -405,7 +408,7 @@ class SapAdSyncService
             } 
 			catch (\Exception $e) 
 			{
-                Logger::db("ad", "error", "Fehler beim Umbenennen oder Aktualisieren des UPNs des Benutzers '{$username}'", [
+                Logger::db("sap", "error", "Fehler beim Umbenennen oder Aktualisieren des UPNs des Benutzers '{$username}'", [
                     "username" => $username,
                     "error" => $e->getMessage(),
                     "actor" => $this->actor,
@@ -501,7 +504,7 @@ class SapAdSyncService
                 } 
 				catch (\Exception $e) 
 				{
-					Logger::db("ad", "error", "Fehler bei beim Aktualisieren des Attributs '{$adAttr}' des Benutzers '{$username}'", [
+					Logger::db("sap", "error", "Fehler bei beim Aktualisieren des Attributs '{$adAttr}' des Benutzers '{$username}'", [
                         "username" => $username,
                         "error" => $e->getMessage(),
                         "actor" => $this->actor,
@@ -589,7 +592,7 @@ class SapAdSyncService
             } 
 			catch (\Exception $e) 
 			{
-                Logger::db("ad", "error", "Fehler bei beim Aktualisieren des Attributs 'Manager' des Benutzers '{$username}'", [
+                Logger::db("sap", "error", "Fehler bei beim Aktualisieren des Attributs 'Manager' des Benutzers '{$username}'", [
                     "username" => $username,
                     "error" => $e->getMessage(),
                     "actor" => $this->actor,
@@ -614,17 +617,20 @@ class SapAdSyncService
 		]);
 		*/
 		
-		try {
+		try 
+		{
 			$adUser = AdUser::where("username", $username)->first();
 			
-			if (!$adUser) {
+			if (!$adUser) 
+			{
 				Logger::warning("AdUser '{$username}' nicht in Datenbank gefunden, Mutation konnte nicht erstellt werden");
 				return;
 			}
 			
 			$mailDomain = null;
 			
-			if ($adUser->email) {
+			if ($adUser->email) 
+			{
 				$parts = explode("@", $adUser->email);
 				$mailDomain = isset($parts[1]) ? "@" . $parts[1] : null;
 			}
@@ -639,11 +645,13 @@ class SapAdSyncService
 			];
 			
 			// Nur geänderte Felder hinzufügen
-			if ($vorname !== null) {
+			if ($vorname !== null) 
+			{
 				$data["vorname"] = $vorname;
 			}
 			
-			if ($nachname !== null) {
+			if ($nachname !== null) 
+			{
 				$data["nachname"] = $nachname;
 			}
 			
@@ -655,8 +663,9 @@ class SapAdSyncService
 			
 			// Logger::debug("  ✓ Mutation erfolgreich erstellt");
 		} 
-		catch (\Exception $e) {
-			Logger::db("ad", "error", "Fehler beim Erstellen der Mutation für '{$username}'", [
+		catch (\Exception $e) 
+		{
+			Logger::db("sap", "error", "Fehler beim Erstellen der Mutation für '{$username}'", [
 				"username" => $username,
 				"error" => $e->getMessage(),
 				"actor" => $this->actor,
@@ -668,15 +677,15 @@ class SapAdSyncService
 
 	protected function syncMissingInitials($adUsers, $rows): void
 	{
-		Logger::debug("═══════════════════════════════════════════════════════════════");
-		Logger::debug("→ syncMissingInitials() Start - Suche nach Benutzern mit initials = 99999");
+		// Logger::debug("═══════════════════════════════════════════════════════════════");
+		// Logger::debug("→ syncMissingInitials() Start - Suche nach Benutzern mit initials = 99999");
 		
 		// Alle AD-Benutzer mit initials = 99999 finden
 		$usersWithoutInitials = $adUsers->filter(function ($user) {
 			return $user->getFirstAttribute("initials") === "99999";
 		});
 		
-		Logger::debug("  Gefundene Benutzer mit initials = 99999: " . $usersWithoutInitials->count());
+		// Logger::debug("  Gefundene Benutzer mit initials = 99999: " . $usersWithoutInitials->count());
 		
 		foreach ($usersWithoutInitials as $adUser) {
 			$username = $adUser->getFirstAttribute("samaccountname");
@@ -684,38 +693,42 @@ class SapAdSyncService
 			$nachnameAD = $adUser->getFirstAttribute("sn");
 			$descriptionAD = $adUser->getFirstAttribute("description");
 			
+			/*
 			Logger::debug("  Prüfe Benutzer: {$username}", [
 				"vorname_ad" => $vornameAD,
 				"nachname_ad" => $nachnameAD,
 				"description_ad" => $descriptionAD ?? "(leer)",
 			]);
+			*/
 			
 			// Im SAP Export nach passendem Eintrag suchen
-			foreach ($rows as $row) {
+			foreach ($rows as $row) 
+			{
 				$vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
 				$nachnameSAP = trim($row["d_name"] ?? "");
 				$batchbezSAP = trim($row["d_0032_batchbez"] ?? "");
 				
 				// Prüfen ob Vorname, Nachname und Description übereinstimmen
-				if ($vornameAD === $vornameSAP && 
-					$nachnameAD === $nachnameSAP && 
-					$descriptionAD === $batchbezSAP) 
+				if ($vornameAD === $vornameSAP && $nachnameAD === $nachnameSAP && $descriptionAD === $batchbezSAP) 
 				{
 					$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
 					
+					/*
 					Logger::debug("  ✓ Übereinstimmung gefunden!", [
 						"vorname" => $vornameSAP,
 						"nachname" => $nachnameSAP,
 						"description" => $batchbezSAP,
 						"personalnummer" => $personalnummer,
 					]);
+					*/
 					
-					try {
+					try 
+					{
 						// Personalnummer im AD setzen
 						// $adUser->setFirstAttribute("initials", $personalnummer);
 						// $adUser->save();
 						
-						Logger::db("ad", "info", "Personalnummer für Benutzer '{$username}' gesetzt", [
+						Logger::db("sap", "info", "Personalnummer für Benutzer '{$username}' gesetzt", [
 							"username" => $username,
 							"alte_initials" => "99999",
 							"neue_initials" => $personalnummer,
@@ -732,8 +745,9 @@ class SapAdSyncService
 						// Nach erstem Match abbrechen
 						break;
 					} 
-					catch (\Exception $e) {
-						Logger::db("ad", "error", "Fehler beim Setzen der Personalnummer für Benutzer '{$username}'", [
+					catch (\Exception $e) 
+					{
+						Logger::db("sap", "error", "Fehler beim Setzen der Personalnummer für Benutzer '{$username}'", [
 							"username" => $username,
 							"personalnummer" => $personalnummer,
 							"error" => $e->getMessage(),
@@ -744,7 +758,7 @@ class SapAdSyncService
 			}
 		}
 		
-		Logger::debug("→ syncMissingInitials() Ende - " . ($this->stats["initials_updated"] ?? 0) . " Personalnummern gesetzt");
+		// Logger::debug("→ syncMissingInitials() Ende - " . ($this->stats["initials_updated"] ?? 0) . " Personalnummern gesetzt");
 	}
 
 }

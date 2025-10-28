@@ -61,16 +61,14 @@ class AdUsersTable extends BaseTable
 
 	protected function applyFilters(Builder $query): void
 	{
-		// Filter: Gelöschte ausblenden (Standard)
 		if (!$this->showDeleted) 
 		{
-			$query->where('is_existing', true);
+			$query->where("is_existing", true);
 		}
 
-		// Filter: Deaktivierte ausblenden (wenn showInactive = false)
 		if (!$this->showInactive) 
 		{
-			$query->where('is_enabled', true);
+			$query->where("is_enabled", true);
 		}
 
 		if ($this->search) 

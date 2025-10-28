@@ -57,6 +57,9 @@
 					<div class="pt-2 text-start">
 						<h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-3">Intern</h6>
 						<dl class="row mb-0">
+							<dt class="col-3">Pers. Nr.</dt>
+							<dd class="col-9">{{ $adUser->initials ?? '-' }}</dd>
+							
 							<dt class="col-3">Arbeitsort</dt>
 							<dd class="col-9">{{ $adUser->arbeitsort?->name ?? '-' }}</dd>
 
