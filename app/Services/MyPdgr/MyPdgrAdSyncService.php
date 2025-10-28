@@ -13,12 +13,12 @@ class MyPdgrAdSyncService
     protected array $changes;
     protected int $minExpectedRows = 1000;
 
-    protected array $attributeMap = [
-        "Office" => "per_adresszusatz",
-        "StreetAddress" => "per_adresse",
-        "PostalCode" => "per_plz",
-        "City" => "per_ort",
-    ];
+	protected array $attributeMap = [
+		"physicaldeliveryofficename" => "per_adresszusatz", // Office
+		"streetaddress" => "per_adresse", // StreetAddress  
+		"postalcode" => "per_plz",// PostalCode
+		"l" => "per_ort", // City (l = locality)
+	];
 
     public function __construct()
     {
@@ -55,7 +55,7 @@ class MyPdgrAdSyncService
 
         foreach ($adUsers as $adUser) 
 		{
-            $this->changes = [];
+			$this->changes = [];
 
             $username = $adUser->getFirstAttribute("samaccountname");
             $displayName = $adUser->getFirstAttribute("displayname");
@@ -244,13 +244,15 @@ class MyPdgrAdSyncService
 			{
                 try 
 				{
+					/*
 					Logger::debug("    ✓ Attribut wird geändert:", [
                         "von" => $adValue ?? "(null)",
                         "nach" => $MyPdgrValue,
                     ]);
+					*/
 
-                    // $adUser->setFirstAttribute(strtolower($adAttr), $MyPdgrValue);
-                    // $adUser->save();
+                    $adUser->setFirstAttribute(strtolower($adAttr), $MyPdgrValue);
+                    $adUser->save();
 
                     $this->changes[] = [
                         "attribute" => $adAttr,
