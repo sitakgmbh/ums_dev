@@ -244,12 +244,10 @@ class MyPdgrAdSyncService
 			{
                 try 
 				{
-                    /*
 					Logger::debug("    ✓ Attribut wird geändert:", [
                         "von" => $adValue ?? "(null)",
                         "nach" => $MyPdgrValue,
                     ]);
-					*/
 
                     // $adUser->setFirstAttribute(strtolower($adAttr), $MyPdgrValue);
                     // $adUser->save();
