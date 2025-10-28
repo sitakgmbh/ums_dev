@@ -13,6 +13,7 @@ class TaskScheduler extends Component
     public array $allowed = [
 		"ad:sync-users",
 		"sap:sync",
+		"mypdgr:sync",
 		"eroeffnungen:assign-license",
         "graph:test-connection",
         // "test:do",

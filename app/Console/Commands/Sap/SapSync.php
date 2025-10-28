@@ -11,7 +11,7 @@ use App\Services\Sap\SapAdSyncService;
 class SapSync extends Command
 {
     protected $signature = "sap:sync";
-    protected $description = "Importiert den SAP-Export, aktualisiert Stammdaten inkl. Konstellationen und synchronisiert die Änderungen ins AD.";
+    protected $description = "Importiert den SAP-Export, aktualisiert Stammdaten inkl. Konstellationen und synchronisiert die Änderungen ins AD. Führt abschliessend einen Personalnummerabgleich durch.";
     
     public function handle(SapImportService $importService, SapAdSyncService $adSyncService): int
     {
