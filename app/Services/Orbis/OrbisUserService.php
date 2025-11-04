@@ -22,6 +22,11 @@ class OrbisUserService
         }
 
         $employee = $this->helper->getEmployeeByUserId($user['id']);
+        
+        if (!$employee) {
+            throw new InvalidArgumentException("Kein Mitarbeiter für Benutzer {$username} gefunden.");
+        }
+        
         $details = $this->helper->getEmployeeDetails($employee);
 
         return [
@@ -34,6 +39,8 @@ class OrbisUserService
     {
         $today = Carbon::now()->toDateString();
         $log = [];
+
+        $this->validateInput($input);
 
         $baseUsername = strtoupper($input['base_username']);
         $username = $this->findAvailableUsername($baseUsername, $log);
@@ -55,17 +62,90 @@ class OrbisUserService
         $employeeId = $this->extractLocationId($response['headers'], 'employees');
         $log[] = "Mitarbeiter erstellt (ID: {$employeeId})";
 
+        // Facility Assignment
+        $this->client->send("resources/external/employeefacilityassignments", "POST", [
+            'employee' => ['id' => $employeeId],
+            'facility' => ['id' => 1],
+            'type' => ['id' => 41280],
+            'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']]
+        ]);
+        $log[] = "Zuweisung Facility an Mitarbeiter abgeschlossen";
+
+        // Employee Function (optional)
+        $employeeFunctionId = $input['employee_function'] ?? null;
+        if ($employeeFunctionId) {
+            $this->client->send("resources/external/employeeemployeefunctionassignments", "POST", [
+                'employee' => ['id' => $employeeId],
+                'employeefunction' => ['id' => (int)$employeeFunctionId],
+                'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']]
+            ]);
+            $log[] = "Zuweisung Mitarbeiterfunktion abgeschlossen";
+        } else {
+            $log[] = "Keine Mitarbeiterfunktion angegeben";
+        }
+
         $userPayload = [
             'name' => $username,
             'password' => base64_encode($input['password']),
-            'mustchangepassword' => true,
             'canchangepassword' => true,
+            'mustchangepassword' => true,
+            'passwordrefreshinterval' => 120,
+            'locked' => false,
             'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']],
+            'facility' => ['id' => 1],
+            'languages' => [
+                'language' => [['id' => 'de_CH'], ['id' => 'de']]
+            ]
         ];
 
         $response = $this->client->send("resources/external/employees/{$employeeId}/users", "POST", $userPayload, true);
         $userId = $this->extractLocationId($response['headers'], 'users');
         $log[] = "Benutzer erstellt (ID: {$userId})";
+
+        // User Facility Assignment
+        $this->client->send("resources/external/userfacilityassignments", "POST", [
+            'user' => ['id' => $userId],
+            'facility' => ['id' => 1],
+            'type' => ['id' => 41280],
+            'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']]
+        ]);
+        $log[] = "Zuweisung Facility an Benutzer abgeschlossen";
+
+        // Organizational Units
+        foreach ($input['orgunits'] ?? [] as $unit) {
+            $assignment = [
+                'employee' => ['id' => $employeeId],
+                'organizationalunit' => ['id' => $unit['id']],
+                'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']]
+            ];
+            
+            if (!empty($unit['rank'])) {
+                $assignment['rank'] = ['id' => (int)$unit['rank']];
+            }
+            
+            $this->client->send("resources/external/employeeorganizationalunitassignments", "POST", $assignment);
+        }
+        $log[] = "Zuweisung Organisationseinheiten abgeschlossen";
+
+        // Organizational Unit Groups
+        foreach ($input['orggroups'] ?? [] as $groupId) {
+            $this->client->send("resources/external/employeeorganizationalunitgroupassignments", "POST", [
+                'employee' => ['id' => $employeeId],
+                'organizationalunitgroup' => ['id' => $groupId],
+                'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']]
+            ]);
+        }
+        $log[] = "OE-Gruppen zugewiesen";
+
+        // User Roles
+        foreach ($input['roles'] ?? [] as $roleId) {
+            $this->client->send("resources/external/userroleassignments", "POST", [
+                'user' => ['id' => $userId],
+                'role' => ['id' => $roleId],
+                'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']]
+            ]);
+        }
+        $log[] = "Zuweisung Benutzerrollen abgeschlossen";
 
         return ['success' => true, 'log' => $log];
     }
@@ -74,6 +154,8 @@ class OrbisUserService
     {
         $today = Carbon::now()->toDateString();
         $log = [];
+
+        $this->validateInput($input);
 
         $username = strtoupper($input['username']);
         $user = $this->helper->getUserByUsername($username);
@@ -84,17 +166,76 @@ class OrbisUserService
 
         $userId = $user['id'];
         $employee = $this->helper->getEmployeeByUserId($userId);
+        
+        if (!$employee) {
+            throw new InvalidArgumentException("Kein zugeordneter Mitarbeiter gefunden.");
+        }
+        
         $employeeId = $employee['id'];
 
-        foreach ($input['roles'] ?? [] as $roleId) {
+        $orgUnits = $input['orgunits'] ?? [];
+        $orgGroups = $input['orggroups'] ?? [];
+        $roles = $input['roles'] ?? [];
+        $employeeFunctionId = $input['employeeFunction'] ?? null;
+        $permissionMode = $input['permissionMode'] ?? 'replace';
+
+        // Replace mode: disable all existing assignments
+        if ($permissionMode === 'replace') {
+            $log[] = "Existierende Zuweisungen werden vollständig ersetzt";
+            
+            $this->disableAllEmployeeOrganizationalUnits($employeeId);
+            $this->disableAllEmployeeOrganizationalUnitGroups($employeeId);
+            $this->disableAllUserRoles($userId);
+        } else {
+            $log[] = "Ergänzungsmodus – bestehende Zuweisungen bleiben erhalten";
+        }
+
+        // Organizational Units
+        foreach ($orgUnits as $unit) {
+            $assignment = [
+                'employee' => ['id' => $employeeId],
+                'organizationalunit' => ['id' => $unit['id']],
+                'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']]
+            ];
+            
+            if (!empty($unit['rank'])) {
+                $assignment['rank'] = ['id' => (int)$unit['rank']];
+            }
+            
+            $this->client->send("resources/external/employeeorganizationalunitassignments", "POST", $assignment);
+        }
+        $log[] = "Organisationseinheiten verarbeitet";
+
+        // Organizational Unit Groups
+        foreach ($orgGroups as $groupId) {
+            $this->client->send("resources/external/employeeorganizationalunitgroupassignments", "POST", [
+                'employee' => ['id' => $employeeId],
+                'organizationalunitgroup' => ['id' => $groupId],
+                'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']]
+            ]);
+        }
+        $log[] = "Organisationseinheitengruppen verarbeitet";
+
+        // User Roles
+        foreach ($roles as $roleId) {
             $this->client->send("resources/external/userroleassignments", "POST", [
                 'user' => ['id' => $userId],
                 'role' => ['id' => $roleId],
-                'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']],
+                'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']]
             ]);
         }
+        $log[] = "Benutzerrollen verarbeitet";
 
-        $log[] = "Benutzerrollen aktualisiert.";
+        // Employee Function (optional)
+        if ($employeeFunctionId) {
+            $this->client->send("resources/external/employeeemployeefunctionassignments", "POST", [
+                'employee' => ['id' => $employeeId],
+                'employeefunction' => ['id' => (int)$employeeFunctionId],
+                'validityperiod' => ['from' => ['date' => $today, 'handling' => 'inclusive']]
+            ]);
+            $log[] = "Mitarbeiterfunktion aktualisiert";
+        }
+
         return ['success' => true, 'log' => $log];
     }
 
@@ -127,6 +268,105 @@ class OrbisUserService
             }
             $log[] = "Benutzername '{$test}' ist bereits vergeben.";
             $counter++;
+        }
+    }
+
+    protected function validateInput(array $input): void
+    {
+        if (!isset($input['roles']) || !is_array($input['roles']) || count($input['roles']) === 0) {
+            throw new InvalidArgumentException("Es muss mindestens eine Rolle ausgewählt werden.");
+        }
+
+        $hasOrgUnits = isset($input['orgunits']) && is_array($input['orgunits']) && count($input['orgunits']) > 0;
+        $hasOrgGroups = isset($input['orggroups']) && is_array($input['orggroups']) && count($input['orggroups']) > 0;
+
+        if (!$hasOrgUnits && !$hasOrgGroups) {
+            throw new InvalidArgumentException("Bitte wähle mindestens eine Organisationseinheit oder eine Organisationseinheitgruppe aus.");
+        }
+    }
+
+    protected function disableAllEmployeeOrganizationalUnits(int $employeeId): void
+    {
+        $today = Carbon::now()->toDateString();
+        $endpoint = "resources/external/employees/{$employeeId}/organizationalunitassignments?referencedate={$today}";
+        
+        try {
+            $response = $this->client->send($endpoint);
+            
+            foreach ($response['employeeorganizationalunitassignment'] ?? [] as $assignment) {
+                if (!empty($assignment['id']) && $assignment['id'] > 0) {
+                    $this->setAssignmentEndDate('employeeorganizationalunitassignments', (int)$assignment['id']);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Fehler beim Deaktivieren von Organisationseinheiten', ['error' => $e->getMessage()]);
+        }
+    }
+
+    protected function disableAllEmployeeOrganizationalUnitGroups(int $employeeId): void
+    {
+        $today = Carbon::now()->toDateString();
+        $endpoint = "resources/external/employees/{$employeeId}/organizationalunitgroupassignments?referencedate={$today}";
+        
+        try {
+            $response = $this->client->send($endpoint);
+            
+            foreach ($response['employeeorganizationalunitgroupassignment'] ?? [] as $assignment) {
+                if (!empty($assignment['id']) && $assignment['id'] > 0) {
+                    $this->setAssignmentEndDate('employeeorganizationalunitgroupassignments', (int)$assignment['id']);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Fehler beim Deaktivieren von Organisationseinheitengruppen', ['error' => $e->getMessage()]);
+        }
+    }
+
+    protected function disableAllUserRoles(int $userId): void
+    {
+        $today = Carbon::now()->toDateString();
+        $endpoint = "resources/external/users/{$userId}/roleassignments?referencedate={$today}";
+        
+        try {
+            $response = $this->client->send($endpoint);
+            
+            foreach ($response['userroleassignment'] ?? [] as $assignment) {
+                if (!empty($assignment['id']) && $assignment['id'] > 0) {
+                    $this->setAssignmentEndDate('userroleassignments', (int)$assignment['id']);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Fehler beim Deaktivieren von Benutzerrollen', ['error' => $e->getMessage()]);
+        }
+    }
+
+    protected function setAssignmentEndDate(string $resource, int $id): void
+    {
+        $endpoint = "resources/external/{$resource}/{$id}";
+        $yesterday = Carbon::now()->subDay()->toDateString();
+
+        try {
+            // Load existing entry
+            $existing = $this->client->send($endpoint);
+
+            if (!is_array($existing) || empty($existing['id'])) {
+                return;
+            }
+
+            // Set valid from date
+            $from = $existing['validityperiod']['from'] ?? ['date' => '2000-01-01'];
+
+            // Build updated assignment
+            $payload = $existing;
+            $payload['canceled'] = true;
+            $payload['validityperiod'] = [
+                'from' => $from,
+                'to' => ['date' => $yesterday]
+            ];
+
+            // Send PUT with full payload
+            $this->client->send("resources/external/{$resource}", "PUT", $payload);
+        } catch (\Exception $e) {
+            Log::warning("Fehler beim Setzen des Enddatums für {$resource}/{$id}", ['error' => $e->getMessage()]);
         }
     }
 }
