@@ -430,7 +430,7 @@ class SapAdSyncService
 		
 		foreach ($this->attributeMap as $adAttr => $config) 
 		{
-			$sapValue = trim($row[$config["sap"]] ?? "");
+			$sapValue = trim($row[$sapField] ?? "") ?: null;
 			$adValue = $adUser->getFirstAttribute($adAttr);
 			
 			/*
