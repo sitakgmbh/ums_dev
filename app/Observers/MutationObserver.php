@@ -34,16 +34,13 @@ class MutationObserver
             "form_data"   => $this->filterData($mutation->getAttributes(), $mutation),
         ]);
 
-		// Bestätigunsmail versenden
-        $to = "patrik@sitak.ch"; // später ersetzen durch $mutation->antragsteller?->email ?: $fallback;
-        $cc = [];
-		
-        if ($mutation->bezugsperson?->email) 
+		// Bestätigungsmail versenden nur wenn Vorname und Nachname leer sind
+		if (empty($mutation->vorname) && empty($mutation->nachname)) 
 		{
-            // $cc[] = $mutation->bezugsperson->email;
-        }
-
-		SafeMail::send(new Bestaetigung($mutation), $to, $cc);
+			$to = "patrik@sitak.ch"; // später ersetzen durch $mutation->antragsteller?->email ?: $fallback;
+			$cc = [];
+			SafeMail::send(new Bestaetigung($mutation), $to, $cc);
+		}
 
 		// Ticket erstellen
         app(OtoboService::class)->createTicket($mutation);
