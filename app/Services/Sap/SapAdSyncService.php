@@ -311,7 +311,7 @@ class SapAdSyncService
 		
         $vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
         $nachnameSAP = trim($row["d_name"] ?? "");
-        $displayName = trim($nachnameSAP . " " . $vornameSAP);
+		$displayName = trim($nachnameSAP . " " . $vornameSAP . " / " . $username);
         $displayNameAD = $adUser->getFirstAttribute("displayname");
 		
 		/*
