@@ -29,7 +29,7 @@
                     <span wire:loading.remove wire:target="searchUser">Suchen</span>
                     <span wire:loading wire:target="searchUser">
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        Suche...
+                        Bitte warten...
                     </span>
                 </button>
             </div>
@@ -37,7 +37,7 @@
 
         {{-- Error Message --}}
         @if($errorMessage)
-            <div class="alert alert-danger" role="alert">
+            <div class="alert alert-danger mb-0" role="alert">
                 {!! $errorMessage !!}
             </div>
         @endif
@@ -263,6 +263,18 @@
     <button type="button" class="btn btn-secondary" wire:click="closeModal">
         {{ $userFound ? 'Abbrechen' : 'Schliessen' }}
     </button>
+
+	<button
+		type="button"
+		class="btn btn-warning me-2"
+		wire:click="markAsComplete"
+		wire:loading.attr="disabled"
+	>
+		<span wire:loading.remove wire:target="markAsComplete">Als erledigt markieren</span>
+		<span wire:loading wire:target="markAsComplete">
+			<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+		</span>
+	</button>
     
     @if($userFound)
         <button

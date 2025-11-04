@@ -195,7 +195,19 @@ class Kis extends BaseModal
     {
         $this->processSubmit($service);
     }
-    
+
+    public function markAsComplete(): void
+    {
+        if ($this->entry) {
+            $this->entry->update(['status_kis' => 2]);
+            $this->successMessage = "Status erfolgreich auf 'Erledigt' gesetzt.";
+            $this->dispatch('kis-updated');
+            
+            // Close modal after short delay
+            $this->dispatch('close-modal-delayed');
+        }
+    }
+
     protected function processSubmit(OrbisUserService $service): void
     {
         try {
