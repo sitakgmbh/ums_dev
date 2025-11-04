@@ -32,7 +32,7 @@ class ApiAuthSwitcher
             $ldapUser = LdapUser::query()->where('samaccountname', '=', $username)->first();
 			
             if (! $ldapUser) {
-                return response()->json(['message' => 'User not found in AD'], 403);
+                return response()->json(['message' => 'Ungültiges Login'], 403);
             }
 
             $provisioner = app(LdapProvisioningService::class);
