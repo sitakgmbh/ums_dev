@@ -212,8 +212,8 @@ class SapAdSyncService
 				]);
 				*/
 				
-				// $adUser->setFirstAttribute("givenname", $vornameSAP);
-                // $adUser->save();
+				$adUser->setFirstAttribute("givenname", $vornameSAP);
+                $adUser->save();
                 
                 $this->changes[] = [
                     "attribute" => "givenname",
@@ -260,8 +260,8 @@ class SapAdSyncService
 				]);
 				*/
 				
-				// $adUser->setFirstAttribute("sn", $nachnameSAP);
-                // $adUser->save();
+				$adUser->setFirstAttribute("sn", $nachnameSAP);
+                $adUser->save();
                 
                 $this->changes[] = [
                     "attribute" => "sn",
@@ -292,7 +292,6 @@ class SapAdSyncService
 		]);
 		*/
 		
-		/*
         // Mutation erstellen wenn mindestens ein Name geändert wurde
 		if ($vornameChanged || $nachnameChanged) 
 		{
@@ -302,7 +301,6 @@ class SapAdSyncService
 				$nachnameChanged ? $nachnameSAP : null
 			);
 		}
-		*/
     }
 
 	protected function syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer): void
@@ -335,8 +333,8 @@ class SapAdSyncService
 				]);
 				*/
 				
-				// $adUser->setFirstAttribute("displayname", $displayName);
-				// $adUser->save();
+				$adUser->setFirstAttribute("displayname", $displayName);
+				$adUser->save();
 				
 				$this->changes[] = [
 					"attribute" => "displayname",
@@ -391,9 +389,9 @@ class SapAdSyncService
 				]);
 				*/
 				
-				// $adUser->rename($newCN);
-				// $adUser->setFirstAttribute("userprincipalname", $newUpn);
-				// $adUser->save();
+				$adUser->rename($newCN);
+				$adUser->setFirstAttribute("userprincipalname", $newUpn);
+				$adUser->save();
 
 				$this->changes[] = [
 					"attribute" => "cn",
@@ -479,7 +477,7 @@ class SapAdSyncService
 						]);
 						*/
 						
-						// $adUser->setFirstAttribute($adAttr, null);
+						$adUser->setFirstAttribute($adAttr, null);
 					} 
 					else 
 					{
@@ -490,7 +488,7 @@ class SapAdSyncService
 						]);
 						*/
 						
-						// $adUser->setFirstAttribute($adAttr, $sapValue);
+						$adUser->setFirstAttribute($adAttr, $sapValue);
 					}
 					
 					// $adUser->save();
@@ -582,8 +580,8 @@ class SapAdSyncService
 				]);
 				*/
 				
-				// $adUser->setFirstAttribute("manager", $newManagerDn);
-                // $adUser->save();
+				$adUser->setFirstAttribute("manager", $newManagerDn);
+                $adUser->save();
                 
                 $this->changes[] = [
                     "attribute" => "manager",
@@ -726,8 +724,8 @@ class SapAdSyncService
 					try 
 					{
 						// Personalnummer im AD setzen
-						// $adUser->setFirstAttribute("initials", $personalnummer);
-						// $adUser->save();
+						$adUser->setFirstAttribute("initials", $personalnummer);
+						$adUser->save();
 						
 						Logger::db("sap", "info", "Personalnummer für Benutzer '{$username}' gesetzt", [
 							"username" => $username,
