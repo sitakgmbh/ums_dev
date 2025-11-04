@@ -2,7 +2,7 @@
 namespace App\Services\Orbis;
 
 use Illuminate\Support\Facades\Log;
-use App\Services\Orbis\Exceptions\OrbisValidationException;
+use InvalidArgumentException;
 use Carbon\Carbon;
 
 class OrbisUserService
@@ -18,7 +18,7 @@ class OrbisUserService
         $user = $this->helper->getUserByUsername($username);
 
         if (!$user) {
-            throw new OrbisValidationException("Benutzer nicht gefunden: {$username}");
+            throw new InvalidArgumentException("Benutzer nicht gefunden: {$username}");
         }
 
         $employee = $this->helper->getEmployeeByUserId($user['id']);
@@ -79,7 +79,7 @@ class OrbisUserService
         $user = $this->helper->getUserByUsername($username);
 
         if (!$user) {
-            throw new OrbisValidationException("Benutzer {$username} nicht gefunden.");
+            throw new InvalidArgumentException("Benutzer {$username} nicht gefunden.");
         }
 
         $userId = $user['id'];
