@@ -43,7 +43,7 @@ class Kis extends BaseModal
             return false;
         }
 
-        $this->entry = Eroeffnung::find($payload['entryId']);
+		$this->entry = Eroeffnung::with('vorlageBenutzer')->find($payload['entryId']);
         
         if (!$this->entry) {
             return false;
@@ -66,10 +66,14 @@ class Kis extends BaseModal
         // Set modal type from payload or default to 'eroeffnung'
         $this->modalType = $payload['type'] ?? 'eroeffnung';
         
-        // Pre-fill username from entry
-        $this->username = strtoupper($this->entry->berechtigung ?? '');
+        // Pre-fill username from vorlageBenutzer relation or fallback to berechtigung
+        if ($this->entry->vorlageBenutzer && $this->entry->vorlageBenutzer->username) {
+            $this->username = strtoupper($this->entry->vorlageBenutzer->username);
+        } else {
+            $this->username = strtoupper($this->entry->berechtigung ?? '');
+        }
         
-        // Set permission mode based on zweite_abteilung
+        // Set permission mode based on abteilung2_id
         $this->permissionMode = $this->shouldUseMergeMode() ? 'merge' : 'replace';
         
         // Auto-select employee function if SAP Leistungserbringer
@@ -89,7 +93,7 @@ class Kis extends BaseModal
     
     protected function shouldUseMergeMode(): bool
     {
-        $zweiteAbteilung = $this->entry->zweite_abteilung ?? null;
+        $zweiteAbteilung = $this->entry->abteilung2_id ?? null;
         return !empty($zweiteAbteilung) && $zweiteAbteilung !== '0' && $zweiteAbteilung !== 0;
     }
 

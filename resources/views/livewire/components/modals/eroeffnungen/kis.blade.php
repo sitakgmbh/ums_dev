@@ -28,9 +28,7 @@
                 >
                     <span wire:loading.remove wire:target="searchUser">Suchen</span>
                     <span wire:loading wire:target="searchUser">
-                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        Bitte warten...
-                    </span>
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Bitte warten...</span>
                 </button>
             </div>
         </div>
