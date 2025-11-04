@@ -491,7 +491,7 @@ class SapAdSyncService
 						$adUser->setFirstAttribute($adAttr, $sapValue);
 					}
 					
-					// $adUser->save();
+					$adUser->save();
 					
 					$this->changes[] = [
 						"attribute" => $adAttr,
