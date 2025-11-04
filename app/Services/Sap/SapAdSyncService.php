@@ -305,14 +305,15 @@ class SapAdSyncService
 		*/
     }
 
-    protected function syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer): void
-    {
+	protected function syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer): void
+	{
 		// Logger::debug("→ syncDisplayNameAndUpn() Start");
 		
-        $vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
-        $nachnameSAP = trim($row["d_name"] ?? "");
-		$displayName = trim($nachnameSAP . " " . $vornameSAP . " / " . $username);
-        $displayNameAD = $adUser->getFirstAttribute("displayname");
+		$vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
+		$nachnameSAP = trim($row["d_name"] ?? "");
+		$displayName = trim($nachnameSAP . " " . $vornameSAP);
+		$displayNameAD = $adUser->getFirstAttribute("displayname");
+		$newCN = trim($nachnameSAP . " " . $vornameSAP . " / " . $username);
 		
 		/*
 		Logger::debug("  DisplayName-Vergleich:", [
@@ -323,11 +324,11 @@ class SapAdSyncService
 		]);
 		*/
 		
-        if ($displayNameAD !== $displayName && !empty($displayName)) 
-        {
-            try 
+		if ($displayNameAD !== $displayName && !empty($displayName)) 
+		{
+			try 
 			{
-                /*
+				/*
 				Logger::debug("  ✓ DisplayName wird geändert:", [
 					"von" => $displayNameAD ?? "(null)",
 					"nach" => $displayName,
@@ -335,54 +336,54 @@ class SapAdSyncService
 				*/
 				
 				// $adUser->setFirstAttribute("displayname", $displayName);
-                // $adUser->save();
-                
-                $this->changes[] = [
-                    "attribute" => "displayname",
-                    "old" => $displayNameAD,
-                    "new" => $displayName,
-                ];
-            } 
+				// $adUser->save();
+				
+				$this->changes[] = [
+					"attribute" => "displayname",
+					"old" => $displayNameAD,
+					"new" => $displayName,
+				];
+			} 
 			catch (\Exception $e) 
 			{
-                Logger::db("sap", "error", "Fehler beim Aktualisieren des Anzeigenamens des Benutzers '{$username}'", [
-                    "username" => $username,
-                    "error" => $e->getMessage(),
-                    "actor" => $this->actor,
-                ]);
-            }
-        }
+				Logger::db("sap", "error", "Fehler beim Aktualisieren des Anzeigenamens des Benutzers '{$username}'", [
+					"username" => $username,
+					"error" => $e->getMessage(),
+					"actor" => $this->actor,
+				]);
+			}
+		}
 		else 
 		{
 			// Logger::debug("  ○ DisplayName bleibt unverändert");
 		}
 
-        $nameAD = $adUser->getFirstAttribute("cn");
+		$nameAD = $adUser->getFirstAttribute("cn");
 		
 		/*
 		Logger::debug("  CN-Vergleich:", [
 			"ad_wert" => $nameAD ?? "(null)",
-			"sap_wert_berechnet" => $displayName,
-			"sind_gleich" => $nameAD === $displayName,
-			"sap_ist_leer" => empty($displayName),
+			"sap_wert_berechnet" => $newCN,
+			"sind_gleich" => $nameAD === $newCN,
+			"sap_ist_leer" => empty($newCN),
 		]);
 		*/
 		
-        if ($nameAD !== $displayName && !empty($displayName)) 
-        {
-            try 
+		if ($nameAD !== $newCN && !empty($newCN)) 
+		{
+			try 
 			{
 				$currentUpn = $adUser->getFirstAttribute("userprincipalname");
-                $upnDomain = explode("@", $currentUpn)[1];
-                
-                $cleanFirstName = UserHelper::normalize($vornameSAP);
-                $cleanLastName = UserHelper::normalize($nachnameSAP);
-                $newUpn = strtolower("{$cleanFirstName}.{$cleanLastName}@{$upnDomain}");
-                
+				$upnDomain = explode("@", $currentUpn)[1];
+				
+				$cleanFirstName = UserHelper::normalize($vornameSAP);
+				$cleanLastName = UserHelper::normalize($nachnameSAP);
+				$newUpn = strtolower("{$cleanFirstName}.{$cleanLastName}@{$upnDomain}");
+				
 				/*
 				Logger::debug("  ✓ CN und UPN werden geändert:", [
 					"cn_von" => $nameAD ?? "(null)",
-					"cn_nach" => $displayName,
+					"cn_nach" => $newCN,
 					"upn_von" => $currentUpn,
 					"upn_nach" => $newUpn,
 					"clean_firstname" => $cleanFirstName,
@@ -390,38 +391,38 @@ class SapAdSyncService
 				]);
 				*/
 				
-                // $adUser->rename($displayName);
+				// $adUser->rename($newCN);
 				// $adUser->setFirstAttribute("userprincipalname", $newUpn);
-                // $adUser->save();
+				// $adUser->save();
 
-                $this->changes[] = [
-                    "attribute" => "cn",
-                    "old" => $nameAD,
-                    "new" => $displayName,
-                ];
+				$this->changes[] = [
+					"attribute" => "cn",
+					"old" => $nameAD,
+					"new" => $newCN,
+				];
 				
-                $this->changes[] = [
-                    "attribute" => "userprincipalname",
-                    "old" => $currentUpn,
-                    "new" => $newUpn,
-                ];
-            } 
+				$this->changes[] = [
+					"attribute" => "userprincipalname",
+					"old" => $currentUpn,
+					"new" => $newUpn,
+				];
+			} 
 			catch (\Exception $e) 
 			{
-                Logger::db("sap", "error", "Fehler beim Umbenennen oder Aktualisieren des UPNs des Benutzers '{$username}'", [
-                    "username" => $username,
-                    "error" => $e->getMessage(),
-                    "actor" => $this->actor,
-                ]);
-            }
-        }
+				Logger::db("sap", "error", "Fehler beim Umbenennen oder Aktualisieren des UPNs des Benutzers '{$username}'", [
+					"username" => $username,
+					"error" => $e->getMessage(),
+					"actor" => $this->actor,
+				]);
+			}
+		}
 		else 
 		{
 			// Logger::debug("  ○ CN bleibt unverändert (UPN-Update übersprungen)");
 		}
 		
 		// Logger::debug("→ syncDisplayNameAndUpn() Ende");
-    }
+	}
 
     protected function syncSimpleAttributes($adUser, $row, $username, $personalnummer): void
     {
