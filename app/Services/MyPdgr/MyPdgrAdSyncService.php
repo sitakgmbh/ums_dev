@@ -115,7 +115,7 @@ class MyPdgrAdSyncService
 				]);
 				*/
 
-                Logger::db("mypdgr", "info", "Benutzer '{$username}' aktualisiert (MyPdgr-Sync)", [
+                Logger::db("mypdgr", "info", "Benutzer '{$username}' aktualisiert", [
                     "personalnummer" => $initials,
                     "username" => $username,
                     "displayname" => $displayName,
