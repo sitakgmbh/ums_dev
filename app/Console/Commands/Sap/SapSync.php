@@ -22,7 +22,7 @@ class SapSync extends Command
             $localCsvPath = $this->downloadLatestCsvFromSmb();
             
             $this->info("Starte SAP-Import...");
-            $importService->import($localCsvPath);
+            // $importService->import($localCsvPath);
             $this->info("SAP-Import abgeschlossen");
             
             Logger::info("SAP-Import abgeschlossen", [
