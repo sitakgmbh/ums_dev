@@ -67,12 +67,12 @@ class AustrittController extends Controller
             "ad_user_id"       => $adUser->id,
             "vertragsende"     => $validated["vertragsende"],
             "ticket_nr"        => $validated["ticket_nr"] ?? null,
-            "status_pep"        => $validated["status_pep"] ?? 0,
-            "status_kis"        => $validated["status_kis"] ?? 0,
-            "status_streamline" => $validated["status_streamline"] ?? 0,
-            "status_tel"        => $validated["status_tel"] ?? 0,
-            "status_alarmierung"=> $validated["status_alarmierung"] ?? 0,
-            "status_logimen"    => $validated["status_logimen"] ?? 0,
+            "status_pep"        => $validated["status_pep"] ?? 1,
+            "status_kis"        => $validated["status_kis"] ?? 1,
+            "status_streamline" => $validated["status_streamline"] ?? 1,
+            "status_tel"        => $validated["status_tel"] ?? 1,
+            "status_alarmierung"=> $validated["status_alarmierung"] ?? 1,
+            "status_logimen"    => $validated["status_logimen"] ?? 1,
             "archiviert"        => 0,
         ]);
 
