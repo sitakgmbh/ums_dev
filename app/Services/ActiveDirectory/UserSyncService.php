@@ -17,6 +17,7 @@ class UserSyncService
         $seenSids = [];
 
         $ldapUsers = LdapUser::query()
+			->in(config("ums.ldap.ad_users_to_sync"))
             ->select([
                 "objectsid",
                 "objectguid",

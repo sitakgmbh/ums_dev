@@ -10,5 +10,5 @@ return [
     | Einstellungen für LDAP
     |
     */
-    "dn_users" => "OU=Users,OU=BSM,DC=bsm,DC=local",
+    "ad_users_to_sync" => "OU=Users,OU=BSM,DC=bsm,DC=local",
 ];
