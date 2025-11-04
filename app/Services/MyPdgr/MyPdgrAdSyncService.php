@@ -251,8 +251,8 @@ class MyPdgrAdSyncService
                     ]);
 					*/
 
-                    $adUser->setFirstAttribute(strtolower($adAttr), $MyPdgrValue);
-                    $adUser->save();
+                    // $adUser->setFirstAttribute(strtolower($adAttr), $MyPdgrValue);
+                    // $adUser->save();
 
                     $this->changes[] = [
                         "attribute" => $adAttr,
