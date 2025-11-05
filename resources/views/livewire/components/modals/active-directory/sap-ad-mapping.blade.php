@@ -32,7 +32,7 @@
         @if($activeFilter === 'keine_personalnummer')
             Zeigt AD-Benutzer an, die keine Personalnummer oder den Platzhalter '99999' hinterlegt haben.
         @elseif($activeFilter === 'kein_ad_benutzer')
-            Zeigt SAP-Einträge an, für die kein AD-Benutzer gefunden wurde.
+            Zeigt SAP-Einträge an, für die kein AD-Benutzer gefunden wurde. Einträge, bei denen das Eintrittsdatum in der Zukunft liegt, werden nicht angezeigt.
         @elseif($activeFilter === 'kein_sap_eintrag')
             Zeigt aktivierte AD-Benutzer an, für die kein SAP-Eintrag gefunden wurde. Einträge mit den Personalnummern 99999, 11111 und 00000 werden nicht angezeigt.
         @endif

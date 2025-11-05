@@ -51,12 +51,16 @@ class SapAdMapping extends BaseModal
             ->get();
     }
     
-    protected function getKeinAdBenutzer()
-    {
-        return SapExport::whereNull('ad_user_id')
-            ->orderBy('d_name', 'asc')
-            ->get();
-    }
+	protected function getKeinAdBenutzer()
+	{
+		return SapExport::whereNull('ad_user_id')
+			->where(function($query) {
+				$query->whereNull('d_einda')
+					  ->orWhereRaw("STR_TO_DATE(d_einda, '%Y%m%d') <= CURDATE()");
+			})
+			->orderBy('d_name', 'asc')
+			->get();
+	}
     
     protected function getKeinSapEintrag()
     {
