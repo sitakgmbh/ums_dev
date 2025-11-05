@@ -129,6 +129,11 @@
 								Extension Attributes
 							</a>
 						</li>
+						<li class="nav-item">
+							<a href="#sap" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0">
+								SAP Stammdaten
+							</a>
+						</li>
 					</ul>
 
 					<div class="tab-content">
@@ -187,6 +192,120 @@
 							</dl>
 						</div>
 
+{{-- SAP Stammdaten --}}
+<div class="tab-pane fade" id="sap">
+    @if($sapExport)
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Personalien</h6>
+                <dl class="row mb-3">
+                    <dt class="col-5">Personalnummer</dt>
+                    <dd class="col-7">{{ $sapExport->d_pernr ?? '-' }}</dd>
+
+                    <dt class="col-5">Anrede</dt>
+                    <dd class="col-7">{{ $sapExport->d_anrlt ?? '-' }}</dd>
+
+                    <dt class="col-5">Titel</dt>
+                    <dd class="col-7">{{ $sapExport->d_titel ?? '-' }}</dd>
+
+                    <dt class="col-5">Vorname</dt>
+                    <dd class="col-7">{{ $sapExport->d_vname ?? '-' }}</dd>
+
+                    <dt class="col-5">Rufname</dt>
+                    <dd class="col-7">{{ $sapExport->d_rufnm ?? '-' }}</dd>
+
+                    <dt class="col-5">Nachname</dt>
+                    <dd class="col-7">{{ $sapExport->d_name ?? '-' }}</dd>
+
+                    <dt class="col-5">Geburtsdatum</dt>
+                    <dd class="col-7 mb-0">{{ $sapExport->d_gbdat ?? '-' }}</dd>
+                </dl>
+
+                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Organisation</h6>
+                <dl class="row mb-3">
+                    <dt class="col-5">Einrichtung</dt>
+                    <dd class="col-7">{{ $sapExport->d_einri ?? '-' }}</dd>
+
+                    <dt class="col-5">Personalbereich</dt>
+                    <dd class="col-7">{{ $sapExport->d_pers_txt ?? '-' }}</dd>
+
+                    <dt class="col-5">Abteilung</dt>
+                    <dd class="col-7">{{ $sapExport->d_abt_txt ?? '-' }}</dd>
+
+                    <dt class="col-5">Abteilungs-Nr.</dt>
+                    <dd class="col-7">{{ $sapExport->d_abt_nr ?? '-' }}</dd>
+
+                    <dt class="col-5">Position</dt>
+                    <dd class="col-7">{{ $sapExport->d_0032_batchbez ?? '-' }}</dd>
+
+                    <dt class="col-5">Arbeitsort</dt>
+                    <dd class="col-7 mb-0">{{ $sapExport->d_arbortx ?? '-' }}</dd>
+                </dl>
+            </div>
+
+            <div class="col-md-6">
+                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Kontakt</h6>
+                <dl class="row mb-3">
+                    <dt class="col-5">E-Mail</dt>
+                    <dd class="col-7">
+                        @if($sapExport->d_email)
+                            <a href="mailto:{{ $sapExport->d_email }}">{{ $sapExport->d_email }}</a>
+                        @else
+                            -
+                        @endif
+                    </dd>
+
+                    <dt class="col-5">Telefon</dt>
+                    <dd class="col-7 mb-0">{{ $sapExport->d_tel01 ?? '-' }}</dd>
+                </dl>
+
+                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Anstellung</h6>
+                <dl class="row mb-3">
+                    <dt class="col-5">Eintrittsdatum</dt>
+                    <dd class="col-7">{{ $sapExport->d_einda ?? '-' }}</dd>
+
+                    <dt class="col-5">Enddatum</dt>
+                    <dd class="col-7">{{ $sapExport->d_endda ?? '-' }}</dd>
+
+                    <dt class="col-5">Beschäftigungsgrad</dt>
+                    <dd class="col-7">{{ $sapExport->d_empct ?? '-' }}</dd>
+
+                    <dt class="col-5">Kader</dt>
+                    <dd class="col-7">{{ $sapExport->d_zzkader ?? '-' }}</dd>
+
+                    <dt class="col-5">Bereitschaft</dt>
+                    <dd class="col-7 mb-0">{{ $sapExport->d_zzbereit ?? '-' }}</dd>
+                </dl>
+
+                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Adresse (Privat)</h6>
+                <dl class="row mb-0">
+                    <dt class="col-5">Straße</dt>
+                    <dd class="col-7">{{ $sapExport->d_adr5_stras ?? '-' }}</dd>
+
+                    <dt class="col-5">PLZ / Ort</dt>
+                    <dd class="col-7">{{ $sapExport->d_adr5_pstlz ?? '-' }} {{ $sapExport->d_adr5_ort01 ?? '-' }}</dd>
+
+                    <dt class="col-5">Land</dt>
+                    <dd class="col-7">{{ $sapExport->d_adr5_land1 ?? '-' }}</dd>
+
+                    <dt class="col-5">E-Mail (privat)</dt>
+                    <dd class="col-7 mb-0">
+                        @if($sapExport->d_email_privat)
+                            <a href="mailto:{{ $sapExport->d_email_privat }}">{{ $sapExport->d_email_privat }}</a>
+                        @else
+                            -
+                        @endif
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    @else
+        <div class="alert alert-info mb-0">
+            <i class="mdi mdi-information-outline me-1"></i>
+            Keine SAP-Stammdaten für diesen Benutzer gefunden.
+        </div>
+    @endif
+</div>
 
 					</div> <!-- end tab-content -->
 				</div>

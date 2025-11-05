@@ -1,8 +1,8 @@
 <?php
-
 namespace App\Livewire\Pages\Admin\AdUsers;
 
 use App\Models\AdUser;
+use App\Models\SapExport;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 
@@ -10,10 +10,12 @@ use Livewire\Attributes\Layout;
 class Show extends Component
 {
     public AdUser $adUser;
+    public ?SapExport $sapExport = null;
 
     public function mount(AdUser $adUser): void
     {
         $this->adUser = $adUser;
+        $this->sapExport = $adUser->sapExport;
     }
 
     public function render()
