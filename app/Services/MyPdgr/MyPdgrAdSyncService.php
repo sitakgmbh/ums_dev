@@ -34,24 +34,50 @@ class MyPdgrAdSyncService
 
     public function sync(): void
     {
-        /*
-		Logger::debug("MyPdgr zu AD Sync gestartet", [
-            "actor" => $this->actor,
-        ]);
-		*/
+		Logger::debug("MyPdgrAdSyncService: Start");
 
         $MyPdgrUsers = $this->getMyPdgrEntries();
-        if (!$MyPdgrUsers || count($MyPdgrUsers) === 0) throw new \RuntimeException("Unerwarteter Fehler beim Abfragen der Daten aus MyPdgr");
-		// Logger::debug("MyPdgr-Einträge geladen: " . count($MyPdgrUsers));
+        if (!$MyPdgrUsers || count($MyPdgrUsers) === 0) {
+			throw new \RuntimeException("Unerwarteter Fehler beim Abfragen der Daten aus MyPdgr");
+		}
+		
+		Logger::debug("MyPdgrAdSyncService: MyPdgr-Einträge geladen: " . count($MyPdgrUsers));
+		
+		// OPTIMIERT: MyPdgr-Einträge in Map konvertieren für schnellen Zugriff
+		$myPdgrMap = [];
+		foreach ($MyPdgrUsers as $entry) {
+			$pdgrNummer = $entry['per_pdgrnummer'] ?? null;
+			if ($pdgrNummer) {
+				$myPdgrMap[$pdgrNummer] = $entry;
+			}
+		}
+		
+		Logger::debug("MyPdgrAdSyncService: MyPdgr-Map erstellt mit " . count($myPdgrMap) . " Einträgen");
 
-        $adUsers = LdapUser::get();
+		Logger::debug("MyPdgrAdSyncService: AD-Benutzer abfragen");
 
+		// OPTIMIERT: Nur benötigte Attribute laden
+        $adUsers = LdapUser::select([
+			'samaccountname',
+			'displayname',
+			'initials',
+			'useraccountcontrol',
+			'physicaldeliveryofficename',
+			'streetaddress',
+			'postalcode',
+			'l',
+		])
+		->in(config("ums.ldap.ad_users_to_sync"))
+		->get();
+
+		// Filter anwenden
 		$adUsers = $adUsers->filter(function ($user) {
 			$initials = $user->getFirstAttribute("initials");
 			return $initials !== "00000" && $initials !== "11111" && $initials !== "99999";
 		});
 
-		// Logger::debug("AD-Benutzer geladen: " . $adUsers->count());
+		Logger::debug("MyPdgrAdSyncService: AD-Benutzer geladen: " . $adUsers->count());
+		Logger::debug("MyPdgrAdSyncService: Iteriere durch AD-Benutzer");
 
         foreach ($adUsers as $adUser) 
 		{
@@ -62,19 +88,13 @@ class MyPdgrAdSyncService
             $initials = $adUser->getFirstAttribute("initials");
             $userAccountControl = $adUser->getFirstAttribute("useraccountcontrol");
 
-			/*
-			Logger::debug("═══════════════════════════════════════════════════════════════");
-			Logger::debug("Verarbeite AD-Benutzer: {$displayName} ({$username})");
-			Logger::debug("  Initials/Personalnummer: " . ($initials ?? "(nicht gesetzt)"));
-			*/
-
             if (empty($initials)) {
-				// Logger::debug("  ○ Keine Personalnummer (Initials) gesetzt - Übersprungen");
                 $this->stats["not_found"]++;
                 continue;
             }
 
-            $MyPdgrEntry = collect($MyPdgrUsers)->firstWhere("per_pdgrnummer", $initials);
+			// OPTIMIERT: Lookup in Map statt Collection durchsuchen
+            $MyPdgrEntry = $myPdgrMap[$initials] ?? null;
 
             if (!$MyPdgrEntry) 
 			{
@@ -83,20 +103,9 @@ class MyPdgrAdSyncService
                 continue;
             }
 
-			/*
-			Logger::debug("  ✓ MyPdgr-Eintrag gefunden", [
-				"per_pdgrnummer" => $MyPdgrEntry["per_pdgrnummer"],
-				"per_adresszusatz" => $MyPdgrEntry["per_adresszusatz"] ?? "",
-				"per_adresse" => $MyPdgrEntry["per_adresse"] ?? "",
-				"per_plz" => $MyPdgrEntry["per_plz"] ?? "",
-				"per_ort" => $MyPdgrEntry["per_ort"] ?? "",
-			]);
-			*/
-
             // Prüfen ob Benutzer deaktiviert ist (userAccountControl & 2 = deaktiviert)
             if ($userAccountControl && ($userAccountControl & 2)) 
 			{
-				// Logger::debug("  ○ Benutzer ist deaktiviert - Übersprungen");
                 $this->stats["disabled"]++;
                 continue;
             }
@@ -108,13 +117,6 @@ class MyPdgrAdSyncService
 
             if (!empty($this->changes)) 
 			{
-				/*
-				Logger::debug("  ✓ Änderungen für '{$username}' erkannt:", [
-					"anzahl_änderungen" => count($this->changes),
-					"änderungen" => $this->changes,
-				]);
-				*/
-
                 Logger::db("mypdgr", "info", "Benutzer '{$username}' aktualisiert", [
                     "personalnummer" => $initials,
                     "username" => $username,
@@ -127,13 +129,11 @@ class MyPdgrAdSyncService
             } 
 			else 
 			{
-				// Logger::debug("  ○ Keine Änderungen für '{$username}' erforderlich");
                 $this->stats["no_changes"]++;
             }
         }
 
-        // Logger::debug("═══════════════════════════════════════════════════════════════");
-        // Logger::debug("MyPdgr zu AD Sync abgeschlossen", $this->stats);
+		Logger::debug("MyPdgrAdSyncService: Ende", $this->stats);
     }
 
     protected function getMyPdgrEntries(): array
@@ -147,15 +147,9 @@ class MyPdgrAdSyncService
             $password = env("MyPdgr_DB_PASSWORD");
             $table = env("MyPdgr_DB_TABLE", "avs_personen");
 
-            if (!$host || !$database || !$username || !$password) throw new \RuntimeException("MyPdgr Datenbank-Konfiguration in .env nicht vollständig");
-
-			/*
-            Logger::debug("Verbinde mit MyPdgr-Datenbank", [
-                "host" => $host,
-                "database" => $database,
-                "table" => $table,
-            ]);
-			*/
+            if (!$host || !$database || !$username || !$password) {
+				throw new \RuntimeException("MyPdgr Datenbank-Konfiguration in .env nicht vollständig");
+			}
 
             // Temporäre Verbindung zur MyPdgr-Datenbank erstellen
             config([
@@ -190,8 +184,6 @@ class MyPdgrAdSyncService
                 ->table($table)
                 ->count();
 
-            // Logger::debug("MyPdgr Tabelle '{$table}' enthält {$rowCount} Einträge");
-
             if ($rowCount < $this->minExpectedRows) 
 			{
                 $msg = "Die Tabelle '{$table}' enthält nur {$rowCount} Einträge (erwartet: mindestens {$this->minExpectedRows}).";
@@ -199,15 +191,21 @@ class MyPdgrAdSyncService
                 throw new \RuntimeException($msg);
             }
 
+			// OPTIMIERT: Nur benötigte Felder selektieren
             $results = DB::connection("MyPdgr_temp")
                 ->table($table)
+				->select([
+					'per_pdgrnummer',
+					'per_adresszusatz',
+					'per_adresse',
+					'per_plz',
+					'per_ort'
+				])
                 ->get()
                 ->map(function ($row) {
                     return (array) $row;
                 })
                 ->toArray();
-
-            // Logger::debug("MyPdgr-Daten erfolgreich abgerufen: " . count($results) . " Einträge");
 
             return $results;
         } 
@@ -224,33 +222,16 @@ class MyPdgrAdSyncService
 
     protected function syncAddressAttributes($adUser, array $MyPdgrEntry, string $username, string $personalnummer): void
     {
-        // Logger::debug("  → Synchronisiere Adressattribute");
-
         foreach ($this->attributeMap as $adAttr => $MyPdgrField) 
 		{
             $MyPdgrValue = trim($MyPdgrEntry[$MyPdgrField] ?? "");
             $adValue = $adUser->getFirstAttribute(strtolower($adAttr));
-			
-			/*
-            Logger::debug("    Attribut-Prüfung: {$adAttr}", [
-                "MyPdgr_feld" => $MyPdgrField,
-                "ad_wert" => $adValue ?? "(null)",
-                "MyPdgr_wert" => $MyPdgrValue ?: "(leer)",
-            ]);
-			*/
 
             // Nur aktualisieren wenn MyPdgr-Wert nicht leer ist UND unterschiedlich zum AD-Wert
             if (!empty($MyPdgrValue) && $adValue !== $MyPdgrValue) 
 			{
                 try 
 				{
-					/*
-					Logger::debug("    ✓ Attribut wird geändert:", [
-                        "von" => $adValue ?? "(null)",
-                        "nach" => $MyPdgrValue,
-                    ]);
-					*/
-
                     $adUser->setFirstAttribute(strtolower($adAttr), $MyPdgrValue);
                     $adUser->save();
 
@@ -269,10 +250,6 @@ class MyPdgrAdSyncService
                         "actor" => $this->actor,
                     ]);
                 }
-            } 
-			else 
-			{
-                // Logger::debug("    ○ Attribut bleibt unverändert");
             }
         }
     }
