@@ -62,6 +62,7 @@ class SapAdMapping extends BaseModal
     {
         return AdUser::whereDoesntHave('sapExport')
             ->where("is_existing", true)
+			->where("is_enabled", true)
             ->whereNotNull('initials')
             ->where('initials', '!=', '99999')
             ->orderBy("display_name", "asc")
