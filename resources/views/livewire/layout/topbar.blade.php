@@ -54,64 +54,62 @@
 
 
 
-            <!-- Incidents Notification -->
-            <li class="dropdown notification-list">
-                <a class="nav-link dropdown-toggle arrow-none" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                    <i class="ri-notification-3-line font-22"></i>
-                    @if($openIncidents->count() > 0)
-                        <span class="noti-icon-badge"></span>
-                    @endif
-                </a>
-                <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated dropdown-lg py-0">
-                    <div class="p-2 border-top-0 border-start-0 border-end-0 border-dashed border">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <h6 class="m-0 font-14 fw-semibold">Offene Incidents ({{ $openIncidents->count() }})</h6>
+<!-- Incidents Notification nur für Admin -->
+@role('admin')
+<li class="dropdown notification-list">
+    <a class="nav-link dropdown-toggle arrow-none" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+        <i class="ri-notification-3-line font-22"></i>
+        @if($openIncidents->count() > 0)
+            <span class="noti-icon-badge"></span>
+        @endif
+    </a>
+    <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated dropdown-lg py-0">
+        <div class="p-2 border-top-0 border-start-0 border-end-0 border-dashed border">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h6 class="m-0 font-14 fw-semibold">Offene Incidents ({{ $openIncidents->count() }})</h6>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-2" style="max-height: 300px;" data-simplebar>
+            @forelse($openIncidents as $incident)
+                <a href="{{ route('admin.incidents.show', $incident->id) }}" 
+                   class="dropdown-item p-0 notify-item card unread-noti shadow-none mb-2">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="notify-icon bg-{{ $incident->priority === 'critical' ? 'danger' : ($incident->priority === 'high' ? 'warning' : ($incident->priority === 'medium' ? 'info' : 'secondary')) }}">
+                                    <i class="mdi mdi-alert-circle-outline"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-2">
+                                <h5 class="noti-item-title fw-semibold font-14" 
+                                    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">
+                                    {{ \Illuminate\Support\Str::limit($incident->title, 28) }}
+                                </h5>
+                                <div>
+                                    <small class="fw-normal text-muted">{{ $incident->created_at->diffForHumans() }}</small>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="px-2" style="max-height: 300px;" data-simplebar>
-@forelse($openIncidents as $incident)
-    <a href="{{ route('admin.incidents.show', $incident->id) }}" 
-       class="dropdown-item p-0 notify-item card unread-noti shadow-none mb-2">
-        <div class="card-body">
-            <div class="d-flex align-items-center">
-                <div class="flex-shrink-0">
-                    <div class="notify-icon bg-{{ $incident->priority === 'critical' ? 'danger' : ($incident->priority === 'high' ? 'warning' : ($incident->priority === 'medium' ? 'info' : 'secondary')) }}">
-                        <i class="mdi mdi-alert-circle-outline"></i>
-                    </div>
+                </a>
+            @empty
+                <div class="p-3 text-center text-muted">
+                    <i class="mdi mdi-check-circle font-24"></i>
+                    <p class="mb-0">Keine offenen Incidents</p>
                 </div>
-				<div class="flex-grow-1 ms-2">
-					<h5 class="noti-item-title fw-semibold font-14" 
-						style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">
-						{{ \Illuminate\Support\Str::limit($incident->title, 28) }}
-					</h5>
-					<div>
-						<small class="fw-normal text-muted">vor {{ $incident->created_at->diffForHumans() }}</small>
-					</div>
-				</div>
-
-            </div>
+            @endforelse
         </div>
-    </a>
-@empty
-    <div class="p-3 text-center text-muted">
-        <i class="mdi mdi-check-circle font-24"></i>
-        <p class="mb-0">Keine offenen Incidents</p>
+
+        <!-- All-->
+        <a href="{{ route('admin.incidents.index') }}" class="dropdown-item text-center text-primary notify-item border-top py-2">
+            Alle anzeigen
+        </a>
     </div>
-@endforelse
-
-
-                    </div>
-
-                    <!-- All-->
-                    <a href="{{ route('admin.incidents.index') }}" class="dropdown-item text-center text-primary notify-item border-top py-2">
-                        Alle anzeigen
-                    </a>
-                </div>
-            </li>
-
+</li>
+@endrole
 
 
 
