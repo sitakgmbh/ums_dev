@@ -44,7 +44,7 @@
 		</div>
 	@else
         <div class="table-responsive">
-            <table class="table table-hover table-centered mb-0">
+            <table class="table table-sm table-hover table-centered mb-0">
                 <thead>
                     <tr>
                         @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
@@ -62,18 +62,12 @@
                     @foreach($data as $item)
                         <tr>
                             @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
-                                <td>
-                                    <strong>{{ $item->display_name ?? "-" }}</strong><br>
-                                    <small class="text-muted">{{ $item->username ?? "-" }}</small>
-                                </td>
+								<td>{{ $item->display_name ?? "-" }} ({{ $item->username ?? "-" }})</td>
                                 <td>{{ $item->description ?? "-" }}</td>
 								<td>{{ $item->initials ?? "-" }}</td>
                             @else
                                 <td>
-                                    <strong>{{ $item->d_name ?? "-" }}</strong>
-                                    @if($item->d_vname || $item->d_rufnm)
-                                        , {{ $item->d_rufnm ?: $item->d_vname }}
-                                    @endif
+                                    {{ $item->d_name ?? "-" }} @if($item->d_vname || $item->d_rufnm) {{ $item->d_rufnm ?: $item->d_vname }}@endif
                                 </td>
                                 <td>{{ $item->d_0032_batchbez ?? "-" }}</td>
 								<td>{{ $item->d_pernr ?? "-" }}</td>
