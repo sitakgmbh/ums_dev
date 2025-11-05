@@ -34,7 +34,7 @@
         @elseif($activeFilter === 'kein_ad_benutzer')
             Zeigt SAP-Einträge an, für die kein AD-Benutzer gefunden wurde.
         @elseif($activeFilter === 'kein_sap_eintrag')
-            Zeigt aktivierte AD-Benutzer an, für die kein SAP-Eintrag gefunden wurde.
+            Zeigt aktivierte AD-Benutzer an, für die kein SAP-Eintrag gefunden wurde. Einträge mit den Personalnummern 99999, 11111 und 00000 werden nicht angezeigt.
         @endif
     </div>
 

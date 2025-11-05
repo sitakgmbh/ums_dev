@@ -65,6 +65,8 @@ class SapAdMapping extends BaseModal
 			->where("is_enabled", true)
             ->whereNotNull('initials')
             ->where('initials', '!=', '99999')
+			->where('initials', '!=', '11111')
+			->where('initials', '!=', '00000')
             ->orderBy("display_name", "asc")
             ->get();
     }
