@@ -48,14 +48,14 @@
                 <thead>
                     <tr>
                         @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
-                            <th>Name</th>
-                            <th>Beschreibung</th>
-                            <th>Personalnummer</th>
+                            <th>AD: Anzeigename / Benutzername</th>
+                            <th>AD: Beschreibung</th>
+                            <th>AD: Personalnummer (Initials)</th>
                         @else
-                            <th>Personalnummer</th>
-                            <th>Name</th>
-                            <th>Beschreibung</th>
-                            <th>E-Mail</th>
+                            <th>SAP: Personalnummer</th>
+                            <th>SAP: Name</th>
+                            <th>SAP: Beschreibung</th>
+                            <th>SAP: E-Mail</th>
                         @endif
                     </tr>
                 </thead>
@@ -68,9 +68,17 @@
                                     <small class="text-muted">{{ $item->username ?? "-" }}</small>
                                 </td>
                                 <td>{{ $item->description ?? "-" }}</td>
-                                <td>{{ $item->initials ?? "-" }}</td>
+                                <td>
+                                    @if($item->initials && $item->initials !== '99999')
+                                        <span class="badge bg-info">{{ $item->initials }}</span>
+                                    @elseif($item->initials === '99999')
+                                        <span class="badge bg-warning">99999 (Platzhalter)</span>
+                                    @else
+                                        <span class="badge bg-danger">Nicht gesetzt</span>
+                                    @endif
+                                </td>
                             @else
-                                <td>{{ $item->d_pernr ?? "-" }}</td>
+                                <td><span class="badge bg-primary">{{ $item->d_pernr ?? "-" }}</span></td>
                                 <td>
                                     <strong>{{ $item->d_name ?? "-" }}</strong>
                                     @if($item->d_vname || $item->d_rufnm)
