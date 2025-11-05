@@ -15,7 +15,7 @@ class TaskScheduler extends Component
 		"sap:sync",
 		"mypdgr:sync",
 		"eroeffnungen:assign-license",
-        "graph:test-connection",
+        // "graph:test-connection",
         // "test:do",
         // "test:do-error",
     ];
