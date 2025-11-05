@@ -4,6 +4,7 @@ namespace App\Services\Sap;
 
 use App\Utils\Logging\Logger;
 use App\Utils\UserHelper;
+use App\Models\Setting;
 use App\Models\Mutation;
 use App\Models\AdUser;
 use LdapRecord\Models\ActiveDirectory\User as LdapUser;
@@ -121,10 +122,18 @@ class SapAdSyncService
 
 			if (!$adUser) 
 			{
-				// Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
+				// Prüfen ob Personalnummer in Excludes-Liste ist
+				$excludes = Setting::getValue('personalnummer_abgleich_excludes', '');
+				$excludeList = array_filter(array_map('trim', explode(',', $excludes)));
+				
+				if (!in_array($personalnummer, $excludeList)) 
+				{
+					Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
+				}
+				
 				$this->stats["not_found"]++;
 				continue;
-			}		
+			}
 
 			$username = $adUser->getFirstAttribute("samaccountname");
 			

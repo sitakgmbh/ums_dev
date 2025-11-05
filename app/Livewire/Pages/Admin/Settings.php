@@ -13,6 +13,7 @@ class Settings extends Component
 
     protected array $groupMap = [
         "debug_mode"          => "Allgemein",
+		"personalnummer_abgleich_excludes" => "SAP",
         "azure_tenant_id"     => "Microsoft Graph",
         "azure_client_id"     => "Microsoft Graph",
         "azure_client_secret" => "Microsoft Graph",

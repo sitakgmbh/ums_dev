@@ -17,6 +17,13 @@ class SettingsSeeder extends Seeder
                 'name'        => 'Debug-Modus',
                 'description' => 'Aktiviert erweiterte Protokollierung. Im Debug-Modus werden zusätzliche Details in den Logdateien gespeichert, um die Analyse und Fehlersuche zu erleichtern. Sollte nur in Entwicklungs- oder Testumgebungen verwendet werden.',
             ],
+            [
+                'key'         => 'personalnummer_abgleich_excludes',
+                'value'       => '',
+                'type'        => 'string',
+                'name'        => 'Excludes Personalnummerabgleich',
+                'description' => 'Hinterlegte Personalnummern erzeugen kein Admin-Ticket. Beispiel: 13579,24680 (mit Komma trennen)',
+            ],
 			// Azure
 			[
 				'key'         => 'azure_tenant_id',
