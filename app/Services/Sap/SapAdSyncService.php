@@ -45,6 +45,8 @@ class SapAdSyncService
 
 	public function sync(string $filePath): void
 	{
+		Logger::debug("SapAdSyncService: Start");
+		
 		if (!file_exists($filePath)) 
 		{
 			throw new \RuntimeException("SAP Export nicht gefunden: {$filePath}");
@@ -79,6 +81,8 @@ class SapAdSyncService
 			$rows[] = array_combine($header, $values);
 		}
 
+		Logger::debug("SapAdSyncService: Tabelle sap_export befüllen");
+
 		// Tabelle leeren und neue Daten speichern
 		SapExport::truncate();
 
@@ -94,6 +98,8 @@ class SapAdSyncService
 		}, $rows);
 
 		SapExport::insert($insertData);
+
+		Logger::debug("SapAdSyncService: Verknüpfungen sap_export erstellen");
 
 		// Verknüpfung zu ad_users erstellen
 		foreach ($insertData as $row) 
@@ -111,6 +117,8 @@ class SapAdSyncService
 			}
 		}
 
+		Logger::debug("SapAdSyncService: AD-Benutzer abfragen");
+
 		$adUsers = LdapUser::get();
 		
 		/*
@@ -122,6 +130,8 @@ class SapAdSyncService
 		*/
 
 		// $rows = array_slice($rows, 0, 1);
+
+		Logger::debug("SapAdSyncService: Iteriere durch SAP-Export");
 
 		foreach ($rows as $row) 
 		{
@@ -216,7 +226,11 @@ class SapAdSyncService
 			}
 		}
 		
+		Logger::debug("SapAdSyncService: Start Personalnummerabgleich");
+		
 		$this->syncMissingInitials($adUsers, $rows);
+		
+		Logger::debug("SapAdSyncService: Ende");
 		
 		// Logger::debug("═══════════════════════════════════════════════════════════════");
 		// Logger::debug("SAP zu AD Sync abgeschlossen", $this->stats);
