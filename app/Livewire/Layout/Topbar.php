@@ -3,6 +3,7 @@
 namespace App\Livewire\Layout;
 
 use Illuminate\Support\Facades\Auth;
+use App\Models\Incident;
 use Livewire\Component;
 
 class Topbar extends Component
@@ -32,6 +33,13 @@ class Topbar extends Component
 
     public function render()
     {
-        return view("livewire.layout.topbar");
+        $openIncidents = Incident::open()
+            ->with(['creator'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('livewire.layout.topbar', [
+            'openIncidents' => $openIncidents,
+        ]);
     }
 }

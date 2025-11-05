@@ -84,6 +84,11 @@ Route::middleware(["auth", "verified"])->group(function () {
 			Route::get('/mail-tool', MailTool::class)->name('mail-tool');
         });
 
+		Route::prefix("incidents")->name("admin.incidents.")->group(function () {
+			Route::get("/", \App\Livewire\Pages\Admin\Incidents\Index::class)->name("index");
+			Route::get("/{id}", \App\Livewire\Pages\Admin\Incidents\Show::class)->name("show");
+		});
+
 		Route::prefix("eroeffnungen")->name("admin.eroeffnungen.")->group(function () {
 			Route::get("/", \App\Livewire\Pages\Admin\Eroeffnungen\Index::class)->name("index");
 			Route::get("/{eroeffnung}/verarbeitung", \App\Livewire\Pages\Admin\Eroeffnungen\Verarbeitung::class)->name("verarbeitung");
