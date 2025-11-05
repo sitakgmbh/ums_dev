@@ -1,9 +1,9 @@
 <div>
 	@section('pageActions')
 	<div class="btn-group" role="group">
-		<button type="button" class="btn btn-primary" title="Benutzer ohne Personalnummer" 
-			onclick="Livewire.dispatch('open-modal', { modal: 'components.modals.active-directory.keine-personalnummer'})">
-			<i class="mdi mdi-account-alert"></i>
+		<button type="button" class="btn btn-primary" title="Active Directory SAP Mapping" 
+			onclick="Livewire.dispatch('open-modal', { modal: 'components.modals.active-directory.sap-ad-mapping'})">
+			<i class="mdi mdi-account-sync"></i>
 		</button>
 	</div>
 	@endsection
@@ -12,5 +12,5 @@
 </div>
 
 @section("modals")
-    <livewire:components.modals.active-directory.keine-personalnummer />
+    <livewire:components.modals.active-directory.sap-ad-mapping />
 @endsection

@@ -7,6 +7,7 @@ use App\Utils\UserHelper;
 use App\Models\Setting;
 use App\Models\Mutation;
 use App\Models\AdUser;
+use App\Models\SapExport;
 use LdapRecord\Models\ActiveDirectory\User as LdapUser;
 
 class SapAdSyncService
@@ -76,6 +77,38 @@ class SapAdSyncService
 			$values = array_map("trim", explode(";", $line));
 			if (count($values) !== count($header)) continue;
 			$rows[] = array_combine($header, $values);
+		}
+
+		// Tabelle leeren und neue Daten speichern
+		SapExport::truncate();
+
+		$insertData = array_map(function($row) {
+			// Voranstehende Nullen bei d_pernr entfernen
+			if (isset($row['d_pernr'])) {
+				$row['d_pernr'] = ltrim(trim($row['d_pernr']), "0");
+			}
+			
+			$row['created_at'] = now();
+			$row['updated_at'] = now();
+			return $row;
+		}, $rows);
+
+		SapExport::insert($insertData);
+
+		// Verknüpfung zu ad_users erstellen
+		foreach ($insertData as $row) 
+		{
+			$personalnummer = $row["d_pernr"] ?? "";
+			if (empty($personalnummer)) continue;
+			
+			$adUser = AdUser::where('initials', $personalnummer)->first();
+			
+			if ($adUser) 
+			{
+				SapExport::where('d_pernr', $personalnummer)->update([
+					'ad_user_id' => $adUser->id
+				]);
+			}
 		}
 
 		$adUsers = LdapUser::get();

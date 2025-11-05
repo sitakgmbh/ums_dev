@@ -130,4 +130,9 @@ class AdUser extends Model
     {
         return $this->belongsTo(Titel::class);
     }
+
+	public function sapExport()
+	{
+		return $this->hasOne(SapExport::class);
+	}
 }
