@@ -14,7 +14,7 @@ class SapAdMapping extends BaseModal
     {	
         $this->loadData();
         
-        $this->title = "SAP ↔ AD Mapping";
+        $this->title = "Details SAP ↔ AD";
         $this->size = "full-width";
         $this->position = "centered";
         $this->backdrop = false;

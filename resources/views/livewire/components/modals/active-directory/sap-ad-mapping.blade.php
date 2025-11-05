@@ -8,21 +8,21 @@
                 class="btn {{ $activeFilter === 'keine_personalnummer' ? 'btn-primary' : 'btn-outline-primary' }}"
                 wire:click="setFilter('keine_personalnummer')"
             >
-                <i class="ri-user-unfollow-line"></i> Benutzer ohne Personalnummer
+                Benutzer ohne Personalnummer
             </button>
             <button 
                 type="button" 
                 class="btn {{ $activeFilter === 'kein_ad_benutzer' ? 'btn-primary' : 'btn-outline-primary' }}"
                 wire:click="setFilter('kein_ad_benutzer')"
             >
-                <i class="ri-account-circle-line"></i> Kein AD-Benutzer gefunden
+                SAP-Einträge ohne AD-Benutzer
             </button>
             <button 
                 type="button" 
                 class="btn {{ $activeFilter === 'kein_sap_eintrag' ? 'btn-primary' : 'btn-outline-primary' }}"
                 wire:click="setFilter('kein_sap_eintrag')"
             >
-                <i class="ri-file-user-line"></i> Kein SAP-Eintrag gefunden
+                AD-Benutzer ohne SAP-Eintrag
             </button>
         </div>
     </div>
@@ -48,14 +48,13 @@
                 <thead>
                     <tr>
                         @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
-                            <th>AD: Anzeigename / Benutzername</th>
-                            <th>AD: Beschreibung</th>
-                            <th>AD: Personalnummer (Initials)</th>
+                            <th>Name</th>
+                            <th>Beschreibung</th>
+                            <th>Personalnummer</th>
                         @else
-                            <th>SAP: Personalnummer</th>
-                            <th>SAP: Name</th>
-                            <th>SAP: Beschreibung</th>
-                            <th>SAP: E-Mail</th>
+                            <th>Name</th>
+                            <th>Beschreibung</th>
+                            <th>Personalnummer</th>
                         @endif
                     </tr>
                 </thead>
@@ -68,17 +67,8 @@
                                     <small class="text-muted">{{ $item->username ?? "-" }}</small>
                                 </td>
                                 <td>{{ $item->description ?? "-" }}</td>
-                                <td>
-                                    @if($item->initials && $item->initials !== '99999')
-                                        <span class="badge bg-info">{{ $item->initials }}</span>
-                                    @elseif($item->initials === '99999')
-                                        <span class="badge bg-warning">99999 (Platzhalter)</span>
-                                    @else
-                                        <span class="badge bg-danger">Nicht gesetzt</span>
-                                    @endif
-                                </td>
+								<td>{{ $item->initials ?? "-" }}</td>
                             @else
-                                <td><span class="badge bg-primary">{{ $item->d_pernr ?? "-" }}</span></td>
                                 <td>
                                     <strong>{{ $item->d_name ?? "-" }}</strong>
                                     @if($item->d_vname || $item->d_rufnm)
@@ -86,7 +76,7 @@
                                     @endif
                                 </td>
                                 <td>{{ $item->d_0032_batchbez ?? "-" }}</td>
-                                <td>{{ $item->d_email ?? "-" }}</td>
+								<td>{{ $item->d_pernr ?? "-" }}</td>
                             @endif
                         </tr>
                     @endforeach

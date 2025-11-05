@@ -1,7 +1,7 @@
 <div>
 	@section('pageActions')
 	<div class="btn-group" role="group">
-		<button type="button" class="btn btn-primary" title="Active Directory SAP Mapping" 
+		<button type="button" class="btn btn-primary" title="Details SAP ↔ AD" 
 			onclick="Livewire.dispatch('open-modal', { modal: 'components.modals.active-directory.sap-ad-mapping'})">
 			<i class="mdi mdi-account-sync"></i>
 		</button>
