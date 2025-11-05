@@ -93,6 +93,15 @@ class SapAdSyncService
 		{
 			$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
 			if (empty($personalnummer)) continue;
+			
+			$eintrittsdatum = trim($row["d_einda"] ?? "");
+			$eintritt = \Carbon\Carbon::createFromFormat('Ymd', $eintrittsdatum)->startOfDay();
+			
+            if ($eintritt->isFuture()) 
+            {
+                Logger::debug("Personalnummer {$personalnummer} übersprungen: Eintrittsdatum {$eintritt->format('d.m.Y')} liegt in der Zukunft");
+                continue;
+            }
 
 			/*
 			Logger::debug("═══════════════════════════════════════════════════════════════");
