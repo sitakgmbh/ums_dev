@@ -201,8 +201,8 @@
 									@endphp
 
 									@foreach($sapFields as $field)
-										<dt class="col-sm-3 {{ $loop->last ? 'mb-0' : '' }}">{{ $field }}</dt>
-										<dd class="col-sm-9 {{ $loop->last ? 'mb-0' : 'mb-1' }}">{{ $sapExport->$field ?? '-' }}</dd>
+										<dt class="col-sm-2 {{ $loop->last ? 'mb-0' : '' }}">{{ $field }}</dt>
+										<dd class="col-sm-10 {{ $loop->last ? 'mb-0' : 'mb-1' }}">{{ $sapExport->$field ?? '-' }}</dd>
 									@endforeach
 								</dl>
 							@else
