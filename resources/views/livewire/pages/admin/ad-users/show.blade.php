@@ -192,121 +192,25 @@
 							</dl>
 						</div>
 
-{{-- SAP Stammdaten --}}
-<div class="tab-pane fade" id="sap">
-    @if($sapExport)
-        <div class="row">
-            <div class="col-md-6">
-                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Personalien</h6>
-                <dl class="row mb-3">
-                    <dt class="col-5">Personalnummer</dt>
-                    <dd class="col-7">{{ $sapExport->d_pernr ?? '-' }}</dd>
+						{{-- SAP Stammdaten --}}
+						<div class="tab-pane fade" id="sap">
+							@if($sapExport)
+								<dl class="row mb-0">
+									@php
+										$sapFields = ['d_pernr', 'd_anrlt', 'd_titel', 'd_name', 'd_vname', 'd_rufnm', 'd_gbdat', 'd_empct', 'd_bort', 'd_natio', 'd_arbortx', 'd_0032_batchbez', 'd_einri', 'd_ptext', 'd_email', 'd_pers_txt', 'd_abt_nr', 'd_abt_txt', 'd_0032_batchid', 'd_tel01', 'd_zzbereit', 'd_personid_ext', 'd_zzkader', 'd_adr1_name2', 'd_adr1_stras', 'd_adr1_pstlz', 'd_adr1_ort01', 'd_adr1_land1', 'd_adr1_telnr', 'd_adr5_name2', 'd_adr5_stras', 'd_adr5_pstlz', 'd_adr5_ort01', 'd_adr5_land1', 'd_email_privat', 'd_nebenamt', 'd_nebenbesch', 'd_einda', 'd_endda', 'd_fmht1', 'd_fmht1zus', 'd_fmht2', 'd_fmht2zus', 'd_fmht3', 'd_fmht3zus', 'd_fmht4', 'd_fmht4zus', 'd_kbcod', 'd_leader'];
+									@endphp
 
-                    <dt class="col-5">Anrede</dt>
-                    <dd class="col-7">{{ $sapExport->d_anrlt ?? '-' }}</dd>
-
-                    <dt class="col-5">Titel</dt>
-                    <dd class="col-7">{{ $sapExport->d_titel ?? '-' }}</dd>
-
-                    <dt class="col-5">Vorname</dt>
-                    <dd class="col-7">{{ $sapExport->d_vname ?? '-' }}</dd>
-
-                    <dt class="col-5">Rufname</dt>
-                    <dd class="col-7">{{ $sapExport->d_rufnm ?? '-' }}</dd>
-
-                    <dt class="col-5">Nachname</dt>
-                    <dd class="col-7">{{ $sapExport->d_name ?? '-' }}</dd>
-
-                    <dt class="col-5">Geburtsdatum</dt>
-                    <dd class="col-7 mb-0">{{ $sapExport->d_gbdat ?? '-' }}</dd>
-                </dl>
-
-                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Organisation</h6>
-                <dl class="row mb-3">
-                    <dt class="col-5">Einrichtung</dt>
-                    <dd class="col-7">{{ $sapExport->d_einri ?? '-' }}</dd>
-
-                    <dt class="col-5">Personalbereich</dt>
-                    <dd class="col-7">{{ $sapExport->d_pers_txt ?? '-' }}</dd>
-
-                    <dt class="col-5">Abteilung</dt>
-                    <dd class="col-7">{{ $sapExport->d_abt_txt ?? '-' }}</dd>
-
-                    <dt class="col-5">Abteilungs-Nr.</dt>
-                    <dd class="col-7">{{ $sapExport->d_abt_nr ?? '-' }}</dd>
-
-                    <dt class="col-5">Position</dt>
-                    <dd class="col-7">{{ $sapExport->d_0032_batchbez ?? '-' }}</dd>
-
-                    <dt class="col-5">Arbeitsort</dt>
-                    <dd class="col-7 mb-0">{{ $sapExport->d_arbortx ?? '-' }}</dd>
-                </dl>
-            </div>
-
-            <div class="col-md-6">
-                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Kontakt</h6>
-                <dl class="row mb-3">
-                    <dt class="col-5">E-Mail</dt>
-                    <dd class="col-7">
-                        @if($sapExport->d_email)
-                            <a href="mailto:{{ $sapExport->d_email }}">{{ $sapExport->d_email }}</a>
-                        @else
-                            -
-                        @endif
-                    </dd>
-
-                    <dt class="col-5">Telefon</dt>
-                    <dd class="col-7 mb-0">{{ $sapExport->d_tel01 ?? '-' }}</dd>
-                </dl>
-
-                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Anstellung</h6>
-                <dl class="row mb-3">
-                    <dt class="col-5">Eintrittsdatum</dt>
-                    <dd class="col-7">{{ $sapExport->d_einda ?? '-' }}</dd>
-
-                    <dt class="col-5">Enddatum</dt>
-                    <dd class="col-7">{{ $sapExport->d_endda ?? '-' }}</dd>
-
-                    <dt class="col-5">Beschäftigungsgrad</dt>
-                    <dd class="col-7">{{ $sapExport->d_empct ?? '-' }}</dd>
-
-                    <dt class="col-5">Kader</dt>
-                    <dd class="col-7">{{ $sapExport->d_zzkader ?? '-' }}</dd>
-
-                    <dt class="col-5">Bereitschaft</dt>
-                    <dd class="col-7 mb-0">{{ $sapExport->d_zzbereit ?? '-' }}</dd>
-                </dl>
-
-                <h6 class="text-uppercase text-muted fw-bold border-bottom pb-1 mb-2">Adresse (Privat)</h6>
-                <dl class="row mb-0">
-                    <dt class="col-5">Straße</dt>
-                    <dd class="col-7">{{ $sapExport->d_adr5_stras ?? '-' }}</dd>
-
-                    <dt class="col-5">PLZ / Ort</dt>
-                    <dd class="col-7">{{ $sapExport->d_adr5_pstlz ?? '-' }} {{ $sapExport->d_adr5_ort01 ?? '-' }}</dd>
-
-                    <dt class="col-5">Land</dt>
-                    <dd class="col-7">{{ $sapExport->d_adr5_land1 ?? '-' }}</dd>
-
-                    <dt class="col-5">E-Mail (privat)</dt>
-                    <dd class="col-7 mb-0">
-                        @if($sapExport->d_email_privat)
-                            <a href="mailto:{{ $sapExport->d_email_privat }}">{{ $sapExport->d_email_privat }}</a>
-                        @else
-                            -
-                        @endif
-                    </dd>
-                </dl>
-            </div>
-        </div>
-    @else
-        <div class="alert alert-info mb-0">
-            <i class="mdi mdi-information-outline me-1"></i>
-            Keine SAP-Stammdaten für diesen Benutzer gefunden.
-        </div>
-    @endif
-</div>
-
+									@foreach($sapFields as $field)
+										<dt class="col-sm-3 {{ $loop->last ? 'mb-0' : '' }}">{{ $field }}</dt>
+										<dd class="col-sm-9 {{ $loop->last ? 'mb-0' : 'mb-1' }}">{{ $sapExport->$field ?? '-' }}</dd>
+									@endforeach
+								</dl>
+							@else
+								<p class="text-muted mb-0">Keine SAP-Stammdaten gefunden.</p>
+							@endif
+						</div>
+						
+						
 					</div> <!-- end tab-content -->
 				</div>
 			</div>
