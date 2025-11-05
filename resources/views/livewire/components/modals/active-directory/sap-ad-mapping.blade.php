@@ -49,11 +49,11 @@
                     <tr>
                         @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
                             <th>Name</th>
-                            <th>Beschreibung</th>
+                            <th>Funktion</th>
                             <th>Personalnummer</th>
                         @else
                             <th>Name</th>
-                            <th>Beschreibung</th>
+                            <th>Funktion</th>
                             <th>Personalnummer</th>
                         @endif
                     </tr>

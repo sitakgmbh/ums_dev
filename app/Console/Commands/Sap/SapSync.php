@@ -132,7 +132,7 @@ class SapSync extends Command
         
         $this->info("Datei erfolgreich kopiert nach: {$localPath}");
         
-        Logger::info("CSV vom SMB-Share heruntergeladen", [
+        Logger::Debug("CSV vom SMB-Share heruntergeladen", [
             "source" => $latestCsv["path"],
             "destination" => $localPath,
             "size" => $latestCsv["size"],
