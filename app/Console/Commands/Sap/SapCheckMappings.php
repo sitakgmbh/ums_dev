@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class SapCheckMappings extends Command
 {
     protected $signature = 'sap:check-mappings';
-    protected $description = 'Sucht Benutzer ohne Personalnummer oder fehlerhafter SAP ↔ AD-Zuordnung und erstellt einen Incident, wenn Ergebnisse gefunden wurden.';
+    protected $description = 'Sucht Benutzer ohne Personalnummer, fehlerhafter SAP ↔ AD-Zuordnung oder doppelte Personalnummern im AD und erstellt ggf. einen Incident.';
 
     public function handle(SapAdMappingService $sapAdMappingService)
     {
