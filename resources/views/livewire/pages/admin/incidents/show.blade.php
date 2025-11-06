@@ -20,13 +20,13 @@
 						</dd>
 
 						<dt class="col-sm-2">Erstellt von:</dt>
-						<dd class="col-sm-10">{{ $incident->creator?->firstname ?? 'System' }} {{ $incident->creator?->lastname ?? '' }}</dd>
+						<dd class="col-sm-10">{{ $incident->creator?->firstname ?? '' }} {{ $incident->creator?->lastname ?? '' }}</dd>
 
 						<dt class="col-sm-2">Erstellt am:</dt>
 						<dd class="col-sm-10">{{ $incident->created_at->format('d.m.Y H:i') }}</dd>
 
 						<dt class="col-sm-2">Gelöst von:</dt>
-						<dd class="col-sm-10">{{ $incident->resolver?->firstname ?? 'System' }} {{ $incident->resolver?->lastname ?? '' }}</dd>
+						<dd class="col-sm-10">{{ $incident->resolver?->firstname ?? '' }} {{ $incident->resolver?->lastname ?? '' }}</dd>
 
 						<dt class="col-sm-2">Gelöst am:</dt>
 						<dd class="col-sm-10">{{ $incident->resolved_at?->format('d.m.Y H:i') ?? '-' }}</dd>
