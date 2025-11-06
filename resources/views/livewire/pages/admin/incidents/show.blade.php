@@ -4,7 +4,7 @@
         <div class="col-12">
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
-					<dl class="row">
+					<dl class="row mb-0">
 						<dt class="col-sm-2">Titel:</dt>
 						<dd class="col-sm-10">{{ $incident->title }}</dd>
 
@@ -32,7 +32,7 @@
 						<dd class="col-sm-10">{{ $incident->resolved_at?->format('d.m.Y H:i') ?? '-' }}</dd>
 
 						<dt class="col-sm-2">Beschreibung:</dt>
-						<dd class="col-sm-10">{{ $incident->description ?? '-' }}</dd>
+						<dd class="col-sm-10 mb-0">{{ $incident->description ?? '-' }}</dd>
 					</dl>
 
                     @if($incident->metadata)
