@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\Sap;
+namespace App\Console\Commands\StateChecker;
 
 use App\Models\AdUser;
 use App\Models\Incident;
@@ -8,9 +8,9 @@ use App\Services\Sap\SapAdMappingService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-class SapCheckMappings extends Command
+class SapAdMappings extends Command
 {
-    protected $signature = 'sap:check-mappings';
+    protected $signature = 'check:sap-ad';
     protected $description = 'Sucht Benutzer ohne Personalnummer, fehlerhafter SAP ↔ AD-Zuordnung oder doppelte Personalnummern im AD und erstellt ggf. einen Incident.';
 
     public function handle(SapAdMappingService $sapAdMappingService)
