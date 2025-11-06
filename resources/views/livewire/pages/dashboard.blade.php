@@ -1,5 +1,113 @@
 <!-- /dashboard -->
 <div>
+
+
+
+<!-- /dashboard -->
+<div>
+    <div class="row">
+        <!-- ... -->
+    </div>
+    <div class="row">
+        <!-- ... -->
+    </div>
+    @role('admin')
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Wochenübersicht</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    @foreach($wochenUebersicht as $tag => $daten)
+                                        <th>{{ $tag }} {{ $daten['datum'] }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+							<tbody>
+								<tr>
+									@foreach($wochenUebersicht as $tag => $daten)
+										<td>
+											<strong class="d-flex align-items-center gap-1">
+												Eintritte
+												<span class="badge {{ $daten['eroeffnungen']->count() === 0 ? 'bg-secondary' : 'bg-info' }}">
+													{{ $daten['eroeffnungen']->count() }}
+												</span>
+											</strong>
+											<ul class="list-unstyled mb-2">
+												@foreach($daten['eroeffnungen'] as $eroeffnung)
+													<li>
+														<a href="{{ route('admin.eroeffnungen.verarbeitung', $eroeffnung['id']) }}">
+															{{ $eroeffnung['name'] }}
+														</a>
+													</li>
+												@endforeach
+											</ul>
+
+											<strong class="d-flex align-items-center gap-1">
+												Mutationen
+												<span class="badge {{ $daten['mutationen']->count() === 0 ? 'bg-secondary' : 'bg-info' }}">
+													{{ $daten['mutationen']->count() }}
+												</span>
+											</strong>
+											<ul class="list-unstyled mb-2">
+												@foreach($daten['mutationen'] as $mutation)
+													<li>
+														<a href="{{ route('admin.mutationen.verarbeitung', $mutation['id']) }}">
+															{{ $mutation['name'] }}
+														</a>
+													</li>
+												@endforeach
+											</ul>
+
+											<strong class="d-flex align-items-center gap-1">
+												Austritte
+												<span class="badge {{ $daten['austritte']->count() === 0 ? 'bg-secondary' : 'bg-info' }}">
+													{{ $daten['austritte']->count() }}
+												</span>
+											</strong>
+											<ul class="list-unstyled mb-0">
+												@foreach($daten['austritte'] as $austritt)
+													<li>
+														<a href="{{ route('admin.austritte.verarbeitung', $austritt['id']) }}">
+															{{ $austritt['name'] }}
+														</a>
+													</li>
+												@endforeach
+											</ul>
+										</td>
+									@endforeach
+								</tr>
+							</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endrole
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="row">
         <div class="col-12 col-md-6 col-lg-3">
             <div class="card widget-flat">
@@ -45,4 +153,24 @@
             </div>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </div>
