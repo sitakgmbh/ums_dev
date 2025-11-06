@@ -67,7 +67,7 @@
         <div class="p-2 border-top-0 border-start-0 border-end-0 border-dashed border">
             <div class="row align-items-center">
                 <div class="col">
-                    <h6 class="m-0 font-14 fw-semibold">Offene Incidents ({{ $openIncidents->count() }})</h6>
+                    <h6 class="m-0 font-14 fw-semibold">Offene Incidents: {{ $openIncidents->count() }}</h6>
                 </div>
             </div>
         </div>
@@ -97,7 +97,7 @@
                 </a>
             @empty
                 <div class="p-3 text-center text-muted">
-                    <i class="mdi mdi-check-circle font-24"></i>
+                    <i class="mdi mdi-check-circle-outline font-36"></i>
                     <p class="mb-0">Keine offenen Incidents</p>
                 </div>
             @endforelse
