@@ -2,28 +2,23 @@
 
 @section("body")
     <div class="mb-3">
+		<p>Du findest hier Informationen zum Mapping von SAP-Eintrag und AD-Benutzer. Einträge, die hier aufgelistet und nicht als 'Excluded' markiert sind, werden täglich als Incident gemeldet. Excludes können in den Einstellungen hinterlegt werden.</p>
         <div class="btn-group w-100" role="group">
-            <button 
-                type="button" 
-                class="btn {{ $activeFilter === 'keine_personalnummer' ? 'btn-primary' : 'btn-outline-primary' }}"
-                wire:click="setFilter('keine_personalnummer')"
-            >
-                Benutzer ohne Personalnummer
-            </button>
-            <button 
-                type="button" 
-                class="btn {{ $activeFilter === 'kein_ad_benutzer' ? 'btn-primary' : 'btn-outline-primary' }}"
-                wire:click="setFilter('kein_ad_benutzer')"
-            >
-                SAP-Einträge ohne AD-Benutzer
-            </button>
-            <button 
-                type="button" 
-                class="btn {{ $activeFilter === 'kein_sap_eintrag' ? 'btn-primary' : 'btn-outline-primary' }}"
-                wire:click="setFilter('kein_sap_eintrag')"
-            >
-                AD-Benutzer ohne SAP-Eintrag
-            </button>
+            @foreach($filters as $filter)
+                <button 
+                    type="button" 
+                    class="btn {{ $activeFilter === $filter ? 'btn-primary' : 'btn-outline-primary' }}"
+                    wire:click="setFilter('{{ $filter }}')"
+                >
+                    @if($filter === 'keine_personalnummer')
+                        Benutzer ohne Personalnummer
+                    @elseif($filter === 'kein_ad_benutzer')
+                        SAP-Einträge ohne AD-Benutzer
+                    @elseif($filter === 'kein_sap_eintrag')
+                        AD-Benutzer ohne SAP-Eintrag
+                    @endif
+                </button>
+            @endforeach
         </div>
     </div>
 
@@ -38,40 +33,52 @@
         @endif
     </div>
 
-	@if(empty($data) || (is_countable($data) && count($data) === 0))
-		<div class="alert alert-success mb-0">
-			<i class="ri-checkbox-circle-line"></i> Keine Einträge gefunden.
-		</div>
-	@else
+    @if(empty($data) || (is_countable($data) && count($data) === 0))
+        <div class="alert alert-success mb-0">
+            <i class="ri-checkbox-circle-line"></i> Keine Einträge gefunden.
+        </div>
+    @else
         <div class="table-responsive">
             <table class="table table-sm table-hover table-centered mb-0">
                 <thead>
                     <tr>
-                        @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
-                            <th>Name</th>
-                            <th>Funktion</th>
-                            <th>Personalnummer</th>
-                        @else
-                            <th>Name</th>
-                            <th>Funktion</th>
-                            <th>Personalnummer</th>
-                        @endif
+                        <th>Name</th>
+                        <th>Funktion</th>
+                        <th>Personalnummer</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($data as $item)
                         <tr>
-                            @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
-								<td>{{ $item->display_name ?? "-" }} ({{ $item->username ?? "-" }})</td>
-                                <td>{{ $item->description ?? "-" }}</td>
-								<td>{{ $item->initials ?? "-" }}</td>
-                            @else
-                                <td>
+                            <td>
+                                @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
+                                    {{ $item->display_name ?? "-" }} ({{ $item->username ?? "-" }})
+                                @else
                                     {{ $item->d_name ?? "-" }} @if($item->d_vname || $item->d_rufnm) {{ $item->d_rufnm ?: $item->d_vname }}@endif
-                                </td>
-                                <td>{{ $item->d_0032_batchbez ?? "-" }}</td>
-								<td>{{ $item->d_pernr ?? "-" }}</td>
-                            @endif
+                                @endif
+                            </td>
+                            <td>
+                                @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
+                                    {{ $item->description ?? "-" }}
+                                @else
+                                    {{ $item->d_0032_batchbez ?? "-" }}
+                                @endif
+                            </td>
+                            <td>
+                                <div class="d-inline-flex align-items-center">
+                                    @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
+                                        {{ $item->initials ?? "-" }}
+                                    @else
+                                        {{ $item->d_pernr ?? "-" }}
+                                    @endif
+                                    @php
+                                        $initials = $activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag' ? $item->initials : $item->d_pernr;
+                                    @endphp
+                                    @if(in_array($initials, $excludedInitials))
+                                        <span class="badge bg-info ms-1">Excluded</span>
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -79,7 +86,7 @@
         </div>
         <div class="mt-3">
             <small class="text-muted">
-                <strong>Total:</strong> {{ $data->count() }} 
+                <strong>Total:</strong> {{ $data->count() }}
                 @if($activeFilter === 'keine_personalnummer')
                     Benutzer ohne Personalnummer
                 @elseif($activeFilter === 'kein_ad_benutzer')

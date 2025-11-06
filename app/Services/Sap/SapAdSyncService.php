@@ -136,7 +136,7 @@ class SapAdSyncService
 					
 					if ($eintritt->isFuture()) 
 					{
-						Logger::debug("Personalnummer {$personalnummer} übersprungen: Eintrittsdatum {$eintritt->format('d.m.Y')} liegt in der Zukunft");
+						// Logger::debug("Personalnummer {$personalnummer} übersprungen: Eintrittsdatum {$eintritt->format('d.m.Y')} liegt in der Zukunft");
 						continue;
 					}
 				} catch (\Exception $e) {
