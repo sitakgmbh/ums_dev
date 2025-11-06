@@ -48,35 +48,38 @@ private function getWochenUebersicht(): array
         $datum = $datumObj->format('d.m.');
         $datumYmd = $datumObj->format('Y-m-d');
 
-        $eroeffnungen = Eroeffnung::whereDate('vertragsbeginn', $datumYmd)
-            ->select('id', 'vorname', 'nachname')
-            ->get()
-            ->map(fn($e) => [
-                'id' => $e->id,
-                'name' => $e->vorname . ' ' . $e->nachname,
-            ])
-            ->sortBy('name')
-            ->values();
+		$eroeffnungen = Eroeffnung::whereDate('vertragsbeginn', $datumYmd)
+			->where('archiviert', 0)
+			->select('id', 'vorname', 'nachname')
+			->get()
+			->map(fn($e) => [
+				'id' => $e->id,
+				'name' => $e->vorname . ' ' . $e->nachname,
+			])
+			->sortBy('name')
+			->values();
 
-        $mutationen = Mutation::whereDate('vertragsbeginn', $datumYmd)
-            ->with('adUser:id,firstname,lastname')
-            ->get()
-            ->map(fn($m) => [
-                'id' => $m->id,
-                'name' => optional($m->adUser)->firstname . ' ' . optional($m->adUser)->lastname,
-            ])
-            ->sortBy('name')
-            ->values();
+		$mutationen = Mutation::whereDate('vertragsbeginn', $datumYmd)
+			->where('archiviert', 0)
+			->with('adUser:id,firstname,lastname')
+			->get()
+			->map(fn($m) => [
+				'id' => $m->id,
+				'name' => optional($m->adUser)->firstname . ' ' . optional($m->adUser)->lastname,
+			])
+			->sortBy('name')
+			->values();
 
-        $austritte = Austritt::whereDate('vertragsende', $datumYmd)
-            ->with('adUser:id,firstname,lastname')
-            ->get()
-            ->map(fn($a) => [
-                'id' => $a->id,
-                'name' => optional($a->adUser)->firstname . ' ' . optional($a->adUser)->lastname,
-            ])
-            ->sortBy('name')
-            ->values();
+		$austritte = Austritt::whereDate('vertragsende', $datumYmd)
+			->where('archiviert', 0)
+			->with('adUser:id,firstname,lastname')
+			->get()
+			->map(fn($a) => [
+				'id' => $a->id,
+				'name' => optional($a->adUser)->firstname . ' ' . optional($a->adUser)->lastname,
+			])
+			->sortBy('name')
+			->values();
 
         $wochenUebersicht[$tag] = [
             'datum' => $datum,
