@@ -10,13 +10,16 @@
 
 						<dt class="col-sm-2">Priorität:</dt>
 						<dd class="col-sm-10">
-							<span class="badge 
-								{{ $incident->priority === 'critical' ? 'bg-danger' : '' }}
-								{{ $incident->priority === 'high' ? 'bg-warning' : '' }}
-								{{ $incident->priority === 'medium' ? 'bg-info' : '' }}
-								{{ $incident->priority === 'low' ? 'bg-secondary' : '' }}">
-								{{ ucfirst($incident->priority) }}
-							</span>
+						<span class="badge 
+							{{ $incident->priority === 'critical' ? 'bg-danger' : '' }}
+							{{ $incident->priority === 'high' ? 'bg-warning' : '' }}
+							{{ $incident->priority === 'medium' ? 'bg-info' : '' }}
+							{{ $incident->priority === 'low' ? 'bg-secondary' : '' }}">
+							{{ ucfirst($incident->priority) === 'Critical' ? 'Kritisch' : '' }}
+							{{ ucfirst($incident->priority) === 'High' ? 'Hoch' : '' }}
+							{{ ucfirst($incident->priority) === 'Medium' ? 'Mittel' : '' }}
+							{{ ucfirst($incident->priority) === 'Low' ? 'Tief' : '' }}
+						</span>
 						</dd>
 
 						<dt class="col-sm-2">Erstellt von:</dt>

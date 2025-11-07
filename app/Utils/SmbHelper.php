@@ -14,7 +14,7 @@ class SmbHelper
         ]);
 
         if (!@is_dir($fullPath)) {
-            Logger::db('smb', 'error', "Verzeichnis nicht gefunden", [
+            Logger::db('system', 'error', "Verzeichnis nicht gefunden", [
                 'path' => $fullPath,
             ]);
             return false;
@@ -24,7 +24,7 @@ class SmbHelper
 
         if ($items === false) {
             $error = error_get_last();
-            Logger::db('smb', 'error', "Fehler beim Auflisten des Verzeichnisses", [
+            Logger::db('system', 'error', "Fehler beim Auflisten des Verzeichnisses", [
                 'path' => $fullPath,
                 'error' => $error['message'] ?? 'Unbekannt',
             ]);
@@ -70,7 +70,7 @@ class SmbHelper
         Logger::debug("Lösche Pfad", ['path' => $fullPath]);
 
         if (!@file_exists($fullPath)) {
-            Logger::db('smb', 'error', "Pfad nicht gefunden", ['path' => $fullPath]);
+            Logger::db('system', 'error', "Pfad nicht gefunden", ['path' => $fullPath]);
             return false;
         }
 
@@ -87,7 +87,7 @@ class SmbHelper
 
             return true;
         } catch (\Exception $e) {
-            Logger::db('smb', 'error', "Fehler beim Löschen", [
+            Logger::db('system', 'error', "Fehler beim Löschen", [
                 'path' => $fullPath,
                 'error' => $e->getMessage(),
             ]);
