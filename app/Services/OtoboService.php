@@ -18,9 +18,9 @@ class OtoboService
 
 	public function __construct()
 	{
-		$this->url = Setting::getValue("otobo_url") ?? null;
-		$this->username = Setting::getValue("otobo_username") ?? null;
-		$this->password = Setting::getValue("otobo_password") ?? null;
+		$this->url = env("OTOBO_URL") ?? null;
+		$this->username = env("OTOBO_USERNAME") ?? null;
+		$this->password = env("OTOBO_PASSWORD") ?? null;
 		$this->config = config("ums.otobo") ?? [];
 
 		$missing = [];

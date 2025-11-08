@@ -22,9 +22,9 @@ class Connection
     {
         if ($this->tenantId !== null) return;
 
-        $this->tenantId     = Setting::getValue("azure_tenant_id", "");
-        $this->clientId     = Setting::getValue("azure_client_id", "");
-        $this->clientSecret = Setting::getValue("azure_client_secret", "");
+        $this->tenantId     = env("AZURE_TENANT_ID") ?? null;
+        $this->clientId     = env("AZURE_CLIENT_ID") ?? null;
+        $this->clientSecret = env("AZURE_CLIENT_SECRET") ?? null;
     }
 
     public function getClient(): GraphServiceClient
