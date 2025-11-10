@@ -37,6 +37,16 @@ return new class extends Migration
             $table->foreignId("abteilung2_id")->nullable()->constrained("abteilungen")->nullOnDelete();
             $table->foreignId("funktion_id")->nullable()->constrained("funktionen")->nullOnDelete();
 
+			$table->string("vorname_old")->nullable();
+			$table->string("nachname_old")->nullable();
+            $table->foreignId("anrede_id_old")->nullable()->constrained("anreden")->nullOnDelete();
+            $table->foreignId("titel_id_old")->nullable()->constrained("titel")->nullOnDelete();
+            $table->foreignId("arbeitsort_id_old")->nullable()->constrained("arbeitsorte")->nullOnDelete();
+            $table->foreignId("unternehmenseinheit_id_old")->nullable()->constrained("unternehmenseinheiten")->nullOnDelete();
+            $table->foreignId("abteilung_id_old")->nullable()->constrained("abteilungen")->nullOnDelete();
+            $table->foreignId("abteilung2_id_old")->nullable()->constrained("abteilungen")->nullOnDelete();
+            $table->foreignId("funktion_id_old")->nullable()->constrained("funktionen")->nullOnDelete();
+
             // --- Telefonie ---
             $table->string("tel_nr")->nullable();
             $table->string("tel_auswahl")->nullable();

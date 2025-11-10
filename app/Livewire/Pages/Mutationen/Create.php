@@ -79,6 +79,22 @@ class Create extends Component
 				$data["ad_gruppen"] = $groups;
 			}
 
+			if (!empty($data["ad_user_id"])) 
+			{
+				Logger::debug("111111 ad_user_id: {$data['ad_user_id']}");
+				// Logger::debug('data dump: ' . print_r($data, true));
+				
+				$adUser = AdUser::findOrFail($data["ad_user_id"]);
+				$data["vorname_old"] = $adUser->firstname;
+				$data["nachname_old"] = $adUser->lastname;
+				$data["anrede_id_old"] = $adUser->anrede?->id;
+				$data["titel_id_old"] = $adUser->titel?->id;
+				$data["arbeitsort_id_old"] = $adUser->arbeitsort?->id;
+				$data["unternehmenseinheit_id_old"] = $adUser->unternehmenseinheit?->id;
+				$data["abteilung_id_old"] = $adUser->abteilung?->id;
+				$data["funktion_id_old"] = $adUser->funktion?->id;
+			}
+
 			Mutation::create($data);
 
 			session()->flash("success", "Mutation erfolgreich erstellt.");

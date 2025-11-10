@@ -180,6 +180,25 @@
                                     @foreach($fields as $label => $path)
                                         @php
                                             $value = data_get($entry, $path, '-');
+											if ($section === 'Personalien neu') {
+												// Fallback auf adUser, falls Wert leer oder null
+												if (empty($value) || $value === '-') {
+													switch ($label) {
+														case 'Vorname':
+															$value = $entry->vorname ?? $entry->adUser?->firstname ?? '-';
+															break;
+														case 'Nachname':
+															$value = $entry->nachname ?? $entry->adUser?->lastname ?? '-';
+															break;
+														case 'Anrede':
+															$value = $entry->anrede?->name ?? $entry->adUser?->anrede?->name ?? '-';
+															break;
+														case 'Titel':
+															$value = $entry->titel?->name ?? $entry->adUser?->titel?->name ?? '-';
+															break;
+													}
+												}
+											}
 
                                             if ($value === true || $value === 1 || $value === "1") {
                                                 $value = 'Ja';

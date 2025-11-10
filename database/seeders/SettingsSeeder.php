@@ -22,7 +22,7 @@ class SettingsSeeder extends Seeder
                 'value'       => '',
                 'type'        => 'string',
                 'name'        => 'Excludes Personalnummerabgleich',
-                'description' => 'Hinterlegte Personalnummern erzeugen keinen Incident. Trenne mehrere Einträge mit einem Komma.,
+                'description' => 'Hinterlegte Personalnummern erzeugen keinen Incident. Trenne mehrere Einträge mit einem Komma.',
             ],
         ];
 

@@ -28,6 +28,14 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="abteilung_id", type="integer", nullable=true, example=5),
  *     @OA\Property(property="abteilung2_id", type="integer", nullable=true, example=6),
  *     @OA\Property(property="funktion_id", type="integer", nullable=true, example=7),
+ *     @OA\Property(property="vorname_old", type="string", example="Max"),
+ *     @OA\Property(property="nachname_old", type="string", example="Mustermann"),
+ *     @OA\Property(property="anrede_id_old", type="integer", nullable=true, example=1),
+ *     @OA\Property(property="titel_id_old", type="integer", nullable=true, example=2),
+ *     @OA\Property(property="arbeitsort_id_old", type="integer", nullable=true, example=3),
+ *     @OA\Property(property="unternehmenseinheit_id_old", type="integer", nullable=true, example=4),
+ *     @OA\Property(property="abteilung_id_old", type="integer", nullable=true, example=5),
+ *     @OA\Property(property="funktion_id_old", type="integer", nullable=true, example=7),
  *     @OA\Property(property="ad_user_id", type="integer", example=53),
  *     @OA\Property(property="mailendung", type="string", example="@domain.tld"),
  *     @OA\Property(property="ad_gruppen", type="array", @OA\Items(type="string"), example={"GRP_IT", "GRP_SUPPORT"}),
@@ -99,6 +107,15 @@ class Mutation extends Model
         "abteilung_id",
         "abteilung2_id",
         "funktion_id",
+        "vorname_old",
+		"nachname_old",
+		"anrede_id_old",
+		"titel_id_old",
+		"arbeitsort_id_old",
+		"unternehmenseinheit_id_old",
+		"abteilung_id_old",
+		"funktion_id_old",
+		"funktion_id",
         "ad_user_id",
         "mailendung",
         "ad_gruppen",
@@ -206,40 +223,75 @@ class Mutation extends Model
         return $this->belongsTo(AdUser::class, "bezugsperson_id");
     }
 
-    public function arbeitsort()
-    {
-        return $this->belongsTo(Arbeitsort::class, "arbeitsort_id");
-    }
+	public function arbeitsort()
+	{
+		return $this->belongsTo(Arbeitsort::class, "arbeitsort_id");
+	}
 
-    public function unternehmenseinheit()
-    {
-        return $this->belongsTo(Unternehmenseinheit::class, "unternehmenseinheit_id");
-    }
+	public function arbeitsortOld()
+	{
+		return $this->belongsTo(Arbeitsort::class, "arbeitsort_id_old");
+	}
 
-    public function abteilung()
-    {
-        return $this->belongsTo(Abteilung::class, "abteilung_id");
-    }
+	public function unternehmenseinheit()
+	{
+		return $this->belongsTo(Unternehmenseinheit::class, "unternehmenseinheit_id");
+	}
 
-    public function abteilung2()
-    {
-        return $this->belongsTo(Abteilung::class, "abteilung2_id");
-    }
+	public function unternehmenseinheitOld()
+	{
+		return $this->belongsTo(Unternehmenseinheit::class, "unternehmenseinheit_id_old");
+	}
 
-    public function funktion()
-    {
-        return $this->belongsTo(Funktion::class, "funktion_id");
-    }
+	public function abteilung()
+	{
+		return $this->belongsTo(Abteilung::class, "abteilung_id");
+	}
 
-    public function anrede()
-    {
-        return $this->belongsTo(Anrede::class, "anrede_id");
-    }
+	public function abteilungOld()
+	{
+		return $this->belongsTo(Abteilung::class, "abteilung_id_old");
+	}
 
-    public function titel()
-    {
-        return $this->belongsTo(Titel::class, "titel_id");
-    }
+	public function abteilung2()
+	{
+		return $this->belongsTo(Abteilung::class, "abteilung2_id");
+	}
+
+	public function abteilung2Old()
+	{
+		return $this->belongsTo(Abteilung::class, "abteilung2_id_old");
+	}
+
+	public function funktion()
+	{
+		return $this->belongsTo(Funktion::class, "funktion_id");
+	}
+
+	public function funktionOld()
+	{
+		return $this->belongsTo(Funktion::class, "funktion_id_old");
+	}
+
+	public function anrede()
+	{
+		return $this->belongsTo(Anrede::class, "anrede_id");
+	}
+
+	public function anredeOld()
+	{
+		return $this->belongsTo(Anrede::class, "anrede_id_old");
+	}
+
+	public function titel()
+	{
+		return $this->belongsTo(Titel::class, "titel_id");
+	}
+
+	public function titelOld()
+	{
+		return $this->belongsTo(Titel::class, "titel_id_old");
+	}
 
     public function sapRolle()
     {
