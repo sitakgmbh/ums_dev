@@ -11,11 +11,9 @@
 						<dt class="col-sm-2">Priorität:</dt>
 						<dd class="col-sm-10">
 						<span class="badge 
-							{{ $incident->priority === 'critical' ? 'bg-danger' : '' }}
-							{{ $incident->priority === 'high' ? 'bg-warning' : '' }}
-							{{ $incident->priority === 'medium' ? 'bg-info' : '' }}
-							{{ $incident->priority === 'low' ? 'bg-secondary' : '' }}">
-							{{ ucfirst($incident->priority) === 'Critical' ? 'Kritisch' : '' }}
+							{{ $incident->priority === 'high' ? 'bg-danger' : '' }}
+							{{ $incident->priority === 'medium' ? 'bg-warning' : '' }}
+							{{ $incident->priority === 'low' ? 'bg-info' : '' }}">
 							{{ ucfirst($incident->priority) === 'High' ? 'Hoch' : '' }}
 							{{ ucfirst($incident->priority) === 'Medium' ? 'Mittel' : '' }}
 							{{ ucfirst($incident->priority) === 'Low' ? 'Tief' : '' }}
@@ -23,13 +21,13 @@
 						</dd>
 
 						<dt class="col-sm-2">Erstellt von:</dt>
-						<dd class="col-sm-10">{{ $incident->creator?->firstname ?? '' }} {{ $incident->creator?->lastname ?? '' }}</dd>
+						<dd class="col-sm-10">{{ $incident->creator?->firstname ?? '-' }} {{ $incident->creator?->lastname ?? '' }}</dd>
 
 						<dt class="col-sm-2">Erstellt am:</dt>
 						<dd class="col-sm-10">{{ $incident->created_at->format('d.m.Y H:i') }}</dd>
 
 						<dt class="col-sm-2">Gelöst von:</dt>
-						<dd class="col-sm-10">{{ $incident->resolver?->firstname ?? '' }} {{ $incident->resolver?->lastname ?? '' }}</dd>
+						<dd class="col-sm-10">{{ $incident->resolver?->firstname ?? '-' }} {{ $incident->resolver?->lastname ?? '' }}</dd>
 
 						<dt class="col-sm-2">Gelöst am:</dt>
 						<dd class="col-sm-10">{{ $incident->resolved_at?->format('d.m.Y H:i') ?? '-' }}</dd>

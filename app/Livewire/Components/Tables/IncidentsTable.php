@@ -74,10 +74,9 @@ class IncidentsTable extends BaseTable
     {
         return [
             "priority" => [
-                "critical" => ["label" => "Kritisch", "class" => "danger"],
-                "high"     => ["label" => "Hoch", "class" => "warning"],
-                "medium"   => ["label" => "Mittel", "class" => "info"],
-                "low"      => ["label" => "Tief", "class" => "secondary"],
+                "high"     => ["label" => "Hoch", "class" => "danger"],
+                "medium"   => ["label" => "Mittel", "class" => "warning"],
+                "low"      => ["label" => "Tief", "class" => "info"],
             ],
         ];
     }

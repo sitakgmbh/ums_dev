@@ -55,14 +55,29 @@
 
 
 <!-- Incidents Notification nur für Admin -->
+<!-- Incidents Notification nur für Admin -->
 @role('admin')
 <li class="dropdown notification-list">
 <a class="nav-link dropdown-toggle arrow-none" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-    <i class="{{ $openIncidents->count() > 0 ? 'ri-error-warning-line text-danger' : 'ri-checkbox-circle-line text-success' }} font-22"></i>
+    @php
+        $iconClass = '';
+        $iconName = '';
+        if ($openIncidents->contains(function ($incident) { return $incident->priority === 'high'; })) {
+            $iconClass = 'text-danger';
+            $iconName = 'ri-alert-line';
+        } elseif ($openIncidents->contains(function ($incident) { return $incident->priority === 'medium'; })) {
+            $iconClass = 'text-warning';
+            $iconName = 'ri-error-warning-line';
+        } elseif ($openIncidents->isNotEmpty()) {
+            $iconClass = 'text-info';
+            $iconName = 'ri-information-line';
+        } else {
+            $iconClass = 'text-success';
+            $iconName = 'ri-checkbox-circle-line';
+        }
+    @endphp
+    <i class="{{ $iconName }} font-22 {{ $iconClass }}"></i>
 </a>
-
-
-
     <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated dropdown-lg py-0">
         <div class="p-2 border-top-0 border-start-0 border-end-0 border-dashed border">
             <div class="row align-items-center">
@@ -71,7 +86,6 @@
                 </div>
             </div>
         </div>
-
         <div class="px-2" style="max-height: 300px;" data-simplebar>
             @forelse($openIncidents as $incident)
                 <a href="{{ route('admin.incidents.show', $incident->id) }}" 
@@ -79,7 +93,7 @@
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0">
-                                <div class="notify-icon bg-{{ $incident->priority === 'critical' ? 'danger' : ($incident->priority === 'high' ? 'warning' : ($incident->priority === 'medium' ? 'info' : 'secondary')) }}">
+                                <div class="notify-icon bg-{{ $incident->priority === 'high' ? 'danger' : ($incident->priority === 'medium' ? 'warning' : 'info') }}">
                                     <i class="mdi mdi-alert-circle-outline"></i>
                                 </div>
                             </div>
@@ -102,7 +116,6 @@
                 </div>
             @endforelse
         </div>
-
         <!-- All-->
         <a href="{{ route('admin.incidents.index') }}" class="dropdown-item text-center text-primary notify-item border-top py-2">
             Alle anzeigen
@@ -110,8 +123,6 @@
     </div>
 </li>
 @endrole
-
-
 
 
 
