@@ -180,6 +180,11 @@
                                         if ($value instanceof \Carbon\Carbon) {
                                             $value = $value->format('d.m.Y');
                                         }
+
+										if ($path === 'ticket_nr' && $value && $value !== '-') {
+											$value = '<a class="link-secondary" target="_blank" href="https://pdgr-otobo/otobo/index.pl?Action=AgentTicketZoom;TicketNumber=' . e($value) . '">' . e($value) . '</a>';
+										}
+
                                     @endphp
 
                                     <tr>
