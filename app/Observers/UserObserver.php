@@ -35,24 +35,28 @@ class UserObserver
         Logger::db("system", "info", "Benutzer {$user->username} erstellt durch {$actorFullname} ({$actorUsername})", $context);
     }
 
-    public function updated(User $user): void
-    {
-        $actor = Auth::user();
-        $actorUsername = $actor?->username ?? "system";
-        $actorFullname = $actor?->name ?? ($actor?->firstname." ".$actor?->lastname);
+	public function updated(User $user): void
+	{
+		if ($user->auth_type !== 'local') {
+			return;
+		}
 
-        $changes  = $this->filterData($user->getChanges(), $user);
-        $original = $this->filterData($user->getOriginal(), $user);
+		$actor = Auth::user();
+		$actorUsername = $actor?->username ?? "system";
+		$actorFullname = $actor?->name ?? ($actor?->firstname." ".$actor?->lastname);
 
-        Logger::db("system", "info", "Benutzer {$user->username} bearbeitet durch {$actorFullname} ({$actorUsername})", [
-            "actor_id"   => $actor?->id,
-            "actor_user" => $actorUsername,
-            "fullname"   => $actorFullname,
-            "username"   => $user->username,
-            "changes"    => $changes,
-            "original"   => $original,
-        ]);
-    }
+		$changes  = $this->filterData($user->getChanges(), $user);
+		$original = $this->filterData($user->getOriginal(), $user);
+
+		Logger::db("system", "info", "Benutzer {$user->username} bearbeitet durch {$actorFullname} ({$actorUsername})", [
+			"actor_id"   => $actor?->id,
+			"actor_user" => $actorUsername,
+			"fullname"   => $actorFullname,
+			"username"   => $user->username,
+			"changes"    => $changes,
+			"original"   => $original,
+		]);
+	}
 
     public function deleted(User $user): void
     {
