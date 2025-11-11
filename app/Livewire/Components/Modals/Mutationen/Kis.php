@@ -76,7 +76,7 @@ class Kis extends BaseModal
         $this->permissionMode = $this->shouldUseMergeMode() ? 'merge' : 'replace';
         
         // Auto-select employee function if SAP Leistungserbringer
-        if ($this->entry->sap_leistungserbringer) {
+        if ($this->entry->is_lei) {
             $this->employeeFunction = 34;
         }
         
