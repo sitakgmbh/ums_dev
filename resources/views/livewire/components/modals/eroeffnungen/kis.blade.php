@@ -264,7 +264,7 @@
 
 	<button
 		type="button"
-		class="btn btn-warning me-2"
+		class="btn btn-warning me-1"
 		wire:click="markAsComplete"
 		wire:loading.attr="disabled"
 	>
