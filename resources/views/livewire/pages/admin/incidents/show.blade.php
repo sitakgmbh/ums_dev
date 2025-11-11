@@ -27,7 +27,7 @@
                         <dt class="col-sm-2">Gelöst am:</dt>
                         <dd class="col-sm-10">{{ $incident->resolved_at?->format('d.m.Y H:i') ?? '-' }}</dd>
                         <dt class="col-sm-2">Beschreibung:</dt>
-                        <dd class="col-sm-10 mb-0">{{ $incident->description ?? '-' }}</dd>
+                        <dd class="col-sm-10 mb-0">{!! nl2br(e($incident->description)) !!}</dd>
                     </dl>
                     @if($incident->metadata)
                         <div class="mt-2">
