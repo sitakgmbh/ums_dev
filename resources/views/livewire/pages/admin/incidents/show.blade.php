@@ -32,7 +32,7 @@
                     @if($incident->metadata)
                         <div class="mt-2">
                             <a class="btn btn-link text-decoration-none p-0" data-bs-toggle="collapse" href="#collapseMetadata" role="button" aria-expanded="false" aria-controls="collapseMetadata">
-                                <i class="mdi mdi-chevron-right me-1"></i>
+                                <i class="mdi mdi-chevron-right me-0"></i>
                                 <span class="metadata-toggle">Metadaten einblenden</span>
                             </a>
                             <div class="collapse" id="collapseMetadata">
