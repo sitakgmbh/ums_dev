@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\EroeffnungController;
 use App\Http\Controllers\Api\MutationController;
 use App\Http\Controllers\Api\AustrittController;
+use App\Http\Controllers\Api\IncidentController;
 
 Route::middleware('apiauthswitcher')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
@@ -21,5 +22,7 @@ Route::middleware('apiauthswitcher')->group(function () {
 
 		Route::post('austritte', [AustrittController::class, 'store']);
 		Route::patch('austritte/{id}', [AustrittController::class, 'update']);
+		
+		Route::post('incidents', [IncidentController::class, 'store']);
     });
 });
