@@ -72,7 +72,7 @@ class AustritteAdminTable extends BaseTable
 
     protected function defaultSortDirection(): string
     {
-        return "desc";
+        return "asc";
     }
 
     protected function applyFilters(Builder $query): void
