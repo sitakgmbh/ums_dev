@@ -59,20 +59,32 @@ class MutationController extends Controller
             ], 404);
         }
 
-        // Mutation erstellen
-        $mutation = Mutation::create([
-            "ad_user_id"     => $adUser->id,
-            "vertragsbeginn" => $validated["vertragsbeginn"],
-            "vorname"        => $validated["vorname"] ?? null,
-            "nachname"       => $validated["nachname"] ?? null,
-            "mailendung"     => $validated["mailendung"] ?? null,
-            "status_mail"    => $validated["status_mail"] ?? 0,
-            "status_kis"     => $validated["status_kis"] ?? 0,
-            "kommentar" => "Dieser Antrag wurde automatisch erstellt.",
+		// Alte Werte aus AD speichern
+		$oldData = [
+			"vorname_old" => $adUser->firstname,
+			"nachname_old" => $adUser->lastname,
+			"anrede_id_old" => $adUser->anrede?->id,
+			"titel_id_old" => $adUser->titel?->id,
+			"arbeitsort_id_old" => $adUser->arbeitsort?->id,
+			"unternehmenseinheit_id_old" => $adUser->unternehmenseinheit?->id,
+			"abteilung_id_old" => $adUser->abteilung?->id,
+			"funktion_id_old" => $adUser->funktion?->id,
+		];
+
+		// Neue Mutation erstellen (alte Werte + neue Werte)
+		$mutation = Mutation::create(array_merge($oldData, [
+			"ad_user_id"     => $adUser->id,
+			"vertragsbeginn" => $validated["vertragsbeginn"],
+			"vorname"        => $validated["vorname"] ?? null,
+			"nachname"       => $validated["nachname"] ?? null,
+			"mailendung"     => $validated["mailendung"] ?? null,
+			"status_mail"    => $validated["status_mail"] ?? 0,
+			"status_kis"     => $validated["status_kis"] ?? 0,
+			"kommentar" => "Dieser Antrag wurde automatisch erstellt.",
 			"ad_gruppen" => [],
 			"kalender_berechtigungen" => [],
 			"archiviert"     => false,
-        ]);
+		]));
 
         return response()->json($mutation, 201);
     }

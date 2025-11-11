@@ -80,10 +80,7 @@ class Create extends Component
 			}
 
 			if (!empty($data["ad_user_id"])) 
-			{
-				Logger::debug("111111 ad_user_id: {$data['ad_user_id']}");
-				// Logger::debug('data dump: ' . print_r($data, true));
-				
+			{				
 				$adUser = AdUser::findOrFail($data["ad_user_id"]);
 				$data["vorname_old"] = $adUser->firstname;
 				$data["nachname_old"] = $adUser->lastname;
