@@ -5,6 +5,11 @@ namespace App\Livewire\Components\Modals\Mutationen;
 use App\Livewire\Components\Modals\BaseModal;
 use App\Models\Mutation;
 use Illuminate\Support\Facades\Mail;
+use App\Support\SafeMail;
+use Carbon\Carbon;
+use LdapRecord\Models\ActiveDirectory\User as AdUser;
+use App\Utils\LdapHelper;
+use App\Utils\Logging\Logger;
 
 class Auftraege extends BaseModal
 {
@@ -309,6 +314,17 @@ private function resolveMailConfig(string $key): array
                 ]);
 
 				SafeMail::send($mailable, $recipients, $cc);
+
+				try 
+				{
+					$username = $this->entry->adUser->username;
+					$date = Carbon::now()->format("Ymd");  // Beispiel: 20251130
+					LdapHelper::setAdAttribute($username, "extensionAttribute4", $date);
+				} 
+				catch (\Throwable $e) 
+				{
+					Logger::error("Fehler beim Setzen extensionAttribute4: " . $e->getMessage());
+				}
             } 
 			catch (\Exception $e) 
 			{

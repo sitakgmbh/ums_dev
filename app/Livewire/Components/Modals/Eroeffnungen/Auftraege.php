@@ -6,6 +6,10 @@ use App\Livewire\Components\Modals\BaseModal;
 use App\Models\Eroeffnung;
 use Illuminate\Support\Facades\Mail;
 use App\Support\SafeMail;
+use Carbon\Carbon;
+use LdapRecord\Models\ActiveDirectory\User as AdUser;
+use App\Utils\LdapHelper;
+use App\Utils\Logging\Logger;
 
 class Auftraege extends BaseModal
 {
@@ -106,6 +110,7 @@ class Auftraege extends BaseModal
 					"cc"       => $cc,
 					"mailable" => new \App\Mail\Eroeffnungen\AuftragSap($this->entry),
 				];
+				
 				break;
 
 
@@ -259,6 +264,16 @@ class Auftraege extends BaseModal
 
 				SafeMail::send($mailable, $recipients, $cc);
 
+				try 
+				{
+					$username = $this->entry->benutzername;
+					$date = Carbon::now()->format("Ymd");
+					LdapHelper::setAdAttribute($username, "extensionAttribute4", $date);
+				} 
+				catch (\Throwable $e) 
+				{
+					Logger::error("Fehler beim Setzen extensionAttribute4: " . $e->getMessage());
+				}
 			} 
 			catch (\Throwable $e) 
 			{
