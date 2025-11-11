@@ -50,16 +50,25 @@ class SsoAutoLogin
 
         $user = User::where("username", $username)->first();
 
-        if (! $user && $ldapUser) 
-		{
-            $user = $service->provisionOrUpdateUserFromLdap($ldapUser, $username, true);
-            Logger::debug("SSO-AutoLogin: Benutzer '{$username}' provisioniert (ID {$user->id})");
-        } 
-		elseif ($user && $ldapUser) 
-		{
-            $service->provisionOrUpdateUserFromLdap($ldapUser, $username, false, $user);
-            Logger::debug("SSO-AutoLogin: Benutzer '{$username}' aktualisiert (ID {$user->id})");
-        }
+		// Gruppenzuordnung pruefen
+		if (! $service->userHasAccess($ldapUser)) {
+
+			$this->logDb("auth", "warning",
+				"Login Benutzer '{$username}' fehlgeschlagen: Keine Berechtigung");
+
+			Logger::debug("SSO-Login verweigert – Benutzer '{$username}' fehlt in erlaubten Gruppen");
+
+			abort(401, "Nicht berechtigt");
+		}
+
+		if (! $user) {
+			$user = $service->provisionOrUpdateUserFromLdap($ldapUser, $username, true);
+			Logger::debug("SSO-AutoLogin: Benutzer '{$username}' provisioniert (ID {$user->id})");
+		} 
+		else {
+			$service->provisionOrUpdateUserFromLdap($ldapUser, $username, false, $user);
+			Logger::debug("SSO-AutoLogin: Benutzer '{$username}' aktualisiert (ID {$user->id})");
+		}
 
         if ($user) 
 		{

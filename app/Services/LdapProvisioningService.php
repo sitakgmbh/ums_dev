@@ -60,4 +60,19 @@ class LdapProvisioningService
 
         return $user;
     }
+
+	public function userHasAccess(LdapUser $ldapUser): bool
+	{
+		$groups = collect($ldapUser->getAttribute("memberOf") ?? [])
+			->map(fn($dn) => preg_match("/CN=([^,]+)/i", $dn, $m) ? $m[1] : null)
+			->filter()
+			->values()
+			->toArray();
+
+		$admin = env("LDAP_ADMIN_GROUP");
+		$user  = env("LDAP_USER_GROUP");
+
+		return in_array($admin, $groups, true) || in_array($user, $groups, true);
+	}
+
 }
