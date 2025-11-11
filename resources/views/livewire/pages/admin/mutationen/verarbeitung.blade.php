@@ -163,6 +163,8 @@
     });
 </script>
 
+
+
     {{-- Rechte Spalte: Details --}}
     <div class="col-12 col-lg-4">
         <div class="card mb-3">
@@ -179,7 +181,26 @@
                                 <tbody style="line-height: 1.2;">
                                     @foreach($fields as $label => $path)
                                         @php
-                                            $value = data_get($entry, $path, '-');
+
+                        $value = data_get($entry, $path, '-');
+
+                        // Vergleich: Personalien neu vs alt
+                        $highlight = false;
+                        if ($section === 'Personalien neu') {
+                            // entsprechenden "alt"-Pfad ableiten
+                            $altPath = str_replace(['vorname','nachname','anrede','titel','arbeitsort','unternehmenseinheit','abteilung','funktion'], 
+                                                   ['vorname_old','nachname_old','anredeOld','titelOld','arbeitsortOld','unternehmenseinheitOld','abteilungOld','funktionOld'], 
+                                                   $path);
+                            $valueAlt = data_get($entry, $altPath, '-');
+
+                            if ($value != $valueAlt) {
+                                $highlight = true;
+                            }
+                        }
+
+                        $tdClass = $highlight ? 'bg-warning text-dark' : '';
+
+
 											if ($section === 'Personalien neu') {
 												// Fallback auf adUser, falls Wert leer oder null
 												if (empty($value) || $value === '-') {
@@ -230,14 +251,14 @@
                                             }
                                         @endphp
 
-                                        <tr>
-                                            <td style="width:1px; white-space: nowrap; padding: 5px 10px 2px 0;">
-                                                {{ $label }}
-                                            </td>
-                                            <td style="padding: 2px 0;">
-                                                {!! $value !!}
-                                            </td>
-                                        </tr>
+										<tr style="{{ $highlight ? 'background-color: #fff9e6;' : '' }}">
+											<td style="width:1px; white-space: nowrap; padding: 5px 10px 2px 0;">
+												{{ $label }}
+											</td>
+											<td style="padding: 2px 0;">
+												{!! $value !!}
+											</td>
+										</tr>
                                     @endforeach
                                 </tbody>
                             </table>

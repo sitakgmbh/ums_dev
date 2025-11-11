@@ -56,18 +56,18 @@ class AustritteAdminTable extends BaseTable
                 "searchable" => false,
                 "raw"        => true,
             ],
+            "actions"             => [ "label" => "Aktionen", "sortable" => false, "class" => "shrink" ],
             "owner.display_name"  => [ "label" => "Besitzer", "sortable" => true ],
             "vertragsende"        => [ "label" => "Austrittsdatum", "sortable" => true ],
             "adUser.display_name"    => [ "label" => "Name", "sortable" => true ],
             "adUser.username"     => [ "label" => "Benutzername", "sortable" => true ],
 			"adUser.initials"     => [ "label" => "Personalnummer", "sortable" => true ],
-            "actions"             => [ "label" => "Aktionen", "sortable" => false, "class" => "shrink" ],
         ];
     }
 
     protected function defaultSortField(): string
     {
-        return "created_at";
+        return "vertragsende";
     }
 
     protected function defaultSortDirection(): string

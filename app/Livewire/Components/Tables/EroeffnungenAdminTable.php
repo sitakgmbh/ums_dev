@@ -63,6 +63,7 @@ class EroeffnungenAdminTable extends BaseTable
                 "searchable" => false,
                 "raw"        => true,
             ],
+            "actions" => [ "label" => "Aktionen", "sortable" => false, "class" => "shrink" ],
             "owner.display_name" => [ "label" => "Besitzer", "sortable" => true ],
 			"vertragsbeginn" => [ "label" => "Eintrittsdatum", "sortable" => true ],
             "anrede.name" => [ "label" => "Anrede", "sortable" => true ],
@@ -74,13 +75,12 @@ class EroeffnungenAdminTable extends BaseTable
 			"antragsteller.display_name" => ["label" => "Antragsteller", "sortable" => true, "searchable" => true],
             "bezugsperson.display_name" => [ "label" => "Bezugsperson", "sortable" => true ],
             "vorlageBenutzer.display_name" => [ "label" => "Berechtigungen", "sortable" => true ],
-            "actions" => [ "label" => "Aktionen", "sortable" => false, "class" => "shrink" ],
         ];
     }
 
     protected function defaultSortField(): string
     {
-        return "created_at";
+        return "vertragsbeginn";
     }
 
     protected function defaultSortDirection(): string

@@ -56,19 +56,19 @@ class MutationenAdminTable extends BaseTable
                 "searchable" => false,
                 "raw"        => true,
             ],
+            "actions" => [ "label" => "Aktionen", "sortable" => false, "class" => "shrink" ],
             "owner.display_name" => [ "label" => "Besitzer", "sortable" => true ],
             "vertragsbeginn"     => [ "label" => "Änderungsdatum", "sortable" => true ],
             "adUser.display_name"=> [ "label" => "Name", "sortable" => true ],
 			"adUser.username"=> [ "label" => "Benutzername", "sortable" => true ],
 			"adUser.initials"=> [ "label" => "Personalnummer", "sortable" => true ],
             "antragsteller.display_name"   => [ "label" => "Antragsteller", "sortable" => true ],
-            "actions" => [ "label" => "Aktionen", "sortable" => false, "class" => "shrink" ],
         ];
     }
 
     protected function defaultSortField(): string
     {
-        return "created_at";
+        return "vertragsbeginn";
     }
 
     protected function defaultSortDirection(): string
