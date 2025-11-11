@@ -15,39 +15,62 @@ class SapAdMappings extends Command
 
     public function handle(SapAdMappingService $sapAdMappingService)
     {
-        $filter = ['keine_personalnummer', 'kein_ad_benutzer', 'kein_sap_eintrag'];
-        $excludedInitials = $sapAdMappingService->getExcludedInitials();
-        $incidentMetadata = [];
+		$filter = ['keine_personalnummer', 'kein_sap_eintrag', 'kein_ad_benutzer'];
 
-        foreach ($filter as $f) {
-            $benutzer = $sapAdMappingService->getFilteredData($f);
+		$excludedInitials = $sapAdMappingService->getExcludedInitials();
+		$excludedUsernames = $sapAdMappingService->getExcludedUsernames();
+		$secondaryPns = $sapAdMappingService->getSecondaryPersonalnummern();
 
-            if ($benutzer->isNotEmpty()) {
-                $incidentMetadata[$f] = [];
+		$incidentMetadata = [];
 
-                foreach ($benutzer as $b) {
-                    $initials = $f === 'keine_personalnummer' || $f === 'kein_sap_eintrag' ? $b->initials : $b->d_pernr;
+		foreach ($filter as $f) {
 
-                    if (!in_array($initials, $excludedInitials)) {
-                        if ($f === 'kein_ad_benutzer') {
-                            $incidentMetadata[$f][] = [
-                                'name' => $b->d_name . ($b->d_vname || $b->d_rufnm ? ' ' . ($b->d_rufnm ?: $b->d_vname) : ''),
-                                'benutzername' => '-',
-                                'personalnummer' => $b->d_pernr,
-                                'funktion' => $b->d_0032_batchbez ?? '-',
-                            ];
-                        } else {
-                            $incidentMetadata[$f][] = [
-                                'name' => $b->display_name,
-                                'benutzername' => $b->username,
-                                'personalnummer' => $b->initials,
-                                'funktion' => $b->description ?? '-',
-                            ];
-                        }
-                    }
-                }
-            }
-        }
+			$benutzer = $sapAdMappingService->getFilteredData($f);
+
+			if ($benutzer->isNotEmpty()) {
+
+				$incidentMetadata[$f] = [];
+
+				foreach ($benutzer as $b) {
+
+					// Personalnummer je nach Filter
+					$personalnummer = ($f === 'keine_personalnummer' || $f === 'kein_sap_eintrag')
+						? $b->initials
+						: $b->d_pernr;
+
+					// Benutzername je nach Filter
+					$username = ($f === 'keine_personalnummer' || $f === 'kein_sap_eintrag')
+						? $b->username
+						: $b->d_name;
+
+					// Excluded oder Secondary? Dann NICHT melden
+					if (
+						in_array($personalnummer, $excludedInitials) ||
+						in_array($username, $excludedUsernames) ||
+						in_array($personalnummer, $secondaryPns)
+					) {
+						continue;
+					}
+
+					// Normal weiter wie bisher
+					if ($f === 'kein_ad_benutzer') {
+						$incidentMetadata[$f][] = [
+							'name' => $b->d_name . ($b->d_vname || $b->d_rufnm ? ' ' . ($b->d_rufnm ?: $b->d_vname) : ''),
+							'benutzername' => '-',
+							'personalnummer' => $b->d_pernr,
+							'funktion' => $b->d_0032_batchbez ?? '-',
+						];
+					} else {
+						$incidentMetadata[$f][] = [
+							'name' => $b->display_name,
+							'benutzername' => $b->username,
+							'personalnummer' => $b->initials,
+							'funktion' => $b->description ?? '-',
+						];
+					}
+				}
+			}
+		}
 
         if (!empty($incidentMetadata)) {
             Incident::create([

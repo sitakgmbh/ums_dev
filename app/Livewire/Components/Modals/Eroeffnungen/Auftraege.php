@@ -54,18 +54,176 @@ class Auftraege extends BaseModal
 	private function getAuftraegeDetails(): array
 	{
 		$details = [];
-		
+
 		foreach ($this->pendingAuftraege as $key => $label) {
-			[$recipients, $cc, $mailable] = $this->resolveMailConfig($key);
-			
-			$details[$key] = [
-				'label' => $label,
-				'to' => $recipients,
-				'cc' => $cc,
-			];
+
+			$configs = $this->resolveMailConfig($key);
+
+			$details[$key] = [];
+
+			foreach ($configs as $conf) {
+				$details[$key][] = [
+					"label"    => $label,
+					"standort" => $conf["standort"] ?? null,
+					"to"       => $conf["to"] ?? [],
+					"cc"       => $conf["cc"] ?? [],
+				];
+			}
 		}
-		
+
 		return $details;
+	}
+
+
+	private function resolveMailConfig(string $key): array
+	{
+		// Standard: genau 1 Mail-Konfiguration
+		$configs = [];
+
+		$arbeitsort = $this->entry->arbeitsort?->name;
+
+		switch ($key) {
+
+			/*
+			|--------------------------------------------------------------------------
+			| SAP (1 Mail)
+			|--------------------------------------------------------------------------
+			*/
+			case "sap":
+				$to = config("ums.eroeffnung.mail.sap.to", []);
+				$cc = config("ums.eroeffnung.mail.sap.cc", []);
+
+				if ($this->entry->is_lei) {
+					$cc = array_merge(
+						$cc,
+						config("ums.eroeffnung.mail.sap_lei.to", [])
+					);
+				}
+
+				$configs[] = [
+					"standort" => null,
+					"to"       => $to,
+					"cc"       => $cc,
+					"mailable" => new \App\Mail\Eroeffnungen\AuftragSap($this->entry),
+				];
+				break;
+
+
+			/*
+			|--------------------------------------------------------------------------
+			| RAUMBESCHRIFTUNG (1 Mail basierend auf arbeitsort)
+			|--------------------------------------------------------------------------
+			*/
+			case "raumbeschriftung":
+
+				if ($arbeitsort === "Chur") {
+					$to = config("ums.eroeffnung.mail.raumbeschriftung_wh.to", []);
+					$cc = config("ums.eroeffnung.mail.raumbeschriftung_wh.cc", []);
+				} elseif ($arbeitsort === "Cazis") {
+					$to = config("ums.eroeffnung.mail.raumbeschriftung_be.to", []);
+					$cc = config("ums.eroeffnung.mail.raumbeschriftung_be.cc", []);
+				} elseif ($arbeitsort === "Rothenbrunnen") {
+					$to = config("ums.eroeffnung.mail.raumbeschriftung_rb.to", []);
+					$cc = config("ums.eroeffnung.mail.raumbeschriftung_rb.cc", []);
+				} else {
+					$to = [];
+					$cc = [];
+				}
+
+				$configs[] = [
+					"standort" => $arbeitsort,
+					"to"       => $to,
+					"cc"       => $cc,
+					"mailable" => new \App\Mail\Eroeffnungen\AuftragRaumbeschriftung($this->entry),
+				];
+				break;
+
+
+			/*
+			|--------------------------------------------------------------------------
+			| BERUFSKLEIDER (1 Mail)
+			|--------------------------------------------------------------------------
+			*/
+			case "berufskleider":
+
+				$configs[] = [
+					"standort" => null,
+					"to"       => config("ums.eroeffnung.mail.berufskleider.to", []),
+					"cc"       => config("ums.eroeffnung.mail.berufskleider.cc", []),
+					"mailable" => new \App\Mail\Eroeffnungen\AuftragBerufskleider($this->entry),
+				];
+				break;
+
+
+			/*
+			|--------------------------------------------------------------------------
+			| GARDEROBE (1 Mail)
+			|--------------------------------------------------------------------------
+			*/
+			case "garderobe":
+
+				$configs[] = [
+					"standort" => null,
+					"to"       => config("ums.eroeffnung.mail.garderobe.to", []),
+					"cc"       => config("ums.eroeffnung.mail.garderobe.cc", []),
+					"mailable" => new \App\Mail\Eroeffnungen\AuftragGarderobe($this->entry),
+				];
+				break;
+
+
+			/*
+			|--------------------------------------------------------------------------
+			| ZUTRITTSRECHTE (MEHRERE Mails – je Standort)
+			|--------------------------------------------------------------------------
+			*/
+			case "zutrittsrechte":
+
+				$standorte = [];
+
+				if ($this->entry->key_wh_badge || $this->entry->key_wh_schluessel) {
+					$standorte[] = "Chur";
+				}
+				if ($this->entry->key_be_badge || $this->entry->key_be_schluessel) {
+					$standorte[] = "Cazis";
+				}
+				if ($this->entry->key_rb_badge || $this->entry->key_rb_schluessel) {
+					$standorte[] = "Rothenbrunnen";
+				}
+
+				foreach ($standorte as $ort) {
+
+					switch ($ort) {
+						case "Chur":
+							$to = config("ums.eroeffnung.mail.zutrittsrechte_wh.to", []);
+							$cc = config("ums.eroeffnung.mail.zutrittsrechte_wh.cc", []);
+							break;
+
+						case "Cazis":
+							$to = config("ums.eroeffnung.mail.zutrittsrechte_be.to", []);
+							$cc = config("ums.eroeffnung.mail.zutrittsrechte_be.cc", []);
+							break;
+
+						case "Rothenbrunnen":
+							$to = config("ums.eroeffnung.mail.zutrittsrechte_rb.to", []);
+							$cc = config("ums.eroeffnung.mail.zutrittsrechte_rb.cc", []);
+							break;
+
+						default:
+							continue 2;
+					}
+
+					$configs[] = [
+						"standort" => $ort,
+						"to"       => $to,
+						"cc"       => $cc,
+						"mailable" => new \App\Mail\Eroeffnungen\AuftragZutrittsrechte($this->entry, $ort),
+					];
+				}
+
+				break;
+		}
+
+		return $configs;
 	}
 
 	public function confirm(): void
@@ -120,84 +278,6 @@ class Auftraege extends BaseModal
 			$this->closeModal();
 		}
 	}
-
-    private function resolveMailConfig(string $key): array
-    {
-        $recipients = [];
-        $cc = [];
-        $mailable  = null;
-
-        $arbeitsort = $this->entry->arbeitsort?->name;
-
-        switch ($key) 
-		{
-			case "sap":
-				$recipients = config("ums.eroeffnung.mail.sap.to", []);
-				$cc         = config("ums.eroeffnung.mail.sap.cc", []);
-				
-				// Wenn LEI, dann sap_lei.to zu CC hinzufügen
-				if ($this->entry->is_lei) {
-					$leiRecipients = config("ums.eroeffnung.mail.sap_lei.to", []);
-					$cc = array_merge($cc, $leiRecipients);
-				}
-				
-				$mailable = new \App\Mail\Eroeffnungen\AuftragSap($this->entry);
-				break;
-
-            case "raumbeschriftung":
-                if ($arbeitsort === "Chur") 
-				{
-                    $recipients = config("ums.eroeffnung.mail.raumbeschriftung_wh.to", []);
-                    $cc         = config("ums.eroeffnung.mail.raumbeschriftung_wh.cc", []);
-                } 
-				elseif ($arbeitsort === "Cazis") 
-				{
-                    $recipients = config("ums.eroeffnung.mail.raumbeschriftung_be.to", []);
-                    $cc         = config("ums.eroeffnung.mail.raumbeschriftung_be.cc", []);
-                } 
-				elseif ($arbeitsort === "Rothenbrunnen") {
-                    $recipients = config("ums.eroeffnung.mail.raumbeschriftung_rb.to", []);
-                    $cc         = config("ums.eroeffnung.mail.raumbeschriftung_rb.cc", []);
-                }
-				
-                $mailable = new \App\Mail\Eroeffnungen\AuftragRaumbeschriftung($this->entry);
-                break;
-
-            case "berufskleider":
-                $recipients = config("ums.eroeffnung.mail.berufskleider.to", []);
-                $cc         = config("ums.eroeffnung.mail.berufskleider.cc", []);
-                $mailable   = new \App\Mail\Eroeffnungen\AuftragBerufskleider($this->entry);
-                break;
-
-            case "garderobe":
-                $recipients = config("ums.eroeffnung.mail.garderobe.to", []);
-                $cc         = config("ums.eroeffnung.mail.garderobe.cc", []);
-                $mailable   = new \App\Mail\Eroeffnungen\AuftragGarderobe($this->entry);
-                break;
-
-            case "zutrittsrechte":
-                if ($arbeitsort === "Chur") 
-				{
-                    $recipients = config("ums.eroeffnung.mail.zutrittsrechte_wh.to", []);
-                    $cc         = config("ums.eroeffnung.mail.zutrittsrechte_wh.cc", []);
-                } 
-				elseif ($arbeitsort === "Cazis") 
-				{
-                    $recipients = config("ums.eroeffnung.mail.zutrittsrechte_be.to", []);
-                    $cc         = config("ums.eroeffnung.mail.zutrittsrechte_be.cc", []);
-                } 
-				elseif ($arbeitsort === "Rothenbrunnen") 
-				{
-                    $recipients = config("ums.eroeffnung.mail.zutrittsrechte_rb.to", []);
-                    $cc         = config("ums.eroeffnung.mail.zutrittsrechte_rb.cc", []);
-                }
-				
-                $mailable = new \App\Mail\Eroeffnungen\AuftragZutrittsrechte($this->entry);
-                break;
-        }
-
-        return [$recipients, $cc, $mailable];
-    }
 
     public function render()
     {

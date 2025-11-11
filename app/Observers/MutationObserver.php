@@ -37,9 +37,8 @@ class MutationObserver
 		// Bestätigungsmail versenden nur wenn Vorname und Nachname leer sind
 		if (empty($mutation->vorname) && empty($mutation->nachname)) 
 		{
-			$to = "patrik@sitak.ch"; // später ersetzen durch $mutation->antragsteller?->email ?: $fallback;
-			$cc = [];
-			SafeMail::send(new Bestaetigung($mutation), $to, $cc);
+			$to = $mutation->antragsteller?->email;
+			SafeMail::send(new Bestaetigung($mutation), $to);
 		}
 
 		// Ticket erstellen

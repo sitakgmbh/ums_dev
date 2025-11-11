@@ -8,15 +8,16 @@
         </div>
     @else
         <div class="table-responsive">
-            <table class="table table-hover table-centered mb-0">
+            <table class="table table-sm table-hover table-centered mb-0">
                 <thead>
                     <tr>
                         <th>Name</th>
+						<th>Benutzername</th>
                         <th>Arbeitsort</th>
                         <th>Unternehmenseinheit</th>
                         <th>Abteilung</th>
                         <th>Funktion</th>
-                        <th>Ablaufdatum AD-Benuter</th>
+                        <th>Vertragsende</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -26,15 +27,13 @@
                             $expiration = \Illuminate\Support\Carbon::parse($adUser->account_expiration_date);
                         @endphp
                         <tr>
-                            <td>
-                                <strong>{{ $adUser->display_name ?? '-' }}</strong><br>
-                                <small class="text-muted">{{ $adUser->username ?? '-' }}</small>
-                            </td>
+                            <td>{{ $adUser->display_name ?? '-' }}</td>
+							<td>{{ $adUser->username ?? '-' }}</td>
                             <td>{{ $adUser->arbeitsort['name'] ?? '-' }}</td>
                             <td>{{ $adUser->unternehmenseinheit['name'] ?? '-' }}</td>
                             <td>{{ $adUser->abteilung['name'] ?? '-' }}</td>
                             <td>{{ $adUser->funktion['name'] ?? '-' }}</td>
-                            <td>{{ $expiration->format('d.m.Y H:i') }}</td>
+                            <td>{{ $expiration->format('d.m.Y') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -43,7 +42,7 @@
 
         <div class="mt-3">
             <small class="text-muted">
-                <strong>Total:</strong> {{ count($austritte) }} bevorstehende(r) Austritt(e)
+                <strong>Total:</strong> {{ count($austritte) }} bevorstehende Austritte
             </small>
         </div>
     @endif

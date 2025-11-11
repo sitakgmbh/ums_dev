@@ -18,11 +18,18 @@ class SettingsSeeder extends Seeder
                 'description' => 'Aktiviert erweiterte Protokollierung. Diese Option generiert viele Logs und sollte nicht permanent aktivert sein.',
             ],
             [
-                'key'         => 'personalnummer_abgleich_excludes',
+                'key'         => 'sap_ad_abgleich_excludes_personalnummern',
                 'value'       => '',
                 'type'        => 'string',
-                'name'        => 'Excludes Personalnummerabgleich',
+                'name'        => 'Excludes Personalnummern',
                 'description' => 'Hinterlegte Personalnummern erzeugen keinen Incident. Trenne mehrere Einträge mit einem Komma.',
+            ],
+            [
+                'key'         => 'sap_ad_abgleich_excludes_benutzernamen',
+                'value'       => '',
+                'type'        => 'string',
+                'name'        => 'Excludes Benutzernamen',
+                'description' => 'Hinterlegte Benutzernamen erzeugen keinen Incident. Trenne mehrere Einträge mit einem Komma.',
             ],
         ];
 

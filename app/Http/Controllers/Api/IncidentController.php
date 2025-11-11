@@ -48,7 +48,7 @@ class IncidentController extends Controller
             'title' => $validated['title'],
             'description' => $validated['description'],
             'priority' => $validated['priority'],
-            'metadata' => $validated['metadata'] ?? [],
+            'metadata' => $validated['metadata'] ?? null,
             'created_by' => auth()->id(),  
         ]);
 

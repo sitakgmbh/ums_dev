@@ -11,11 +11,11 @@
                     wire:click="setFilter('{{ $filter }}')"
                 >
                     @if($filter === 'keine_personalnummer')
-                        Benutzer ohne Personalnummer
-                    @elseif($filter === 'kein_ad_benutzer')
-                        SAP-Einträge ohne AD-Benutzer
+                        AD-Benutzer ohne Personalnummer
                     @elseif($filter === 'kein_sap_eintrag')
                         AD-Benutzer ohne SAP-Eintrag
+                    @elseif($filter === 'kein_ad_benutzer')
+                        SAP-Einträge ohne AD-Benutzer
                     @endif
                 </button>
             @endforeach
@@ -26,11 +26,11 @@
         <i class="ri-information-line"></i>
         @if($activeFilter === 'keine_personalnummer')
             Zeigt AD-Benutzer an, die keine Personalnummer oder den Platzhalter '99999' hinterlegt haben.
+        @elseif($activeFilter === 'kein_sap_eintrag')
+            Zeigt aktivierte AD-Benutzer mit einer Personalnummer an, für die kein SAP-Eintrag gefunden wurde. AD-Benutzer mit den Personalnummern 99999, 11111 und 00000 werden nicht angezeigt.
         @elseif($activeFilter === 'kein_ad_benutzer')
             Zeigt SAP-Einträge an, für die kein AD-Benutzer gefunden wurde. Einträge, bei denen das Eintrittsdatum in der Zukunft liegt, werden nicht angezeigt.
-        @elseif($activeFilter === 'kein_sap_eintrag')
-            Zeigt aktivierte AD-Benutzer an, für die kein SAP-Eintrag gefunden wurde. Einträge mit den Personalnummern 99999, 11111 und 00000 werden nicht angezeigt.
-        @endif
+		@endif
     </div>
 
     @if(empty($data) || (is_countable($data) && count($data) === 0))
@@ -64,21 +64,46 @@
                                     {{ $item->d_0032_batchbez ?? "-" }}
                                 @endif
                             </td>
-                            <td>
-                                <div class="d-inline-flex align-items-center">
-                                    @if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
-                                        {{ $item->initials ?? "-" }}
-                                    @else
-                                        {{ $item->d_pernr ?? "-" }}
-                                    @endif
-                                    @php
-                                        $initials = $activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag' ? $item->initials : $item->d_pernr;
-                                    @endphp
-                                    @if(in_array($initials, $excludedInitials))
-                                        <span class="badge bg-info ms-1">Excluded</span>
-                                    @endif
-                                </div>
-                            </td>
+							<td>
+								<div class="d-inline-flex align-items-center">
+
+									{{-- Personalnummer oder SAP-Personen-Nr. --}}
+									@if($activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag')
+										{{ $item->initials ?? "-" }}
+										@php
+											$personalnummer = $item->initials;
+										@endphp
+									@else
+										{{ $item->d_pernr ?? "-" }}
+										@php
+											$personalnummer = $item->d_pernr;
+										@endphp
+									@endif
+
+									{{-- Benutzername --}}
+									@php
+										$username = $activeFilter === 'keine_personalnummer' || $activeFilter === 'kein_sap_eintrag'
+											? ($item->username ?? null)
+											: ($item->d_name ?? null);
+										
+										$secondaryPNs = $secondaryPns ?? [];
+										$isSecondary = in_array($personalnummer, $secondaryPNs);										
+									@endphp
+
+									@if(in_array($personalnummer, $excludedInitials) 
+										|| in_array($username, $excludedUsernames) || $isSecondary)
+										
+										@if($isSecondary)
+											<span class="badge bg-success ms-1">Zweite Personalnummer</span>
+										@elseif(in_array($personalnummer, $excludedInitials) || in_array($username, $excludedUsernames))
+											<span class="badge bg-info ms-1">Ausnahme</span>
+										@endif
+
+									@endif
+
+								</div>
+							</td>
+
                         </tr>
                     @endforeach
                 </tbody>

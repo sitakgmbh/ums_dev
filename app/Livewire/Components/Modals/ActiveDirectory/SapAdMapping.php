@@ -10,7 +10,9 @@ class SapAdMapping extends BaseModal
     public $activeFilter = 'keine_personalnummer';
     public $data = [];
     public $excludedInitials = [];
-    public $filters = ['keine_personalnummer', 'kein_ad_benutzer', 'kein_sap_eintrag'];
+	public $excludedUsernames = [];
+	public $secondaryPns = [];
+    public $filters = ['keine_personalnummer', 'kein_sap_eintrag', 'kein_ad_benutzer'];
 
     protected function openWith(array $payload): bool
     {   
@@ -32,12 +34,14 @@ class SapAdMapping extends BaseModal
         $this->loadData(app(SapAdMappingService::class));
     }
     
-    protected function loadData(SapAdMappingService $sapAdMappingService)
-    {
-        $this->data = $sapAdMappingService->getFilteredData($this->activeFilter);
-        $this->excludedInitials = $sapAdMappingService->getExcludedInitials();
-    }
-    
+	protected function loadData(SapAdMappingService $sapAdMappingService)
+	{
+		$this->data = $sapAdMappingService->getFilteredData($this->activeFilter);
+		$this->excludedInitials = $sapAdMappingService->getExcludedInitials();
+		$this->excludedUsernames = $sapAdMappingService->getExcludedUsernames();
+		$this->secondaryPns = $sapAdMappingService->getSecondaryPersonalnummern();
+	}
+
     public function render()
     {
         return view("livewire.components.modals.active-directory.sap-ad-mapping");

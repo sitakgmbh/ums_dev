@@ -39,18 +39,12 @@ class EroeffnungObserver
             "form_data"        => $this->filterData($eroeffnung->getAttributes(), $eroeffnung),
         ];
 		
-		// Log-Eintrag erstellen
         Logger::db("antraege", "info", "Eröffnung ID {$eroeffnung->id} erstellt durch {$fullname} ({$username})", $context);
 
 		// Bestätigungsmail versenden
-        $to = "patrik@sitak.ch"; // später ersetzen durch $eroeffnung->antragsteller?->email ?: $fallback;
-        $cc = [];
+        $to = $eroeffnung->antragsteller?->email;
+		$cc = $eroeffnung->bezugsperson->email;
 		
-        if ($eroeffnung->bezugsperson?->email) 
-		{
-            // $cc[] = $eroeffnung->bezugsperson->email;
-        }
-
 		SafeMail::send(new Bestaetigung($eroeffnung), $to, $cc);
 
 		// Ticket erstellen

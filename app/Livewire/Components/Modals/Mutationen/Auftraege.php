@@ -56,17 +56,23 @@ class Auftraege extends BaseModal
 	private function getAuftraegeDetails(): array
 	{
 		$details = [];
-		
+
 		foreach ($this->pendingAuftraege as $key => $label) {
-			[$recipients, $cc, $mailable] = $this->resolveMailConfig($key);
-			
-			$details[$key] = [
-				'label' => $label,
-				'to' => $recipients,
-				'cc' => $cc,
-			];
+
+			$configs = $this->resolveMailConfig($key);
+
+			$details[$key] = [];
+
+			foreach ($configs as $conf) {
+				$details[$key][] = [
+					"label"    => $label,
+					"standort" => $conf["standort"] ?? null,
+					"to"       => $conf["to"] ?? [],
+					"cc"       => $conf["cc"] ?? [],
+				];
+			}
 		}
-		
+
 		return $details;
 	}
 
@@ -94,34 +100,156 @@ class Auftraege extends BaseModal
 		};
 	}
 
-	private function resolveMailConfig(string $key): array
-	{
-		$mailKey = $this->resolveMailKey($key);
-		
-		if (!$mailKey) {
-			return [[], [], null];
-		}
-		
-		$recipients = config("ums.mutation.mail.{$mailKey}.to", []);
-		$cc = config("ums.mutation.mail.{$mailKey}.cc", []);
-		
-		// LEI zu CC hinzufügen falls nötig
-		if ($key === "sap" && $this->entry->komm_lei) {
-			$leiRecipients = config("ums.mutation.mail.sap_lei.to", []);
-			$cc = array_merge($cc, $leiRecipients);
-		}
-		
-		$mailable = match ($key) {
-			"sap"   => new \App\Mail\Mutationen\AuftragSap($this->entry),
-			"raumbeschriftung"=> new \App\Mail\Mutationen\AuftragRaumbeschriftung($this->entry),
-			"berufskleider"   => new \App\Mail\Mutationen\AuftragBerufskleider($this->entry),
-			"garderobe"       => new \App\Mail\Mutationen\AuftragGarderobe($this->entry),
-			"zutrittsrechte"  => new \App\Mail\Mutationen\AuftragZutrittsrechte($this->entry),
-			default           => null,
-		};
-		
-		return [$recipients, $cc, $mailable];
-	}
+private function resolveMailConfig(string $key): array
+{
+    $configs = [];
+
+    $arbeitsort = $this->entry->arbeitsort?->name;
+
+    switch ($key) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | SAP (1 Mail)
+        |--------------------------------------------------------------------------
+        */
+        case "sap":
+            $to = config("ums.mutation.mail.sap.to", []);
+            $cc = config("ums.mutation.mail.sap.cc", []);
+
+            // LEI zu CC hinzufügen
+            if ($this->entry->komm_lei) {
+                $cc = array_merge(
+                    $cc,
+                    config("ums.mutation.mail.sap_lei.to", [])
+                );
+            }
+
+            $configs[] = [
+                "standort" => null,
+                "to"       => $to,
+                "cc"       => $cc,
+                "mailable" => new \App\Mail\Mutationen\AuftragSap($this->entry),
+            ];
+            break;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RAUMBESCHRIFTUNG (1 Mail basierend auf Arbeitsort)
+        |--------------------------------------------------------------------------
+        */
+        case "raumbeschriftung":
+
+            if ($arbeitsort === "Chur") {
+                $to = config("ums.mutation.mail.raumbeschriftung_wh.to", []);
+                $cc = config("ums.mutation.mail.raumbeschriftung_wh.cc", []);
+            } elseif ($arbeitsort === "Cazis") {
+                $to = config("ums.mutation.mail.raumbeschriftung_be.to", []);
+                $cc = config("ums.mutation.mail.raumbeschriftung_be.cc", []);
+            } elseif ($arbeitsort === "Rothenbrunnen") {
+                $to = config("ums.mutation.mail.raumbeschriftung_rb.to", []);
+                $cc = config("ums.mutation.mail.raumbeschriftung_rb.cc", []);
+            } else {
+                $to = [];
+                $cc = [];
+            }
+
+            $configs[] = [
+                "standort" => $arbeitsort,
+                "to"       => $to,
+                "cc"       => $cc,
+                "mailable" => new \App\Mail\Mutationen\AuftragRaumbeschriftung($this->entry),
+            ];
+            break;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BERUFSKLEIDER (1 Mail)
+        |--------------------------------------------------------------------------
+        */
+        case "berufskleider":
+
+            $configs[] = [
+                "standort" => null,
+                "to"       => config("ums.mutation.mail.berufskleider.to", []),
+                "cc"       => config("ums.mutation.mail.berufskleider.cc", []),
+                "mailable" => new \App\Mail\Mutationen\AuftragBerufskleider($this->entry),
+            ];
+            break;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | GARDEROBE (1 Mail)
+        |--------------------------------------------------------------------------
+        */
+        case "garderobe":
+
+            $configs[] = [
+                "standort" => null,
+                "to"       => config("ums.mutation.mail.garderobe.to", []),
+                "cc"       => config("ums.mutation.mail.garderobe.cc", []),
+                "mailable" => new \App\Mail\Mutationen\AuftragGarderobe($this->entry),
+            ];
+            break;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ZUTRITTSRECHTE (MEHRERE Mails — je Standort)
+        |--------------------------------------------------------------------------
+        */
+        case "zutrittsrechte":
+
+            $standorte = [];
+
+            if ($this->entry->key_wh_badge || $this->entry->key_wh_schluessel) {
+                $standorte[] = "Chur";
+            }
+            if ($this->entry->key_be_badge || $this->entry->key_be_schluessel) {
+                $standorte[] = "Cazis";
+            }
+            if ($this->entry->key_rb_badge || $this->entry->key_rb_schluessel) {
+                $standorte[] = "Rothenbrunnen";
+            }
+
+            foreach ($standorte as $ort) {
+
+                switch ($ort) {
+                    case "Chur":
+                        $to = config("ums.mutation.mail.zutrittsrechte_wh.to", []);
+                        $cc = config("ums.mutation.mail.zutrittsrechte_wh.cc", []);
+                        break;
+
+                    case "Cazis":
+                        $to = config("ums.mutation.mail.zutrittsrechte_be.to", []);
+                        $cc = config("ums.mutation.mail.zutrittsrechte_be.cc", []);
+                        break;
+
+                    case "Rothenbrunnen":
+                        $to = config("ums.mutation.mail.zutrittsrechte_rb.to", []);
+                        $cc = config("ums.mutation.mail.zutrittsrechte_rb.cc", []);
+                        break;
+
+                    default:
+                        continue 2;
+                }
+
+                $configs[] = [
+                    "standort" => $ort,
+                    "to"       => $to,
+                    "cc"       => $cc,
+                    "mailable" => new \App\Mail\Mutationen\AuftragZutrittsrechte($this->entry, $ort),
+                ];
+            }
+            break;
+    }
+
+    return $configs;
+}
+
 
     public function confirm(): void
     {
