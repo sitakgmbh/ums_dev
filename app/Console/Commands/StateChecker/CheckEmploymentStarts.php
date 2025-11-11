@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\Eroeffnungen;
+namespace App\Console\Commands\StateChecker;
 
 use App\Models\Eroeffnung;
 use App\Utils\Logging\Logger;
@@ -9,9 +9,9 @@ use LdapRecord\Models\ActiveDirectory\User as LdapUser;
 use LdapRecord\Models\ActiveDirectory\Group as LdapGroup;
 use Throwable;
 
-class AssignLicense extends Command
+class CheckEmploymentStarts extends Command
 {
-    protected $signature = 'eroeffnungen:assign-license';
+    protected $signature = 'check:employment-starts';
     protected $description = 'Weist Mitarbeitenden, die am heutigen Tag eintreten, eine M365-Lizenz zu.';
 
     public function handle(): int

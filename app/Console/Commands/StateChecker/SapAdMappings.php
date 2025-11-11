@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class SapAdMappings extends Command
 {
-    protected $signature = 'check:sap-ad';
+    protected $signature = 'check:sap-ad-mappings';
     protected $description = 'Sucht Benutzer ohne Personalnummer, fehlerhafter SAP ↔ AD-Zuordnung oder doppelte Personalnummern im AD und erstellt ggf. einen Incident.';
 
     public function handle(SapAdMappingService $sapAdMappingService)

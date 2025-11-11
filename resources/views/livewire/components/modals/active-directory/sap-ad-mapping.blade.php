@@ -93,11 +93,13 @@
 									@if(in_array($personalnummer, $excludedInitials) 
 										|| in_array($username, $excludedUsernames) || $isSecondary)
 										
-										@if($isSecondary)
-											<span class="badge bg-success ms-1">Zweite Personalnummer</span>
-										@elseif(in_array($personalnummer, $excludedInitials) || in_array($username, $excludedUsernames))
-											<span class="badge bg-info ms-1">Ausnahme</span>
-										@endif
+									@if($isSecondary)
+										<span class="badge bg-success ms-1">Zweite Personalnummer</span>
+									@endif
+
+									@if(in_array($personalnummer, $excludedInitials) || in_array($username, $excludedUsernames))
+										<span class="badge bg-info ms-1">Ausnahme</span>
+									@endif
 
 									@endif
 
