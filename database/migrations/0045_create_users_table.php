@@ -18,7 +18,7 @@ return new class extends Migration
 			$table->string('ad_sid', 255)->nullable()->unique();
             $table->string('firstname')->nullable(); // varchar(255)
             $table->string('lastname')->nullable();  // varchar(255)
-            $table->string('email')->unique();       // varchar(255), Unique Index
+            $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();  // varchar(255)
             $table->boolean('is_enabled')->nullable(); // tinyint(1)

@@ -33,9 +33,9 @@ class LdapProvisioningService
 
         $user->fill([
             "username"   => $username,
-            "firstname"  => $ldapUser->getFirstAttribute("givenname") ?? "",
-            "lastname"   => $ldapUser->getFirstAttribute("sn") ?? "",
-            "email"      => $ldapUser->getFirstAttribute("mail") ?? "",
+            "firstname"  => $ldapUser->getFirstAttribute("givenname") ?? null,
+            "lastname"   => $ldapUser->getFirstAttribute("sn") ?? null,
+            "email"      => $ldapUser->getFirstAttribute("mail") ?? null,
             "auth_type"  => "ldap",
             "ad_sid"     => $sid,
             "is_enabled" => null,
