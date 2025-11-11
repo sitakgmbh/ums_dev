@@ -41,10 +41,8 @@ class LdapProvisioningService
             "is_enabled" => null,
         ]);
 
-        if ($create) 
-		{
-            $user->password = ""; 
-        }
+		// Fuer LDAP-User niemals Passwort speichern
+		$user->password = null;
 
         $user->save();
 
