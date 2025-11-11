@@ -170,7 +170,7 @@ class UserSyncService
             "last_synced_at" => Carbon::now(),
         ]);
 
-		Logger::Info("Synchronisation Actice Directory abgeschlossen", [
+		Logger::Debug("Synchronisation Actice Directory abgeschlossen", [
             "found"   => count($seenSids),
             "missing" => AdUser::where("is_existing", false)->count(),
 		]);

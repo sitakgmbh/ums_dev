@@ -30,7 +30,7 @@ class SyncUsers extends Command
 
             $this->info("AD-Sync erfolgreich abgeschlossen.");
             
-            Logger::info("AD-Sync abgeschlossen", [
+            Logger::Info("AD-Sync abgeschlossen", [
                 "user" => auth()->user()->username ?? "cli"
             ]);
 
