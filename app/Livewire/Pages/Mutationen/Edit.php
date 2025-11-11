@@ -51,7 +51,7 @@ class Edit extends Component
             "funktion_id"             => $this->form->funktionen,
             "vorlage_benutzer_id"     => $this->form->adusers,
             "abteilung2_id"           => $this->form->abteilungen,
-            "kalender_berechtigungen" => $this->form->adusersKalender,
+            // "kalender_berechtigungen" => $this->form->adusersKalender,
         ] as $id => $options) {
             $this->dispatch("select2-options", id: $id, options: $options, value: $this->form->$id);
         }

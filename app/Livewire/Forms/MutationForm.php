@@ -116,7 +116,7 @@ class MutationForm extends Form
 
     // Kalender
     public bool $vorab_lizenzierung = false;
-    public array $kalender_berechtigungen = [];
+    // public array $kalender_berechtigungen = [];
     public array $adusersKalender = [];
 
     // Status-Felder
