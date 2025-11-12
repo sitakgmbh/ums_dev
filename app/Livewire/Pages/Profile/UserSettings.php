@@ -9,28 +9,41 @@ class UserSettings extends Component
 {
     public bool $darkmode_enabled = false;
     public array $representations = [];
+	public $representingUsers = [];
     public $adUsers;
 
-    public function mount()
+
+public function mount()
+{
+    $user = Auth::user();
+    $this->darkmode_enabled = (bool) $user->getSetting('darkmode_enabled', false);
+    $this->representations = $user->myRepresentation()->pluck('ad_users.id')->toArray();
+    $this->adUsers = AdUser::orderBy('display_name')->get(['id', 'display_name']);
+
+    // Benutzer, die dich als Vertreter eingetragen haben
+    $this->representingUsers = \App\Models\User::whereHas('myRepresentation', function($q) use ($user) {
+        $q->where('ad_user_id', $user->adUser?->id);
+    })
+    ->with('adUser')
+    ->get()
+    ->map(fn($u) => $u->adUser?->display_name . ' (' . $u->username . ')')
+    ->toArray();
+}
+
+
+    public function save()
     {
         $user = Auth::user();
-        $this->darkmode_enabled = (bool) $user->getSetting('darkmode_enabled', false);
-        $this->representations   = $user->getSetting('representations', []);
-        $this->adUsers          = AdUser::orderBy('display_name')->get(['id', 'display_name']);
-    }
+        $user->setSetting('darkmode_enabled', $this->darkmode_enabled);
 
-	public function save()
-	{
-		$user = Auth::user();
-		$user->setSetting('darkmode_enabled', $this->darkmode_enabled);
-		
-		// IDs zu Integers konvertieren
-		$representations = array_map('intval', $this->representations);
-		$user->setSetting('representations', $representations);
-		
-		session()->flash('success', 'Deine Einstellungen wurden gespeichert.');
-		$this->dispatch('select2Updated', representations: $this->representations);
-	}
+        $neueRepresentations = array_map('intval', $this->representations);
+
+        // Sync über myRepresentation
+        $user->myRepresentation()->sync($neueRepresentations);
+
+        session()->flash('success', 'Deine Einstellungen wurden gespeichert.');
+        $this->dispatch('select2Updated', representations: $this->representations);
+    }
 
     public function render()
     {

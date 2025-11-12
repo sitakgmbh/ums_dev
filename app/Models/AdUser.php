@@ -135,4 +135,9 @@ class AdUser extends Model
 	{
 		return $this->hasOne(SapExport::class);
 	}
+	
+	public function adUser()
+	{
+		return $this->hasOne(AdUser::class, 'sid', 'ad_sid');
+	}
 }

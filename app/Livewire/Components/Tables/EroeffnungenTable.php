@@ -117,66 +117,72 @@ class EroeffnungenTable extends BaseTable
         ];
     }
 
-    protected function applyFilters(Builder $query): void
-    {
-		$adUserId = auth()->user()?->adUser?->id;
-		
-		if (!$adUserId) 
-		{
-			$query->whereRaw("1 = 0"); // immer falsch
-			return;
-		}
-		
-		if ($this->showAllAntraege)
-		{
-			$usersIRepresent = auth()->user()->iRepresentUsers();
-			
-			$iRepresentAdUserIds = $usersIRepresent->pluck("adUser.id")->filter()->toArray();
-			
-			$query->where(function($q) use ($adUserId, $iRepresentAdUserIds) {
-				$q->where("eroeffnungen.antragsteller_id", $adUserId);
-				
-				if (!empty($iRepresentAdUserIds)) {
-					$q->orWhereIn("eroeffnungen.antragsteller_id", $iRepresentAdUserIds);
-				}
-			});
-		} 
-		else 
-		{
-			$query->where("eroeffnungen.antragsteller_id", $adUserId);
-		}
+protected function applyFilters(Builder $query): void
+{
+    $user = auth()->user();
+    $myAdUserId = $user?->adUser?->id;
 
-        if (! $this->showArchived) 
-        {
-            $query->where("eroeffnungen.archiviert", false);
-        }
-
-        if ($this->search) 
-        {
-            $search = strtolower($this->search);
-
-            $query->where(function ($q) use ($search) {
-                $q->orWhereRaw("LOWER(eroeffnungen.vertragsbeginn) LIKE ?", ["%{$search}%"])
-                  ->orWhereRaw("LOWER(eroeffnungen.nachname) LIKE ?", ["%{$search}%"])
-                  ->orWhereRaw("LOWER(eroeffnungen.vorname) LIKE ?", ["%{$search}%"]);
-
-                $q->orWhereHas("anrede", fn($sub) =>
-                    $sub->whereRaw("LOWER(anreden.name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("titel", fn($sub) =>
-                    $sub->whereRaw("LOWER(titel.name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("arbeitsort", fn($sub) =>
-                    $sub->whereRaw("LOWER(arbeitsorte.name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("funktion", fn($sub) =>
-                    $sub->whereRaw("LOWER(funktionen.name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("antragsteller", fn($sub) =>
-                    $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("bezugsperson", fn($sub) =>
-                    $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
-                  ->orWhereHas("vorlageBenutzer", fn($sub) =>
-                    $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]));
-            });
-        }
+    if (!$myAdUserId) {
+        $query->whereRaw("1 = 0");
+        return;
     }
+
+    if ($this->showAllAntraege) {
+        // User-IDs, die mich als Stellvertreter eingetragen haben
+        $userIdsDieMichVertretenLassen = \App\Models\Stellvertretung::where('ad_user_id', $myAdUserId)
+            ->pluck('user_id')
+            ->toArray();
+
+        // Deren AD-User-SIDs holen
+        $adSids = \App\Models\User::whereIn('id', $userIdsDieMichVertretenLassen)
+            ->whereNotNull('ad_sid')
+            ->pluck('ad_sid')
+            ->toArray();
+
+        // 3️⃣ Deren AD-User-IDs (für Vergleich in Eroeffnungen)
+        $adUserIds = \App\Models\AdUser::whereIn('sid', $adSids)
+            ->pluck('id')
+            ->toArray();
+
+        // Eigene ID dazu (damit ich meine eigenen Anträge sehe)
+        $alleAdUserIds = array_merge([$myAdUserId], $adUserIds);
+
+        $query->whereIn('eroeffnungen.antragsteller_id', $alleAdUserIds);
+    } else {
+        $query->where('eroeffnungen.antragsteller_id', $myAdUserId);
+    }
+
+    if (!$this->showArchived) {
+        $query->where('eroeffnungen.archiviert', false);
+    }
+
+    if ($this->search) {
+        $search = strtolower($this->search);
+
+        $query->where(function ($q) use ($search) {
+            $q->orWhereRaw("LOWER(eroeffnungen.vertragsbeginn) LIKE ?", ["%{$search}%"])
+                ->orWhereRaw("LOWER(eroeffnungen.nachname) LIKE ?", ["%{$search}%"])
+                ->orWhereRaw("LOWER(eroeffnungen.vorname) LIKE ?", ["%{$search}%"]);
+
+            $q->orWhereHas("anrede", fn($sub) =>
+                $sub->whereRaw("LOWER(anreden.name) LIKE ?", ["%{$search}%"]))
+                ->orWhereHas("titel", fn($sub) =>
+                    $sub->whereRaw("LOWER(titel.name) LIKE ?", ["%{$search}%"]))
+                ->orWhereHas("arbeitsort", fn($sub) =>
+                    $sub->whereRaw("LOWER(arbeitsorte.name) LIKE ?", ["%{$search}%"]))
+                ->orWhereHas("funktion", fn($sub) =>
+                    $sub->whereRaw("LOWER(funktionen.name) LIKE ?", ["%{$search}%"]))
+                ->orWhereHas("antragsteller", fn($sub) =>
+                    $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
+                ->orWhereHas("bezugsperson", fn($sub) =>
+                    $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
+                ->orWhereHas("vorlageBenutzer", fn($sub) =>
+                    $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]));
+        });
+    }
+}
+
+
 
 	protected function getColumnFormatters(): array
 	{

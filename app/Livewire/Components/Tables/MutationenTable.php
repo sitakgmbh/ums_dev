@@ -80,51 +80,58 @@ class MutationenTable extends BaseTable
 		];
 	}
 	
-    protected function applyFilters(Builder $query): void
-    {
-		$adUserId = auth()->user()?->adUser?->id;
-		
-		if (!$adUserId) 
-		{
-			$query->whereRaw("1 = 0"); // immer falsch
-			return;
-		}
-		
-		if ($this->showAllAntraege)
-		{
-			$usersIRepresent = auth()->user()->iRepresentUsers();
-			
-			$iRepresentAdUserIds = $usersIRepresent->pluck("adUser.id")->filter()->toArray();
-			
-			$query->where(function($q) use ($adUserId, $iRepresentAdUserIds) {
-				$q->where("mutationen.antragsteller_id", $adUserId);
-				
-				if (!empty($iRepresentAdUserIds)) {
-					$q->orWhereIn("mutationen.antragsteller_id", $iRepresentAdUserIds);
-				}
-			});
-		} 
-		else 
-		{
-			$query->where("mutationen.antragsteller_id", $adUserId);
-		}
+protected function applyFilters(Builder $query): void
+{
+    $user = auth()->user();
+    $adUserId = $user?->adUser?->id;
 
-        if (! $this->showArchived) {
-            $query->where("mutationen.archiviert", false);
-        }
-
-        if ($this->search) {
-            $search = strtolower($this->search);
-
-			$query->where(function ($q) use ($search) {
-				$q->orWhereRaw("LOWER(mutationen.vertragsbeginn) LIKE ?", ["%{$search}%"])
-				  ->orWhereHas("adUser", fn($sub) =>
-					  $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
-				  ->orWhereHas("antragsteller", fn($sub) =>
-					  $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]));
-			});
-        }
+    if (!$adUserId) {
+        $query->whereRaw("1 = 0");
+        return;
     }
+
+    if ($this->showAllAntraege) {
+        // 1️⃣ User-IDs, die mich als Stellvertreter eingetragen haben
+        $userIds = \App\Models\Stellvertretung::where('ad_user_id', $adUserId)
+            ->pluck('user_id')
+            ->toArray();
+
+        // 2️⃣ Deren AD-SIDs holen
+        $adSids = \App\Models\User::whereIn('id', $userIds)
+            ->whereNotNull('ad_sid')
+            ->pluck('ad_sid')
+            ->toArray();
+
+        // 3️⃣ Deren AD-User-IDs für die Mutationen
+        $adUserIds = \App\Models\AdUser::whereIn('sid', $adSids)
+            ->pluck('id')
+            ->toArray();
+
+        // 4️⃣ Eigene ID immer mit dazu
+        $alleAdUserIds = array_merge([$adUserId], $adUserIds);
+
+        $query->whereIn('mutationen.antragsteller_id', $alleAdUserIds);
+    } else {
+        $query->where('mutationen.antragsteller_id', $adUserId);
+    }
+
+    if (!$this->showArchived) {
+        $query->where('mutationen.archiviert', false);
+    }
+
+    if ($this->search) {
+        $search = strtolower($this->search);
+
+        $query->where(function ($q) use ($search) {
+            $q->orWhereRaw("LOWER(mutationen.vertragsbeginn) LIKE ?", ["%{$search}%"])
+                ->orWhereHas("adUser", fn($sub) =>
+                    $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]))
+                ->orWhereHas("antragsteller", fn($sub) =>
+                    $sub->whereRaw("LOWER(ad_users.display_name) LIKE ?", ["%{$search}%"]));
+        });
+    }
+}
+
 
 	protected function getColumnFormatters(): array
 	{

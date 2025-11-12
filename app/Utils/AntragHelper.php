@@ -121,30 +121,28 @@ class AntragHelper
 		];
 	}
 
-	public static function canView($antrag, $user): bool
-	{
-		if ($user?->hasRole("admin")) 
-		{
-			return true;
-		}
-		
-		if (!self::hasValidAdUser($user)) 
-		{
-			return false;
-		}
-		
-		$adUserId = $user->adUser->id;
-		
-		if ($antrag->antragsteller_id === $adUserId) 
-		{
-			return true;
-		}
-		
-		$usersIRepresent = $user->iRepresentUsers();
-		$iRepresentAdUserIds = $usersIRepresent->pluck("adUser.id")->filter()->toArray();
-		
-		return in_array($antrag->antragsteller_id, $iRepresentAdUserIds);
-	}
+public static function canView($antrag, $user): bool
+{
+    if ($user?->hasRole("admin")) 
+        return true;
+
+    if (!self::hasValidAdUser($user)) 
+        return false;
+
+    $adUserId = $user->adUser->id;
+
+    if ($antrag->antragsteller_id === $adUserId) 
+        return true;
+
+    $antragstellerUser = \App\Models\User::where('ad_sid', $antrag->antragsteller?->sid)->first();
+
+    if (!$antragstellerUser) 
+        return false;
+
+    // Verwende die Relation
+    return $antragstellerUser->myRepresentation()->where('ad_users.id', $adUserId)->exists();
+}
+
 
 
 
