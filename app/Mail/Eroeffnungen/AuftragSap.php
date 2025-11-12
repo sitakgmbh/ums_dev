@@ -20,7 +20,10 @@ class AuftragSap extends Mailable
 
     public function build()
     {
-        return $this->subject("Auftrag SAP-Eröffnung {$this->eroeffnung->nachname} {$this->eroeffnung->vorname}")
+        $vertragsbeginn = $this->eroeffnung->vertragsbeginn?->format('d.m.Y') ?? '';
+		$subject = "Auftrag SAP-Eröffnung {$this->eroeffnung->nachname} {$this->eroeffnung->vorname} per {$vertragsbeginn}";
+		
+		return $this->subject($subject)
             ->view("mails.eroeffnungen.auftrag-sap")
             ->with(["eroeffnung" => $this->eroeffnung]);
     }

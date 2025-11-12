@@ -20,7 +20,10 @@ class AuftragRaumbeschriftung extends Mailable
 
     public function build()
     {
-        return $this->subject("Auftrag Raumbeschriftung {$this->eroeffnung->vorname} {$this->eroeffnung->nachname}")
+        $vertragsbeginn = $this->eroeffnung->vertragsbeginn?->format('d.m.Y') ?? '';
+		$subject = "Auftrag Raumbeschriftung {$this->eroeffnung->nachname} {$this->eroeffnung->vorname} per {$vertragsbeginn}";
+		
+		return $this->subject($subject)
             ->view("mails.eroeffnungen.auftrag-raumbeschriftung")
             ->with(["eroeffnung" => $this->eroeffnung]);
     }

@@ -16,7 +16,10 @@ class AuftragGarderobe extends Mailable
 
     public function build()
     {
-        return $this->subject("Auftrag Garderobe {$this->mutation->adUser->display_name}")
+        $vertragsbeginn = $this->mutation->vertragsbeginn?->format('d.m.Y') ?? '';
+		$subject = "Auftrag Berufskleider {$this->mutation->adUser->display_name} per {$vertragsbeginn}";
+		
+		return $this->subject($subject)
             ->view("mails.mutationen.auftrag-garderobe")
             ->with(["mutation" => $this->mutation]);
     }

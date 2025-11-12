@@ -16,7 +16,10 @@ class AuftragZutrittsrechte extends Mailable
 
     public function build()
     {
-        return $this->subject("Auftrag Zutrittsrechte {$this->mutation->vorname} {$this->mutation->nachname}")
+        $vertragsbeginn = $this->mutation->vertragsbeginn?->format('d.m.Y') ?? '';
+		$subject = "Auftrag Zutrittsrechte {$this->mutation->adUser->display_name} per {$vertragsbeginn}";
+		
+		return $this->subject($subject)
             ->view("mails.mutationen.auftrag-zutrittsrechte")
             ->with(["mutation" => $this->mutation]);
     }

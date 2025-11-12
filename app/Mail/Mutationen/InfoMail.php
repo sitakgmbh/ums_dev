@@ -20,15 +20,12 @@ class InfoMail extends Mailable
 
     public function build()
     {
-        $subject = sprintf(
-            "Mutation %s abgeschlossen",
-            $this->mutation->adUser->display_name
-        );
+        $subject = "Mutation {$this->mutation->adUser->display_name} abgeschlossen";
 
         return $this->subject($subject)
-            ->view("mails.mutationen.info-mail")
+            ->view('mails.mutationen.info-mail')
             ->with([
-                "mutation" => $this->mutation,
+                'mutation' => $this->mutation,
             ]);
     }
 }

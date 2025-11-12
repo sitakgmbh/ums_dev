@@ -20,19 +20,16 @@ class AuftragSap extends Mailable
 
     public function build()
     {
-        $subject = sprintf(
-            "Auftrag SAP-Mutation %s %s",
-            $this->mutation->vorname,
-            $this->mutation->nachname
-        );
+        $vertragsbeginn = $this->mutation->vertragsbeginn ? $this->mutation->vertragsbeginn->format('d.m.Y') : '';
+		$subject = "Auftrag SAP-Mutation {$this->mutation->adUser->display_name} per {$vertragsbeginn}";
 
         return $this->subject($subject)
-            ->view("mails.mutationen.auftrag-sap")
+            ->view('mails.mutationen.auftrag-sap')
             ->with([
-                "mutation" => $this->mutation,
-                "hasSapRole"   => !empty($this->mutation->sap_rolle_id),
-                "hasSapDelete" => !empty($this->mutation->sap_delete),
-                "hasSapLei"    => !empty($this->mutation->komm_lei),
+                'mutation'     => $this->mutation,
+                'hasSapRole'   => !empty($this->mutation->sap_rolle_id),
+                'hasSapDelete' => !empty($this->mutation->sap_delete),
+                'hasSapLei'    => !empty($this->mutation->komm_lei),
             ]);
     }
 }

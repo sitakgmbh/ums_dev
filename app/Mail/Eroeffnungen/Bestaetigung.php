@@ -25,9 +25,10 @@ class Bestaetigung extends Mailable
 
 	public function build()
 	{
-		$vertragsbeginn = $this->eroeffnung->vertragsbeginn ? $this->eroeffnung->vertragsbeginn->format("d.m.Y") : "Kein Datum";
+		$vertragsbeginn = $this->eroeffnung->vertragsbeginn?->format('d.m.Y') ?? '';
+		$subject = "Bestätigung Eröffnung {$this->eroeffnung->nachname} {$this->eroeffnung->vorname} per {$vertragsbeginn}";
 
-		return $this->subject("Bestätigung Antrag Eröffnung {$this->eroeffnung->vorname} {$this->eroeffnung->nachname} per {$vertragsbeginn}")
+		return $this->subject($subject)
 			->view("mails.eroeffnungen.bestaetigung")
 			->with([
 				"eroeffnung" => $this->eroeffnung,

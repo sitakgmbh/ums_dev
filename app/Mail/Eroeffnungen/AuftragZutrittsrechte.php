@@ -14,10 +14,13 @@ class AuftragZutrittsrechte extends Mailable
 
     public function __construct(Eroeffnung $eroeffnung) { $this->eroeffnung = $eroeffnung; }
 
-    public function build()
-    {
-        return $this->subject("Auftrag Zutrittsrechte {$this->eroeffnung->vorname} {$this->eroeffnung->nachname}")
-            ->view("mails.eroeffnungen.auftrag-zutrittsrechte")
-            ->with(["eroeffnung" => $this->eroeffnung]);
-    }
+	public function build()
+	{
+		$vertragsbeginn = $this->eroeffnung->vertragsbeginn?->format('d.m.Y') ?? '';
+		$subject = "Auftrag Schlüsselrechte {$this->eroeffnung->nachname} {$this->eroeffnung->vorname} per {$vertragsbeginn}";
+
+		return $this->subject($subject)
+			->view("mails.eroeffnungen.auftrag-zutrittsrechte")
+			->with(["eroeffnung" => $this->eroeffnung]);
+	}
 }

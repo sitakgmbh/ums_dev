@@ -67,10 +67,30 @@ class MailPreviewController extends Controller
             abort(404, "Mailable '{$mailable}' nicht gefunden");
         }
 
-        $factory = $map[$mailable];
-        $needsModel = !in_array($mailable, ['testmail']);
-        $instance = $needsModel ? $factory($modelId) : $factory();
 
-        return $instance->render();
+		// **Diesen Block hast du vergessen!**
+		$factory = $map[$mailable];
+		$needsModel = !in_array($mailable, ['testmail']);
+		$instance = $needsModel ? $factory($modelId) : $factory();
+
+		$instance->build(); // Jetzt existiert $instance!
+
+		$subject = $instance->subject ?? null;
+
+		// View-Name extrahieren
+		$viewName = $instance->view;
+		if ($viewName instanceof \Illuminate\View\View) {
+			$viewName = $viewName->name();
+		}
+
+		// View-Daten holen
+		$data = method_exists($instance, 'buildViewData')
+			? $instance->buildViewData()
+			: [];
+
+		// Subject reinmergen
+		return view($viewName, array_merge($data, ['subject' => $subject]));
+
+
     }
 }

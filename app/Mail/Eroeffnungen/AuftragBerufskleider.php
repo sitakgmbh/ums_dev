@@ -16,7 +16,10 @@ class AuftragBerufskleider extends Mailable
 
     public function build()
     {
-        return $this->subject("Auftrag Berufskleider {$this->eroeffnung->vorname} {$this->eroeffnung->nachname}")
+        $vertragsbeginn = $this->eroeffnung->vertragsbeginn?->format('d.m.Y') ?? '';
+		$subject = "Auftrag Berufskleider {$this->eroeffnung->nachname} {$this->eroeffnung->vorname} per {$vertragsbeginn}";
+		
+		return $this->subject($subject)
             ->view("mails.eroeffnungen.auftrag-berufskleider")
             ->with(["eroeffnung" => $this->eroeffnung]);
     }
