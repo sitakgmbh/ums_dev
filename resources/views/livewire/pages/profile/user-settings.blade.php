@@ -25,7 +25,7 @@
                         @endforeach
                     </select>
                     <small class="d-block mt-1 lh-sm text-muted">
-                        Wähle Personen aus, die dich vertreten dürfen. Diese Stellvertreter dürfen deine Anträge einsehen und bearbeiten.
+                        Hinterlege Personen, die dich vertreten dürfen. Diese Stellvertreter dürfen deine Anträge einsehen und bearbeiten.
                     </small>
 
 					@if(count($representingUsers) > 0)
