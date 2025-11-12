@@ -35,7 +35,7 @@
 						</small>
 					@else
 						<small class="d-block mt-2 text-muted">
-							<span class="fw-semibold">Aktuell hat dich niemand als Stellvertretung hinterlegt.</span>
+							<span class="fw-semibold">Du bist bei keinem anderen Benutzer als Stellvertretung hinterlegt.</span>
 						</small>
 					@endif
 
