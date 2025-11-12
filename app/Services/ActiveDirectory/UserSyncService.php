@@ -106,8 +106,7 @@ class UserSyncService
                 "created"                   => $this->toCarbon($ldapUser->whencreated),
                 "modified"                  => $this->toCarbon($ldapUser->whenchanged),
                 "last_bad_password_attempt" => $this->toCarbon($ldapUser->badpasswordtime),
-                // "last_logon_date"           => $this->toCarbon($ldapUser->lastlogon),
-				"last_logon_date" => $this->toCarbon($ldapUser->lastlogontimestamp),
+                "last_logon_date"           => $this->toCarbon($ldapUser->lastlogon),
                 "password_last_set"         => $this->toCarbon($ldapUser->pwdlastset),
 
                 "logon_count"           => $ldapUser->logoncount[0] ?? null,
