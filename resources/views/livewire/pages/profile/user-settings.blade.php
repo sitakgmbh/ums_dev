@@ -25,19 +25,19 @@
                         @endforeach
                     </select>
                     <small class="d-block mt-1 lh-sm text-muted">
-                        Wähle Personen aus, die dich vertreten dürfen. Diese Stellvertreter dürfen deine Anträge verwalten.
+                        Wähle Personen aus, die dich vertreten dürfen. Diese Stellvertreter dürfen deine Anträge einsehen und bearbeiten.
                     </small>
 
-@if(count($representingUsers) > 0)
-    <small class="d-block mt-2 text-muted">
-        <span class="fw-semibold">Du wirst vertreten durch:</span>
-        <span class="ms-1">{{ implode(', ', $representingUsers) }}</span>
-    </small>
-@else
-    <small class="d-block mt-2 text-muted">
-        <span class="fw-semibold">Aktuell hat dich niemand als Stellvertretung hinterlegt.</span>
-    </small>
-@endif
+					@if(count($representingUsers) > 0)
+						<small class="d-block mt-2 text-muted">
+							<span class="fw-semibold">Du wirst vertreten durch:</span>
+							<span class="ms-1">{{ implode(', ', $representingUsers) }}</span>
+						</small>
+					@else
+						<small class="d-block mt-2 text-muted">
+							<span class="fw-semibold">Aktuell hat dich niemand als Stellvertretung hinterlegt.</span>
+						</small>
+					@endif
 
 
                 </div>
