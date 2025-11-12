@@ -116,14 +116,14 @@ class AdUsersTable extends BaseTable
         return [
             [
                 "method" => "toggleInactive",
-                "icon"   => $this->showInactive ? "mdi mdi-account-off" : "mdi mdi-account-check",
+                "icon"   => $this->showInactive ? "mdi mdi-lock" : "mdi mdi-lock-outline",
                 "iconClass" => "text-secondary",
                 "class"  => $this->showInactive ? "btn-light" : "btn-outline-light",
                 "title"  => $this->showInactive ? "Deaktivierte Benutzer ausblenden" : "Deaktivierte Benutzer anzeigen",
             ],
             [
                 "method" => "toggleDeleted",
-                "icon"   => $this->showDeleted ? "mdi mdi-account-check" : "mdi mdi-account-remove",
+                "icon"   => $this->showDeleted ? "mdi mdi-trash-can" : "mdi mdi-trash-can-outline",
                 "iconClass" => "text-secondary",
                 "class"  => $this->showDeleted ? "btn-light" : "btn-outline-light",
                 "title"  => $this->showDeleted ? "Gelöschte Benutzer ausblenden" : "Gelöschte Benutzer anzeigen",
