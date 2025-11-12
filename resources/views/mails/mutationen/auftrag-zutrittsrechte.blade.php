@@ -1,12 +1,12 @@
 @extends('layouts.mail')
 
 @section('header')
-    <h2>Auftrag Zutrittsrechte</h2>
+    <h2>Auftrag Schlüsselrechte</h2>
 @endsection
 
 @section('intro')
     <p>Hallo</p>
-    <p>Bitte richte folgende Zutrittsrechte für <strong>{{ $mutation->adUser->display_name }}</strong> ein.</p>
+    <p>Bitte richte folgende Schlüsselrechte für <strong>{{ $mutation->adUser->display_name }}</strong> ein.</p>
 	<ul style="margin:0; padding-left:0; list-style-position:inside;">
 		@if($mutation->key_wh_badge) <li>Badge Waldhaus</li> @endif
 		@if($mutation->key_wh_schluessel) <li>Schluessel Waldhaus</li> @endif
