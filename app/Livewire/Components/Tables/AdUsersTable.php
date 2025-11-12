@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AdUsersTable extends BaseTable
 {
-    public bool $showInactive = true; // Standard: Deaktivierte werden angezeigt
+    public bool $showInactive = true;
     public bool $showDeleted = false;
 
     protected $queryString = [
@@ -116,14 +116,14 @@ class AdUsersTable extends BaseTable
         return [
             [
                 "method" => "toggleInactive",
-                "icon"   => $this->showInactive ? "mdi mdi-lock" : "mdi mdi-lock-outline",
+                "icon"   => $this->showInactive ? "mdi mdi-lock" : "mdi mdi-lock",
                 "iconClass" => "text-secondary",
                 "class"  => $this->showInactive ? "btn-light" : "btn-outline-light",
                 "title"  => $this->showInactive ? "Deaktivierte Benutzer ausblenden" : "Deaktivierte Benutzer anzeigen",
             ],
             [
                 "method" => "toggleDeleted",
-                "icon"   => $this->showDeleted ? "mdi mdi-trash-can" : "mdi mdi-trash-can-outline",
+                "icon"   => $this->showDeleted ? "mdi mdi-trash-can" : "mdi mdi-trash-can",
                 "iconClass" => "text-secondary",
                 "class"  => $this->showDeleted ? "btn-light" : "btn-outline-light",
                 "title"  => $this->showDeleted ? "Gelöschte Benutzer ausblenden" : "Gelöschte Benutzer anzeigen",
