@@ -108,8 +108,8 @@ return [
 			'cc' => ['patrik@senti.bz'],
 		],
 		'info' => [
-			'to' => ['patrik@sitak.ch'],
-			'cc' => ['patrik@senti.bz'],
+			'to' => [],
+			'cc' => [],
 		],
 		'info-hr' => [
 			'to' => ['patrik@sitak.ch'],

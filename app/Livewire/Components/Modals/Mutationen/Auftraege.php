@@ -256,90 +256,66 @@ private function resolveMailConfig(string $key): array
 }
 
 
-    public function confirm(): void
-    {
-        if (! $this->entry) 
-		{
-            $this->addError("general", "Keine Mutation gefunden");
-            return;
-        }
+public function confirm(): void
+{
+    if (! $this->entry) {
+        $this->addError("general", "Keine Mutation gefunden");
+        return;
+    }
 
-        foreach ($this->pendingAuftraege as $key => $label) 
-		{
-            try 
-			{
-                $mailKey = $this->resolveMailConfig($key);
+    foreach ($this->pendingAuftraege as $key => $label) {
 
-                if (! $mailKey) 
-				{
-                    $this->addError("general", "Kein Mail-Key für {$label} ermittelt");
-                    continue;
-                }
+        // Alle Mail-Konfigurationen holen
+        $configs = $this->resolveMailConfig($key);
 
-                $recipients = config("ums.mutation.mail.{$mailKey}.to", []);
-                $cc         = config("ums.mutation.mail.{$mailKey}.cc", []);
+        foreach ($configs as $conf) {
 
-				// Wenn SAP und komm_lei, dann sap_lei.to zu CC hinzufügen
-				if ($key === "sap" && $this->entry->komm_lei) 
-				{
-					$leiRecipients = config("ums.mutation.mail.sap_lei.to", []);
-					$cc = array_merge($cc, $leiRecipients);
-				}
+            $recipients = $conf["to"] ?? [];
+            $cc         = $conf["cc"] ?? [];
+            $mailable   = $conf["mailable"] ?? null;
 
-                if (empty($recipients) && empty($cc)) 
-				{
-                    $this->addError("general", "Keine Empfänger für {$label} definiert");
-                    continue;
-                }
+            // Sonderfall SAP → LEI
+            if ($key === "sap" && $this->entry->komm_lei) {
+                $cc = array_merge(
+                    $cc,
+                    config("ums.mutation.mail.sap_lei.to", [])
+                );
+            }
 
-                $mailable = match ($key) {
-					"sap"   => new \App\Mail\Mutationen\AuftragSap($this->entry),
-                    "raumbeschriftung"=> new \App\Mail\Mutationen\AuftragRaumbeschriftung($this->entry),
-                    "berufskleider"   => new \App\Mail\Mutationen\AuftragBerufskleider($this->entry),
-                    "garderobe"       => new \App\Mail\Mutationen\AuftragGarderobe($this->entry),
-                    "zutrittsrechte"  => new \App\Mail\Mutationen\AuftragZutrittsrechte($this->entry),
-                    default           => null,
-                };
+            if (empty($recipients) && empty($cc)) {
+                $this->addError("general", "Keine Empfaenger fuer {$label} definiert");
+                continue;
+            }
 
-                if (! $mailable) 
-				{
-                    $this->addError("general", "Kein Mailable für {$label} gefunden");
-                    continue;
-                }
+            if (! $mailable) {
+                $this->addError("general", "Kein Mailable fuer {$label} gefunden");
+                continue;
+            }
 
-                logger()->info("Versand {$label}", [
-                    "to"    => $recipients,
-                    "cc"    => $cc,
-                    "entry" => $this->entry->id,
-                ]);
+            logger()->info("Versand {$label}", [
+                "to"    => $recipients,
+                "cc"    => $cc,
+                "entry" => $this->entry->id,
+            ]);
 
-				SafeMail::send($mailable, $recipients, $cc);
+            SafeMail::send($mailable, $recipients, $cc);
 
-				try 
-				{
-					$username = $this->entry->adUser->username;
-					$date = Carbon::now()->format("Ymd");  // Beispiel: 20251130
-					LdapHelper::setAdAttribute($username, "extensionAttribute4", $date);
-				} 
-				catch (\Throwable $e) 
-				{
-					Logger::error("Fehler beim Setzen extensionAttribute4: " . $e->getMessage());
-				}
-            } 
-			catch (\Exception $e) 
-			{
-                logger()->error("Fehler bei {$label}: " . $e->getMessage());
-                $this->addError("general", "Fehler bei {$label}: " . $e->getMessage());
+            try {
+                $username = $this->entry->adUser->username;
+                $date = Carbon::now()->format("Ymd");
+                LdapHelper::setAdAttribute($username, "extensionAttribute4", $date);
+            } catch (\Throwable $e) {
+                Logger::error("Fehler beim Setzen extensionAttribute4: " . $e->getMessage());
             }
         }
-
-        if (! $this->getErrorBag()->isNotEmpty()) 
-		{
-            $this->entry->update(["status_auftrag" => 2]);
-            $this->dispatch("auftraege-versendet");
-            $this->closeModal();
-        }
     }
+
+    if (! $this->getErrorBag()->isNotEmpty()) {
+        $this->entry->update(["status_auftrag" => 2]);
+        $this->dispatch("auftraege-versendet");
+        $this->closeModal();
+    }
+}
 
     public function render()
     {

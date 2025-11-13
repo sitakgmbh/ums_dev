@@ -44,6 +44,11 @@ class InfoMail extends BaseModal
         $defaultCc = config("ums.eroeffnung.mail.info.cc", []);
         $toHr = config("ums.eroeffnung.mail.info-hr.to", []);
 
+		if ($mail = $this->entry->antragsteller->email ?? null) 
+		{
+			$defaultRecipients[] = $mail;
+		}
+		
         // Falls KIS-Benutzer bestellt, HR zu CC hinzufügen
         if ($this->entry->status_info !== 2 && $this->entry->status_kis == 2) 
         {
@@ -79,6 +84,7 @@ class InfoMail extends BaseModal
             $recipientsList = array_filter($recipientsList);
 
             $ccList = [];
+			
             if (!empty($this->cc)) {
                 $ccList = array_map('trim', preg_split('/[,;]+/', $this->cc));
                 $ccList = array_filter($ccList);

@@ -231,68 +231,58 @@ class Auftraege extends BaseModal
 		return $configs;
 	}
 
-	public function confirm(): void
-	{
-		if (! $this->entry) {
-			$this->addError("general", "Keine Eröffnung gefunden");
-			return;
-		}
+public function confirm(): void
+{
+    if (! $this->entry) {
+        $this->addError("general", "Keine Eroeffnung gefunden");
+        return;
+    }
 
-		foreach ($this->pendingAuftraege as $key => $label) 
-		{
-			try 
-			{
-				[$recipients, $cc, $mailable] = $this->resolveMailConfig($key);
+    foreach ($this->pendingAuftraege as $key => $label) {
 
-				if (empty($recipients) && empty($cc)) 
-				{
-					$this->addError("general", "Keine Empfänger für {$label} definiert");
-					continue;
-				}
+        $configs = $this->resolveMailConfig($key);
 
-				if (! $mailable) 
-				{
-					$this->addError("general", "Kein Mailable für {$label} gefunden");
-					continue;
-				}
+        foreach ($configs as $conf) {
 
-				logger()->info("Versand {$label}", [
-					"to"    => $recipients,
-					"cc"    => $cc,
-					"entry" => $this->entry->id,
-				]);
+            $recipients = $conf["to"] ?? [];
+            $cc         = $conf["cc"] ?? [];
+            $mailable   = $conf["mailable"] ?? null;
 
-				SafeMail::send($mailable, $recipients, $cc);
+            if (empty($recipients) && empty($cc)) {
+                $this->addError("general", "Keine Empfaenger fuer {$label} definiert");
+                continue;
+            }
 
-				try 
-				{
-					$username = $this->entry->benutzername;
-					$date = Carbon::now()->format("Ymd");
-					LdapHelper::setAdAttribute($username, "extensionAttribute4", $date);
-				} 
-				catch (\Throwable $e) 
-				{
-					Logger::error("Fehler beim Setzen extensionAttribute4: " . $e->getMessage());
-				}
-			} 
-			catch (\Throwable $e) 
-			{
-				logger()->error("Fehler bei {$label}: " . $e->getMessage(), [
-					"trace" => $e->getTraceAsString(),
-				]);
-				
-				$this->addError("general", "Fehler bei {$label}: " . $e->getMessage());
-			}
-		}
+            if (! $mailable) {
+                $this->addError("general", "Kein Mailable fuer {$label} gefunden");
+                continue;
+            }
 
-		// Wenn keine Fehler Status aktualisieren
-		if (! $this->getErrorBag()->isNotEmpty()) 
-		{
-			$this->entry->update(["status_auftrag" => 2]);
-			$this->dispatch("auftraege-versendet");
-			$this->closeModal();
-		}
-	}
+            logger()->info("Versand {$label}", [
+                "to"    => $recipients,
+                "cc"    => $cc,
+                "entry" => $this->entry->id,
+            ]);
+
+            SafeMail::send($mailable, $recipients, $cc);
+
+            try {
+                $username = $this->entry->benutzername;
+                $date = Carbon::now()->format("Ymd");
+                LdapHelper::setAdAttribute($username, "extensionAttribute4", $date);
+            } catch (\Throwable $e) {
+                Logger::error("Fehler beim Setzen extensionAttribute4: " . $e->getMessage());
+            }
+        }
+    }
+
+    if (! $this->getErrorBag()->isNotEmpty()) {
+        $this->entry->update(["status_auftrag" => 2]);
+        $this->dispatch("auftraege-versendet");
+        $this->closeModal();
+    }
+}
+
 
     public function render()
     {
