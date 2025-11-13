@@ -50,7 +50,7 @@ class InfoMail extends BaseModal
 		}
 		
         // Falls KIS-Benutzer bestellt, HR zu CC hinzufügen
-        if ($this->entry->status_info !== 2 && $this->entry->status_kis == 2) 
+        if ($this->entry->status_kis == 2 && $this->entry->status_info !== 2) 
         {
             $defaultCc = array_merge($defaultCc, (array) $toHr);
         }

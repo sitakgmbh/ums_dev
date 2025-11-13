@@ -61,9 +61,9 @@ class Telefonie extends BaseModal
 			$this->G_APP_UCC = true;
 		}
 
-        $this->optionsCloudExt1 = config("mutation.telefonie.cloudExt1");
-        $this->optionsCloudExt2 = config("mutation.telefonie.cloudExt2");
-        $this->optionsCloudExt3 = config("mutation.telefonie.cloudExt3");
+        $this->optionsCloudExt1 = config("ums.mutation.telefonie.cloudExt1");
+        $this->optionsCloudExt2 = config("ums.mutation.telefonie.cloudExt2");
+        $this->optionsCloudExt3 = config("ums.mutation.telefonie.cloudExt3");
 
         $this->title      = "Telefonie konfigurieren";
         $this->size       = "md";
@@ -83,24 +83,37 @@ class Telefonie extends BaseModal
 			return;
 		}
 
+		$username = $this->entry->adUser->username ?? null;
+
+		if (!$username) 
+		{
+			$this->addError("general", "Benutzername nicht vorhanden.");
+			return;
+		}
+
 		try 
 		{
+			if ($this->tel_nr) 
+			{
+				LdapHelper::setAdAttribute($username, "telephoneNumber", $this->tel_nr);
+			}
+
 			if ($this->cloudExt1) 
 			{
-				LdapHelper::setAdAttribute($this->entry->benutzername, "msDS-cloudExtensionAttribute1", $this->cloudExt1);
+				LdapHelper::setAdAttribute($username, "msDS-cloudExtensionAttribute1", $this->cloudExt1);
 			}
 			
 			if ($this->cloudExt2) 
 			{
-				LdapHelper::setAdAttribute($this->entry->benutzername, "msDS-cloudExtensionAttribute2", $this->cloudExt2);
+				LdapHelper::setAdAttribute($username, "msDS-cloudExtensionAttribute2", $this->cloudExt2);
 			}
 			
 			if ($this->cloudExt3) 
 			{
-				LdapHelper::setAdAttribute($this->entry->benutzername, "msDS-cloudExtensionAttribute3", $this->cloudExt3);
+				LdapHelper::setAdAttribute($username, "msDS-cloudExtensionAttribute3", $this->cloudExt3);
 			}
 
-			LdapHelper::updateGroupMembership($this->entry->benutzername, [
+			LdapHelper::updateGroupMembership($username, [
 				"G_APP_UCC"       => $this->G_APP_UCC,
 				"G_APP_Novaalert" => $this->G_APP_Novaalert,
 			]);

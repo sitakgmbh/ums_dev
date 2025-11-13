@@ -42,7 +42,6 @@ class InfoMail extends BaseModal
         // Vorausfüllen mit Config-Werten
         $defaultRecipients = config("ums.mutation.mail.info.to", []);
         $defaultCc = config("ums.mutation.mail.info.cc", []);
-        $toHr = config("ums.mutation.mail.info-hr.to", []);
 
 		if ($antragstellerMail = $this->entry->antragsteller->email ?? null) 
 		{
