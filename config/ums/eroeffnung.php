@@ -131,6 +131,7 @@ return [
         'Details' => [
             'Eintrittsdatum' => 'vertragsbeginn',
             'Wiedereintritt' => 'wiedereintritt',
+			'Vor Eintritt lizenzieren' => 'vorab_lizenzierung',
             'Antragsteller'  => 'antragsteller.display_name',
             'Bezugsperson'   => 'bezugsperson.display_name',
 			'Berechtigungen'   => 'vorlageBenutzer.display_name',

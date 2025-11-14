@@ -280,6 +280,37 @@
                     </div>
                 @endif
 
+				@php
+					$kalender = $entry->kalender_berechtigungen;
+
+					if (!is_array($kalender)) 
+					{
+						$kalender = [];
+					}
+
+					foreach ($kalender as $id) 
+					{
+						$user = \App\Models\AdUser::find($id);
+						
+						if ($user) 
+						{
+							$kalenderNamen[] = $user->display_name;
+						}
+					}
+				@endphp
+
+				@if(!empty($kalenderNamen))
+					<div>
+						<div class="fw-bold mb-2">Berechtigungen Kalender</div>
+						<ul class="mb-0 ps-0 ms-0" style="list-style-position: inside;">
+							@foreach($kalenderNamen as $name)
+								<li>{{ $name }}</li>
+							@endforeach
+						</ul>
+
+					</div>
+				@endif
+
 				@if($entry->kommentar)
 					<div>
 						<div class="fw-bold mb-2">Kommentar</div>
