@@ -47,6 +47,11 @@ class MutationObserver
 
 	public function updated(Mutation $mutation): void
 	{
+		if ($mutation->shouldSuppressObserver()) 
+		{
+			return;
+		}
+		
 		$user = Auth::user();
 		$username = $user?->username ?? "unbekannt";
 		$fullname = $user?->name ?? ($user?->firstname . " " . $user?->lastname);

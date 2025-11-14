@@ -36,7 +36,12 @@ class AustrittObserver
 
     public function updated(Austritt $austritt): void
     {
-        $user = Auth::user();
+		if ($austritt->shouldSuppressObserver()) 
+		{
+			return;
+		}
+		
+		$user = Auth::user();
         $username = $user?->username ?? "unbekannt";
         $fullname = $user?->name ?? ($user?->firstname . " " . $user?->lastname);
 

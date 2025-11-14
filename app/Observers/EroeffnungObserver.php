@@ -53,7 +53,8 @@ class EroeffnungObserver
 
     public function updated(Eroeffnung $eroeffnung): void
     {
-		if ($eroeffnung->shouldSuppressObserver()) {
+		if ($eroeffnung->shouldSuppressObserver()) 
+		{
 			return;
 		}
 
