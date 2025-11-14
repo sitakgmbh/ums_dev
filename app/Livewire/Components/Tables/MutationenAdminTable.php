@@ -218,6 +218,7 @@ class MutationenAdminTable extends BaseTable
                 if ($row->status_tel)     $badges[] = $createBadge($row->status_tel, "mdi-phone", "Telefonie");
                 if ($row->status_sap)     $badges[] = $createBadge($row->status_sap, "mdi-hospital-building", "SAP");
                 if ($row->status_auftrag) $badges[] = $createBadge($row->status_auftrag, "mdi-clipboard-text", "Aufträge");
+				if ($row->status_info)     $badges[] = $createBadge($row->status_info, "mdi-information-variant", "Info-Mail");
 
                 if ($row->archiviert) 
 				{
