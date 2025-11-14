@@ -217,9 +217,9 @@
                                             <td style="width:1px; white-space: nowrap; padding: 5px 10px 2px 0;">
                                                 {{ $label }}
                                             </td>
-                                            <td style="padding: 2px 0;">
-                                                {!! $value !!}
-                                            </td>
+											<td style="padding: 5px 10px 2px 0;">
+												{!! $value !!}
+											</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
