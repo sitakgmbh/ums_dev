@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AdUser;
 use App\Models\Austritt;
+use App\Utils\Logging\Logger;
 
 class AustrittController extends Controller
 {
@@ -53,6 +54,10 @@ class AustrittController extends Controller
             "status_logimen"    => "nullable|boolean",
         ]);
 
+		Logger::debug("API-Request Austritt", [
+			"request"   => $request->all(),
+			"validated" => $validated,
+		]);
         // AD-User suchen
         $adUser = AdUser::where("sid", $validated["sid"])->first();
 		
