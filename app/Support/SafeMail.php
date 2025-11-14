@@ -23,7 +23,15 @@ class SafeMail
         $username = $user?->username ?? "system";
         $fullname = trim(($user?->firstname ?? "") . " " . ($user?->lastname ?? ""));
 
-        $subject = property_exists($mailable, "subject") ? $mailable->subject : (method_exists($mailable, "subject") ? $mailable->subject() : "(kein Betreff)");
+		if (method_exists($mailable, "build")) {
+			try {
+				$mailable->build();
+			} catch (\Throwable $e) {
+				// ignorieren
+			}
+		}
+
+		$subject = $mailable->subject ?? null;
 
         $context = [
             "to"       => $toList,

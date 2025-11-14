@@ -26,7 +26,7 @@ class Bestaetigung extends Mailable
 	public function build()
 	{
 		$vertragsbeginn = $this->mutation->vertragsbeginn?->format('d.m.Y') ?? '';
-		$subject = "Bestätitung Mutation {$this->mutation->adUser->display_name} per {$vertragsbeginn}";
+		$subject = "Bestätigung Mutation {$this->mutation->adUser->display_name} per {$vertragsbeginn}";
 
 		return $this->subject($subject)
 			->view("mails.mutationen.bestaetigung")
