@@ -38,59 +38,86 @@ class Dashboard extends Component
 
 private function getWochenUebersicht(): array
 {
-    $wochenTage = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
-    $wochenUebersicht = [];
+    // Anzeige-Reihenfolge
+    $tage = ['Samstag', 'Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
 
-    $currentDate = now();
+    $uebersicht = [];
+    $heute = now()->format('Y-m-d');
 
-    foreach ($wochenTage as $tag) {
-        $datumObj = $currentDate->copy()->startOfWeek()->addDays(array_search($tag, $wochenTage));
-        $datum = $datumObj->format('d.m.');
+    foreach ($tage as $tag) {
+
+        // Zuordnung zu einem festen Wochenindex
+        // (Montag = 0 ... Sonntag = 6)
+        $index = match ($tag) {
+            'Montag'     => 0,
+            'Dienstag'   => 1,
+            'Mittwoch'   => 2,
+            'Donnerstag' => 3,
+            'Freitag'    => 4,
+            'Samstag'    => 5,
+            'Sonntag'    => 6,
+        };
+
+        if ($tag === 'Samstag' || $tag === 'Sonntag') {
+            // Samstag/Sonntag aus der VORWOCHE
+            $basis = now()->copy()->subWeek()->startOfWeek(); // Montag vor einer Woche
+        } else {
+            // Rest aus der aktuellen Woche
+            $basis = now()->copy()->startOfWeek(); // Dieser Montag
+        }
+
+        // Datum fuer den Tag berechnen
+        $datumObj = $basis->copy()->addDays($index);
         $datumYmd = $datumObj->format('Y-m-d');
 
-		$eroeffnungen = Eroeffnung::whereDate('vertragsbeginn', $datumYmd)
-			->where('archiviert', 0)
-			->select('id', 'vorname', 'nachname')
-			->get()
-			->map(fn($e) => [
-				'id' => $e->id,
-				'name' => $e->vorname . ' ' . $e->nachname,
-			])
-			->sortBy('name')
-			->values();
+        // Daten laden
+        $eroeffnungen = Eroeffnung::whereDate('vertragsbeginn', $datumYmd)
+            ->where('archiviert', 0)
+            ->select('id', 'vorname', 'nachname')
+            ->get()
+            ->map(fn($e) => [
+                'id' => $e->id,
+                'name' => $e->vorname.' '.$e->nachname,
+            ])
+            ->sortBy('name')
+            ->values();
 
-		$mutationen = Mutation::whereDate('vertragsbeginn', $datumYmd)
-			->where('archiviert', 0)
-			->with('adUser:id,firstname,lastname')
-			->get()
-			->map(fn($m) => [
-				'id' => $m->id,
-				'name' => optional($m->adUser)->firstname . ' ' . optional($m->adUser)->lastname,
-			])
-			->sortBy('name')
-			->values();
+        $mutationen = Mutation::whereDate('vertragsbeginn', $datumYmd)
+            ->where('archiviert', 0)
+            ->with('adUser:id,firstname,lastname')
+            ->get()
+            ->map(fn($m) => [
+                'id' => $m->id,
+                'name' => optional($m->adUser)->firstname.' '.optional($m->adUser)->lastname,
+            ])
+            ->sortBy('name')
+            ->values();
 
-		$austritte = Austritt::whereDate('vertragsende', $datumYmd)
-			->where('archiviert', 0)
-			->with('adUser:id,firstname,lastname')
-			->get()
-			->map(fn($a) => [
-				'id' => $a->id,
-				'name' => optional($a->adUser)->firstname . ' ' . optional($a->adUser)->lastname,
-			])
-			->sortBy('name')
-			->values();
+        $austritte = Austritt::whereDate('vertragsende', $datumYmd)
+            ->where('archiviert', 0)
+            ->with('adUser:id,firstname,lastname')
+            ->get()
+            ->map(fn($a) => [
+                'id' => $a->id,
+                'name' => optional($a->adUser)->firstname.' '.optional($a->adUser)->lastname,
+            ])
+            ->sortBy('name')
+            ->values();
 
-        $wochenUebersicht[$tag] = [
-            'datum' => $datum,
+        // Zusammenbauen
+        $uebersicht[$tag] = [
+            'datum'        => $datumObj->format('d.m.'),
+            'datum_ymd'    => $datumYmd,
+            'heute'        => $datumYmd === $heute,
             'eroeffnungen' => $eroeffnungen,
-            'mutationen' => $mutationen,
-            'austritte' => $austritte,
+            'mutationen'   => $mutationen,
+            'austritte'    => $austritte,
         ];
     }
 
-    return $wochenUebersicht;
+    return $uebersicht;
 }
+
 
 
 

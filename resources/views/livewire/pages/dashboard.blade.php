@@ -1,7 +1,6 @@
 <!-- /dashboard -->
 <div>
 
-
 	@role('admin')
 	<div class="row">
 		<div class="col-12">
@@ -13,7 +12,9 @@
 							<thead class="bg-light">
 								<tr>
 									@foreach($wochenUebersicht as $tag => $daten)
-										<th>{{ $tag }} {{ $daten['datum'] }}</th>
+										<th class="{{ $daten['heute'] ? 'table-info' : '' }} text-secondary">
+											{{ $tag }} {{ $daten['datum'] }}
+										</th>
 									@endforeach
 								</tr>
 							</thead>
