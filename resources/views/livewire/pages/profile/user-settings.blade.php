@@ -30,7 +30,7 @@
 
 					@if(count($representingUsers) > 0)
 						<small class="d-block mt-2 text-muted">
-							<span class="fw-semibold">Du wirst vertreten durch:</span>
+							<span class="fw-semibold">Du bist bei folgenden Mitarbeitenden als Stellvertretung hinterlegt:</span>
 							<span class="ms-1">{{ implode(', ', $representingUsers) }}</span>
 						</small>
 					@else

@@ -209,6 +209,7 @@ trait MutationFormHooks
 		// Mutation vorhanden?
 		$mutation = \App\Models\Mutation::query()
 			->where("ad_user_id", $user->id)
+			->where("archiviert", false)
 			->first();
 
 		if ($mutation) 
