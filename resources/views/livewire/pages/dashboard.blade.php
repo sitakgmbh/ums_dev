@@ -12,7 +12,7 @@
 							<thead class="bg-light">
 								<tr>
 									@foreach($wochenUebersicht as $tag => $daten)
-										<th class="{{ $daten['heute'] ? 'table-info' : '' }} text-secondary">
+										<th class="{{ $daten['heute'] ? 'table-dark' : '' }} {{ $daten['heute'] ? 'table-white' : 'text-secondary' }}">
 											{{ $tag }} {{ $daten['datum'] }}
 										</th>
 									@endforeach
