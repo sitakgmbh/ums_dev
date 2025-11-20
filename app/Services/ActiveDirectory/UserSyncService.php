@@ -138,7 +138,6 @@ class UserSyncService
                 "proxy_addresses"       => $ldapUser->proxyaddresses ? array_values($ldapUser->proxyaddresses) : [],
 				"member_of" => $ldapUser->memberof ? array_map(fn($dn) => preg_replace("/^CN=([^,]+).*/i", "$1", $dn), $ldapUser->memberof) : [],
 
-                // ExtensionAttributes
                 "extensionattribute1"   => $ldapUser->extensionattribute1[0] ?? null,
                 "extensionattribute2"   => $ldapUser->extensionattribute2[0] ?? null,
                 "extensionattribute3"   => $ldapUser->extensionattribute3[0] ?? null,
@@ -181,7 +180,7 @@ class UserSyncService
 		if (!$value) return null;
 		if ($value instanceof Carbon) return $value;
 
-		// FILETIME → Unix
+		// FILETIME -> Unix
 		if (is_numeric($value)) 
 		{
 			// Sonderwerte für "nie"
@@ -232,7 +231,7 @@ class UserSyncService
 			return null;
 		}
 
-		// thumbnailPhoto ist binär, wird als String geliefert
+		// thumbnailPhoto ist binär/string
 		return base64_encode($photo);
 	}
 }

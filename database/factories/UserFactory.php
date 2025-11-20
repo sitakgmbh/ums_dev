@@ -13,13 +13,13 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'username'   => $this->faker->unique()->userName(),
-            'auth_type'  => 'local', // oder 'ldap'
-            'firstname'  => $this->faker->firstName(),
-            'lastname'   => $this->faker->lastName(),
-            'email'      => $this->faker->unique()->safeEmail(),
-            'password'   => bcrypt('Password!'), // Default-Passwort
-            'is_enabled' => true,
+            "username"   => $this->faker->unique()->userName(),
+            "auth_type"  => "local",
+            "firstname"  => $this->faker->firstName(),
+            "lastname"   => $this->faker->lastName(),
+            "email"      => $this->faker->unique()->safeEmail(),
+            "password"   => bcrypt("Password!"),
+            "is_enabled" => true,
         ];
     }
 }

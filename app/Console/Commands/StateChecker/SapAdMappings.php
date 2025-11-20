@@ -23,44 +23,35 @@ class SapAdMappings extends Command
 
 		$incidentMetadata = [];
 
-		foreach ($filter as $f) {
-
+		foreach ($filter as $f) 
+		{
 			$benutzer = $sapAdMappingService->getFilteredData($f);
 
-			if ($benutzer->isNotEmpty()) {
-
+			if ($benutzer->isNotEmpty()) 
+			{
 				$incidentMetadata[$f] = [];
 
-				foreach ($benutzer as $b) {
+				foreach ($benutzer as $b) 
+				{
+					$personalnummer = ($f === 'keine_personalnummer' || $f === 'kein_sap_eintrag') ? $b->initials : $b->d_pernr;
+					$username = ($f === 'keine_personalnummer' || $f === 'kein_sap_eintrag') ? $b->username : $b->d_name;
 
-					// Personalnummer je nach Filter
-					$personalnummer = ($f === 'keine_personalnummer' || $f === 'kein_sap_eintrag')
-						? $b->initials
-						: $b->d_pernr;
-
-					// Benutzername je nach Filter
-					$username = ($f === 'keine_personalnummer' || $f === 'kein_sap_eintrag')
-						? $b->username
-						: $b->d_name;
-
-					// Excluded oder Secondary? Dann NICHT melden
-					if (
-						in_array($personalnummer, $excludedInitials) ||
-						in_array($username, $excludedUsernames) ||
-						in_array($personalnummer, $secondaryPns)
-					) {
+					if (in_array($personalnummer, $excludedInitials) || in_array($username, $excludedUsernames) || in_array($personalnummer, $secondaryPns)) 
+					{
 						continue;
 					}
 
-					// Normal weiter wie bisher
-					if ($f === 'kein_ad_benutzer') {
+					if ($f === 'kein_ad_benutzer') 
+					{
 						$incidentMetadata[$f][] = [
 							'name' => $b->d_name . ($b->d_vname || $b->d_rufnm ? ' ' . ($b->d_rufnm ?: $b->d_vname) : ''),
 							'benutzername' => '-',
 							'personalnummer' => $b->d_pernr,
 							'funktion' => $b->d_0032_batchbez ?? '-',
 						];
-					} else {
+					} 
+					else 
+					{
 						$incidentMetadata[$f][] = [
 							'name' => $b->display_name,
 							'benutzername' => $b->username,
@@ -72,7 +63,8 @@ class SapAdMappings extends Command
 			}
 		}
 
-        if (!empty($incidentMetadata)) {
+        if (!empty($incidentMetadata)) 
+		{
             Incident::create([
                 'title' => 'Abgleich SAP ↔ AD',
                 'description' => 'Folgende Filter haben problematische Einträge erkannt: ' . implode(', ', array_keys($incidentMetadata)),
@@ -82,11 +74,12 @@ class SapAdMappings extends Command
             ]);
 
             $this->info('Incident erfolgreich erstellt.');
-        } else {
+        } 
+		else 
+		{
             $this->info('Keine problematischen Einträge gefunden.');
         }
 
-        // Zusätzlicher Check für AdUser mit denselben Initialen
 		$duplicateInitials = AdUser::select('initials', DB::raw('COUNT(*) as count'))
 			->whereNotNull('initials')
 			->whereNotIn('initials', ['99999', '11111', '00000'])
@@ -95,13 +88,16 @@ class SapAdMappings extends Command
 			->pluck('initials')
 			->toArray();
 
-        if (!empty($duplicateInitials)) {
+        if (!empty($duplicateInitials)) 
+		{
             $duplicateIncidentMetadata = [];
 
-            foreach ($duplicateInitials as $initials) {
+            foreach ($duplicateInitials as $initials) 
+			{
                 $users = AdUser::where('initials', $initials)->get();
 
-                foreach ($users as $user) {
+                foreach ($users as $user) 
+				{
                     $duplicateIncidentMetadata[] = [
                         'name' => $user->display_name,
                         'benutzername' => $user->username,
@@ -121,7 +117,8 @@ class SapAdMappings extends Command
 
             $this->info('Incident für doppelte Personalnummern erstellt.');
         }
-		 else {
+		else 
+		{
             $this->info('Keine doppelten Personalnummern im AD gefunden.');
         }
     }

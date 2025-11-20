@@ -6,9 +6,6 @@ class UserService
 {
     public function __construct(protected Connection $base) {}
 
-    /**
-     * Alle Benutzer abfragen
-     */
     public function listUsers(): array
     {
         return $this->base->call(function () 
@@ -34,9 +31,6 @@ class UserService
         }, "listUsers");
     }
 
-    /**
-     * Einzelnen Benutzer abfragen
-     */
     public function getUser(string $userId): ?array
     {
         return $this->base->call(function () use ($userId) 
@@ -58,9 +52,6 @@ class UserService
         }, "getUser({$userId})");
     }
 
-    /**
-     * Gruppen eines Benutzers abfragen
-     */
     public function getUserGroups(string $userId): array
     {
         return $this->base->call(function () use ($userId) 

@@ -47,7 +47,8 @@ class UserController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user) {
+        if (!$user) 
+		{
             return response()->json(["message" => "Benutzer nicht gefunden"], 404);
         }
 

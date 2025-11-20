@@ -41,13 +41,11 @@ class EroeffnungObserver
 		
         Logger::db("antraege", "info", "Eröffnung ID {$eroeffnung->id} erstellt durch {$fullname} ({$username})", $context);
 
-		// Bestätigungsmail versenden
         $to = $eroeffnung->antragsteller?->email;
 		$cc = $eroeffnung->bezugsperson->email;
 		
 		SafeMail::send(new Bestaetigung($eroeffnung), $to, $cc);
 
-		// Ticket erstellen
 		app(\App\Services\OtoboService::class)->createTicket($eroeffnung);
     }
 
@@ -71,7 +69,6 @@ class EroeffnungObserver
             "original"      => $original,
         ]);
 
-		// Ticket schliessen wenn archiviert
         if ($eroeffnung->wasChanged('archiviert') && $eroeffnung->archiviert) 
 		{
             $msg = "Eröffnung wurde archiviert durch {$fullname} ({$username}).";
@@ -88,13 +85,11 @@ class EroeffnungObserver
 
         $deletedData = $this->filterData($eroeffnung->getOriginal(), $eroeffnung);
 
-		// Logeintrag erstellen
         Logger::db("antraege", "info", "Eröffnung ID {$eroeffnung->id} gelöscht durch {$fullname} ({$username})", [
             "eroeffnung_id" => $eroeffnung->id,
             "deleted_data"  => $deletedData,
         ]);
 
-		// Ticket abschliessen
 		$message = "Eröffnung wurde gelöscht durch {$fullname} ({$username})";
 		app(\App\Services\OtoboService::class)->updateTicket($eroeffnung, $message, true);
     }

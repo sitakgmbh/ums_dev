@@ -8,18 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('logs', function (Blueprint $table) {
+        Schema::create("logs", function (Blueprint $table) 
+		{
             $table->id();
-            $table->string('category')->nullable();      // eigene Kategorie, frei wählbar
-            $table->string('level');                     // INFO, ERROR, WARNING
-            $table->text('message');                     // eigentliche Log-Nachricht
-            $table->json('context')->nullable();         // optionale Zusatzdaten
-            $table->timestamp('created_at')->useCurrent();
+            $table->string("category")->nullable();
+            $table->string("level");
+            $table->text("message");
+            $table->json("context")->nullable();
+            $table->timestamp("created_at")->useCurrent();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('logs');
+        Schema::dropIfExists("logs");
     }
 };

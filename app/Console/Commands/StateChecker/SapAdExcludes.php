@@ -25,12 +25,12 @@ class SapAdExcludes extends Command
             ->filter()
             ->values();
 
-        if ($excludedList->isEmpty()) {
+        if ($excludedList->isEmpty()) 
+		{
             $this->info('Keine Excludes vorhanden – nichts zu tun.');
             return 0;
         }
 
-        // Eroeffnungen fuer heute
         $today = date('Y-m-d');
 
         $eroeffnungen = Eroeffnung::where('archiviert', 0)
@@ -38,7 +38,8 @@ class SapAdExcludes extends Command
             ->whereNotNull('benutzername')
             ->get();
 
-        if ($eroeffnungen->isEmpty()) {
+        if ($eroeffnungen->isEmpty()) 
+		{
             $this->info("Keine Eroeffnungen fuer heute ({$today}).");
             return 0;
         }
@@ -47,10 +48,12 @@ class SapAdExcludes extends Command
 
         $removed = [];
 
-        foreach ($eroeffnungen as $e) {
+        foreach ($eroeffnungen as $e) 
+		{
             $username = trim($e->benutzername);
 
-            if ($excludedList->contains($username)) {
+            if ($excludedList->contains($username)) 
+			{
                 $this->info("Bereinige: {$username}");
                 Log::info("CleanupExcludedUsernames: Entferne {$username} aus Excludes wegen Eroeffnung-ID {$e->id}");
 
@@ -60,29 +63,26 @@ class SapAdExcludes extends Command
             }
         }
 
-        if (!empty($removed)) {
+        if (!empty($removed)) 
+		{
             $newValue = $excludedList->implode(',');
-
-            // Setting holen oder neu anlegen
             $setting = Setting::firstOrNew(['key' => $key]);
-
-            // Mutator kümmert sich um Type-Encoding
             $setting->value = $newValue;
 
-            // Falls Type nicht existiert (Neu-Anlage)
-            if (!$setting->exists) {
+            if (!$setting->exists) 
+			{
                 $setting->type = 'string';
                 $setting->name = 'SAP/AD Excluded Usernames';
                 $setting->description = 'Liste der ausgeschlossenen Benutzernamen fuer den SAP/AD-Abgleich';
             }
 
             $setting->save();
-
-            // Cache flushen, sonst bleibt alter Wert im Cache
             Cache::forget("setting_{$key}");
 
             $this->info("Bereinigung abgeschlossen: " . count($removed) . " Benutzer entfernt.");
-        } else {
+        } 
+		else 
+		{
             $this->info("Keine uebereinstimmenden Benutzer gefunden.");
         }
 

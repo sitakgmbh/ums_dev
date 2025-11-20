@@ -113,7 +113,7 @@
 							// Erledigte Stati sperren
 							$disabled = in_array($status, [2, 3], true);
 
-							// Kein Edit-Recht → alles sperren
+							// Kein Edit-Recht -> alles sperren
 							if (! $canEdit) {
 								$disabled = true;
 							}

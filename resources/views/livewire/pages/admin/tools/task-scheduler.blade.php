@@ -1,5 +1,5 @@
 <div>
-    {{-- Geplante Aufgaben (nur Anzeige, kein Button) --}}
+
     <div class="card mb-3">
         <div class="card-header bg-primary text-white py-1">
             <p class="mb-0"><strong>Geplante Aufgaben</strong></p>

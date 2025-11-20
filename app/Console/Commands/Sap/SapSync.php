@@ -83,7 +83,6 @@ class SapSync extends Command
         }
     }
     
-    // Lädt die neuste CSV-Datei vom hinterlegten SMB-Share herunter
     protected function downloadLatestCsvFromSmb(): string
     {
         $smbSharePath = config("ums.sap.export_path");
@@ -97,7 +96,6 @@ class SapSync extends Command
             throw new \RuntimeException("Keine Dateien im SMB-Share gefunden.");
         }
         
-        // Nur CSV-Dateien filtern
         $csvFiles = array_filter($items, function ($item) {
             return $item["type"] === "file" 
                 && strtolower(pathinfo($item["name"], PATHINFO_EXTENSION)) === "csv";
@@ -120,11 +118,10 @@ class SapSync extends Command
         
         $this->info("Datei: {$latestCsv['name']} ({$timestamp})");
         
-        // Lokalen Zielpfad erstellen
         $localPath = storage_path("app/private/sap_import_{$timestamp}.csv");
         
-        // Datei kopieren
         $this->info("Kopiere Datei...");
+		
         if (!@copy($latestCsv["path"], $localPath)) 
         {
             throw new \RuntimeException("Fehler beim Kopieren der Datei von {$latestCsv['path']} nach {$localPath}");

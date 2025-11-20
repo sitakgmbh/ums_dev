@@ -28,19 +28,22 @@ if (env("AUTH_MODE") === "local")
     Route::get("/reset-password/{token}", ResetPassword::class)->name("password.reset");
 }
 
-Route::middleware(["auth", "verified"])->group(function () {
+Route::middleware(["auth", "verified"])->group(function () 
+{
     Route::get("/dashboard", Dashboard::class)->name("dashboard");
     Route::get("/profile/edit", ProfileEdit::class)->name("profile.edit");
 	Route::get("/profile/settings", \App\Livewire\Pages\Profile\UserSettings::class)->middleware("auth")->name("profile.settings");
 
-	Route::prefix("eroeffnungen")->name("eroeffnungen.")->group(function () {
+	Route::prefix("eroeffnungen")->name("eroeffnungen.")->group(function () 
+	{
 		Route::get("/", \App\Livewire\Pages\Eroeffnungen\Index::class)->name("index");
 		Route::get("/create", \App\Livewire\Pages\Eroeffnungen\Create::class)->name("create");
 		Route::get("/{eroeffnung}", \App\Livewire\Pages\Eroeffnungen\Show::class)->name("show");
 		Route::get("/{eroeffnung}/edit", \App\Livewire\Pages\Eroeffnungen\Edit::class)->name("edit");
 	});
 
-	Route::prefix("mutationen")->name("mutationen.")->group(function () {
+	Route::prefix("mutationen")->name("mutationen.")->group(function () 
+	{
 		Route::get("/", \App\Livewire\Pages\Mutationen\Index::class)->name("index");
 		Route::get("/create", \App\Livewire\Pages\Mutationen\Create::class)->name("create");
 		Route::get("/{mutation}", \App\Livewire\Pages\Mutationen\Show::class)->name("show");
@@ -48,7 +51,8 @@ Route::middleware(["auth", "verified"])->group(function () {
 	});
 
     // Admin Bereich
-    Route::prefix("admin")->middleware("role:admin")->group(function () {
+    Route::prefix("admin")->middleware("role:admin")->group(function () 
+	{
         // Admin Dashboard
         Route::get("/", AdminDashboard::class)->name("admin.dashboard");
 

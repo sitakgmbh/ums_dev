@@ -8,17 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('sap_rollen', function (Blueprint $table) {
+        Schema::create("sap_rollen", function (Blueprint $table) 
+		{
             $table->id();
-            $table->string('name')->unique();
-            $table->boolean('enabled')->default(false);
-            $table->string('label')->nullable();
+            $table->string("name")->unique();
+            $table->boolean("enabled")->default(false);
+            $table->string("label")->nullable();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('sap_rollen');
+        Schema::dropIfExists("sap_rollen");
     }
 };

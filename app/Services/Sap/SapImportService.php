@@ -31,7 +31,6 @@ class SapImportService
 
 		$content = file_get_contents($filePath);
 
-		// Encoding erkennen und nach UTF-8 konvertieren
 		$encoding = mb_detect_encoding($content, ["UTF-8", "ISO-8859-1", "Windows-1252", "ASCII"], true);
 
 		if ($encoding && $encoding !== "UTF-8") 
@@ -59,13 +58,12 @@ class SapImportService
             $rows[] = array_combine($header, $values);
         }
 
-		// SapExport Tabelle befüllen
 		Logger::debug("SapImportService: Tabelle sap_export befüllen");
 		SapExport::truncate();
 		
 		$insertData = array_map(function($row) {
-			// Voranstehende Nullen bei d_pernr entfernen
-			if (isset($row['d_pernr'])) {
+			if (isset($row['d_pernr'])) 
+			{
 				$row['d_pernr'] = ltrim(trim($row['d_pernr']), "0");
 			}
 			
@@ -76,17 +74,15 @@ class SapImportService
 		
 		SapExport::insert($insertData);
 		
-		// Verknüpfung zu ad_users erstellen
 		Logger::debug("SapImportService: Verknüpfungen sap_export zu ad_users erstellen");
 		
-		// Alle AdUsers mit initials auf einmal laden für bessere Performance
 		$adUsersMap = AdUser::whereNotNull('initials')
 			->where('is_existing', true)
 			->pluck('id', 'initials')
 			->toArray();
 		
-		// Bulk Update für SapExport
 		$sapUpdateData = [];
+		
 		foreach ($insertData as $row) 
 		{
 			$personalnummer = $row["d_pernr"] ?? "";
@@ -98,12 +94,11 @@ class SapImportService
 			}
 		}
 		
-		// Bulk Update ausführen
-		foreach ($sapUpdateData as $pernr => $adUserId) {
+		foreach ($sapUpdateData as $pernr => $adUserId) 
+		{
 			SapExport::where('d_pernr', $pernr)->update(['ad_user_id' => $adUserId]);
 		}
 
-        // Für spätere Deaktivierung
         $funktionenSeen = [];
         $abteilungenSeen = [];
         $unternehmenseinheitenSeen = [];
@@ -121,7 +116,6 @@ class SapImportService
             $titelName = trim($row["d_titel"] ?? "");
             $anredeName = trim($row["d_anrlt"] ?? "");
 
-            // Stammdaten firstOrCreate
             $funktion = $funktionName !== "" ? Funktion::firstOrCreate(["name" => $funktionName]) : null;
             $abteilung = $abteilungName !== "" ? Abteilung::firstOrCreate(["name" => $abteilungName]) : null;
             $ue = $ueName !== "" ? Unternehmenseinheit::firstOrCreate(["name" => $ueName]) : null;
@@ -148,7 +142,6 @@ class SapImportService
             if ($titel) $titelSeen[] = $titel->id;
             if ($anrede) $anredenSeen[] = $anrede->id;
 
-            // Konstellation nur wenn alle 4 vorhanden
             if ($funktion && $abteilung && $ue && $arbeitsort) 
 			{
                 $konstellation = Konstellation::firstOrCreate([
@@ -192,7 +185,6 @@ class SapImportService
         Anrede::whereIn("id", $anredenSeen)->where("enabled", false)->update(["enabled" => true]);
         Konstellation::whereIn("id", $konstellationenSeen)->where("enabled", false)->update(["enabled" => true]);
 
-		// AD User Abgleich - OPTIMIERT: Alle Lookups VOR der Schleife
 		Logger::debug("SapImportService: AD User Abgleich - Lade alle Maps");
 		
 		$funktionenMap = Funktion::pluck('id', 'name')->toArray();
@@ -204,7 +196,6 @@ class SapImportService
 		
 		Logger::debug("SapImportService: AD User Abgleich - Verarbeite Rows");
 		
-		// Alle Updates sammeln
 		$adUserUpdates = [];
 		
 		foreach ($rows as $row) 
@@ -217,7 +208,6 @@ class SapImportService
 			$anredeName     = trim($row["d_anrlt"] ?? "");
 			$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
 
-			// Lookup ohne DB-Query!
 			$funktionId   = $funktionName ? ($funktionenMap[$funktionName] ?? null) : null;
 			$abteilungId  = $abteilungName ? ($abteilungenMap[$abteilungName] ?? null) : null;
 			$ueId         = $ueName ? ($ueMap[$ueName] ?? null) : null;
@@ -225,7 +215,6 @@ class SapImportService
 			$titelId      = $titelName ? ($titelMap[$titelName] ?? null) : null;
 			$anredeId     = $anredeName ? ($anredenMap[$anredeName] ?? null) : null;
 
-			// Lookup ohne DB-Query!
 			$adUserId = $personalnummer ? ($adUsersMap[$personalnummer] ?? null) : null;
 
 			if ($adUserId) 
@@ -242,10 +231,10 @@ class SapImportService
 			}
 		}
 		
-		// Bulk Update ausführen
 		Logger::debug("SapImportService: AD User Abgleich - Update " . count($adUserUpdates) . " Benutzer");
 		
-		foreach ($adUserUpdates as $userId => $fields) {
+		foreach ($adUserUpdates as $userId => $fields) 
+		{
 			AdUser::where('id', $userId)->update($fields);
 		}
 		

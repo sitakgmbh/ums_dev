@@ -41,7 +41,7 @@ class SyncUsers extends Command
 		{
             $this->error("Fehler: " . $e->getMessage());
 
-            Logger::db('ad', 'error', "AD-Sync fehlgeschlagen", [
+            Logger::db("ad", "error", "AD-Sync fehlgeschlagen", [
                 "user" => auth()->user()->username ?? "cli",
                 "exception" => $e,
             ]);

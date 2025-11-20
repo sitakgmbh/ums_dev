@@ -202,12 +202,6 @@ class Mutation extends Model
 		return $this->suppressObserver;
 	}
 
-    /*
-     |--------------------------------------------------------------------------
-     | Beziehungen
-     |--------------------------------------------------------------------------
-     */
-
     public function owner()
     {
         return $this->belongsTo(AdUser::class, "owner_id");

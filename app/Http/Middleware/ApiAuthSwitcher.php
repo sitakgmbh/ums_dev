@@ -13,7 +13,8 @@ class ApiAuthSwitcher
 {
     public function handle($request, Closure $next)
     {
-        if (isset($_SERVER['REMOTE_USER'])) {
+        if (isset($_SERVER['REMOTE_USER'])) 
+		{
             return $this->handleSso($request, $next);
         }
 
@@ -27,11 +28,12 @@ class ApiAuthSwitcher
 
         $user = User::where('username', $username)->first();
 
-        if (! $user) 
+        if (!$user) 
 		{
             $ldapUser = LdapUser::query()->where('samaccountname', '=', $username)->first();
 			
-            if (! $ldapUser) {
+            if (! $ldapUser) 
+			{
                 return response()->json(['message' => 'Ungültiges Login'], 403);
             }
 
@@ -49,13 +51,15 @@ class ApiAuthSwitcher
         $username = $request->getUser();
         $password = $request->getPassword();
 
-        if (! $username || ! $password) {
+        if (! $username || ! $password) 
+		{
             return response('Unauthorized', 401, ['WWW-Authenticate' => 'Basic']);
         }
 
         $user = User::where('username', $username)->first();
 
-        if (! $user || ! \Hash::check($password, $user->password)) {
+        if (! $user || ! \Hash::check($password, $user->password)) 
+		{
             return response('Unauthorized', 401, ['WWW-Authenticate' => 'Basic']);
         }
 

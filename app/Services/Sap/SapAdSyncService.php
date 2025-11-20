@@ -55,8 +55,6 @@ class SapAdSyncService
 		$this->changes = [];
 
 		$content = file_get_contents($filePath);
-
-		// Encoding erkennen und nach UTF-8 konvertieren
 		$encoding = mb_detect_encoding($content, ["UTF-8", "ISO-8859-1", "Windows-1252", "ASCII"], true);
 
 		if ($encoding && $encoding !== "UTF-8") 
@@ -81,7 +79,6 @@ class SapAdSyncService
 
 		Logger::debug("SapAdSyncService: AD-Benutzer abfragen");
 
-		// OPTIMIERT: Nur benötigte Attribute laden
 		$adUsers = LdapUser::select([
 			'samaccountname',
 			'initials', 
@@ -108,16 +105,18 @@ class SapAdSyncService
 		
 		Logger::debug("SapAdSyncService: Erstelle AD-User Map");
 		
-		// OPTIMIERT: AD Users in Map konvertieren für schnellen Zugriff
 		$adUsersMap = [];
-		foreach ($adUsers as $user) {
+		
+		foreach ($adUsers as $user) 
+		{
 			$initials = $user->getFirstAttribute("initials");
-			if ($initials) {
+			
+			if ($initials) 
+			{
 				$adUsersMap[$initials] = $user;
 			}
 		}
 		
-		// Excludes-Liste laden
 		$excludes = Setting::getValue('personalnummer_abgleich_excludes', '');
 		$excludeList = array_filter(array_map('trim', explode(',', $excludes)));
 
@@ -126,12 +125,15 @@ class SapAdSyncService
 		foreach ($rows as $row) 
 		{
 			$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
+			
 			if (empty($personalnummer)) continue;
 			
-			// Eintrittsdatum prüfen
 			$eintrittsdatum = trim($row["d_einda"] ?? "");
-			if (!empty($eintrittsdatum)) {
-				try {
+			
+			if (!empty($eintrittsdatum)) 
+			{
+				try 
+				{
 					$eintritt = \Carbon\Carbon::createFromFormat('Ymd', $eintrittsdatum)->startOfDay();
 					
 					if ($eintritt->isFuture()) 
@@ -139,12 +141,13 @@ class SapAdSyncService
 						// Logger::debug("Personalnummer {$personalnummer} übersprungen: Eintrittsdatum {$eintritt->format('d.m.Y')} liegt in der Zukunft");
 						continue;
 					}
-				} catch (\Exception $e) {
+				} 
+				catch (\Exception $e) 
+				{
 					// Ungültiges Datum ignorieren
 				}
 			}
 
-			// OPTIMIERT: Lookup in Map statt Collection durchsuchen
 			$adUser = $adUsersMap[$personalnummer] ?? null;
 
 			if (!$adUser) 
@@ -177,8 +180,6 @@ class SapAdSyncService
 				]);
 				
 				$this->stats["updated"]++;
-				
-				// Nach dem Loggen für nächsten User leeren
 				$this->changes = [];
 			} 
 			else 
@@ -369,7 +370,6 @@ class SapAdSyncService
 				}
             }
 
-			// Vergleich und Update
 			if ($adValue !== $sapValue) 
 			{
 				try 
@@ -414,7 +414,6 @@ class SapAdSyncService
 			return;
 		}
 
-		// OPTIMIERT: Lookup in Map statt LDAP Query
         $managerUser = $adUsersMap[$managerPersNr] ?? null;
 
         if (!$managerUser) 
@@ -478,7 +477,6 @@ class SapAdSyncService
 				"status_kis" => 1,
 			];
 			
-			// Nur geänderte Felder hinzufügen
 			if ($vorname !== null) 
 			{
 				$data["vorname"] = $vorname;
@@ -505,25 +503,24 @@ class SapAdSyncService
 
 	protected function syncMissingInitials($adUsers, $rows): void
 	{
-		// Alle AD-Benutzer mit initials = 99999 finden
 		$usersWithoutInitials = $adUsers->filter(function ($user) {
 			return $user->getFirstAttribute("initials") === "99999";
 		});
 		
-		foreach ($usersWithoutInitials as $adUser) {
+		foreach ($usersWithoutInitials as $adUser) 
+		{
 			$username = $adUser->getFirstAttribute("samaccountname");
 			$vornameAD = $adUser->getFirstAttribute("givenname");
 			$nachnameAD = $adUser->getFirstAttribute("sn");
 			$descriptionAD = $adUser->getFirstAttribute("description");
 			
-			// Im SAP Export nach passendem Eintrag suchen
 			foreach ($rows as $row) 
 			{
 				$vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
 				$nachnameSAP = trim($row["d_name"] ?? "");
 				$batchbezSAP = trim($row["d_0032_batchbez"] ?? "");
 				
-				// Prüfen ob Vorname, Nachname und Description übereinstimmen
+				// Prüfen ob Vorname, Nachname und Beschreibung übereinstimmen
 				if ($vornameAD === $vornameSAP && $nachnameAD === $nachnameSAP && $descriptionAD === $batchbezSAP) 
 				{
 					$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
@@ -548,7 +545,6 @@ class SapAdSyncService
 						
 						$this->stats["initials_updated"] = ($this->stats["initials_updated"] ?? 0) + 1;
 						
-						// Nach erstem Match abbrechen
 						break;
 					} 
 					catch (\Exception $e) 

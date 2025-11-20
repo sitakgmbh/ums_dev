@@ -24,39 +24,38 @@ class Logger
 
     public static function debug(string $message, array $context = []): void
     {
-        if (Setting::getValue('debug_mode', false)) {
+        if (Setting::getValue('debug_mode', false)) 
+		{
             Log::channel('debuglog')->debug($message, $context);
         }
     }
 
-public static function db(string $category, string $level, string $message, array $context = []): void
-{
-    $category = strtolower($category);
-    $level    = strtolower($level);
+	public static function db(string $category, string $level, string $message, array $context = []): void
+	{
+		$category = strtolower($category);
+		$level    = strtolower($level);
 
-    // Kategorie prüfen
-    if (!\App\Enums\LogCategory::isValid($category)) {
-        self::warning("Ungültige Log-Kategorie: {$category}", [
-            'message' => $message,
-            'context' => $context,
-        ]);
-        return;
-    }
+		if (!\App\Enums\LogCategory::isValid($category)) 
+		{
+			self::warning("Ungültige Log-Kategorie: {$category}", [
+				'message' => $message,
+				'context' => $context,
+			]);
+			return;
+		}
 
-    // Level prüfen
-    if (!\App\Enums\LogLevel::isValid($level)) {
-        self::warning("Ungültiger Log-Level: {$level}", [
-            'message' => $message,
-            'context' => $context,
-        ]);
-        return;
-    }
+		if (!\App\Enums\LogLevel::isValid($level)) 
+		{
+			self::warning("Ungültiger Log-Level: {$level}", [
+				'message' => $message,
+				'context' => $context,
+			]);
+			return;
+		}
 
-    // Log in DB schreiben
-    Log::channel('db')->{$level}(
-        $message,
-        array_merge(['category' => $category], $context)
-    );
-}
-
+		Log::channel('db')->{$level}(
+			$message,
+			array_merge(['category' => $category], $context)
+		);
+	}
 }

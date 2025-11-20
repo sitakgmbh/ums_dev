@@ -8,17 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create("austritte", function (Blueprint $table) {
+        Schema::create("austritte", function (Blueprint $table) 
+		{
             $table->id();
-
-            // --- Basis-Infos ---
             $table->foreignId("owner_id")->nullable()->constrained("ad_users")->nullOnDelete();
             $table->date("vertragsende");
-
-            // --- Account-Daten ---
             $table->foreignId("ad_user_id")->nullable()->constrained("ad_users")->nullOnDelete();
 
-            // --- Status-Felder ---
             $table->boolean("status_pep")->default(1);
 			$table->boolean("status_kis")->default(1);
 			$table->boolean("status_streamline")->default(1);

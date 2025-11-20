@@ -47,8 +47,6 @@ class OtoboService
 		$this->isConfigured = true;
 	}
 
-
-	// Ticket erstellen
 	public function createTicket(Model $model): bool|string
 	{
 		try 
@@ -164,7 +162,6 @@ class OtoboService
 		}
 	}
 
-	// Ticket aktualisieren
 	public function updateTicket(Model $model, string $message, bool $close = false): bool
 	{
 		try 
@@ -248,9 +245,6 @@ class OtoboService
 		}
 	}
 
-	/**
-	 * Interner Request an OTOBO
-	 */
 	private function sendRequest(string $endpoint, array $data): ?array
 	{
 		try
@@ -312,5 +306,4 @@ class OtoboService
 			return null;
 		}
 	}
-
 }

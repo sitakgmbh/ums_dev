@@ -13,7 +13,8 @@ class SmbHelper
             'recursive' => $recursive,
         ]);
 
-        if (!@is_dir($fullPath)) {
+        if (!@is_dir($fullPath)) 
+		{
             Logger::db('system', 'error', "Verzeichnis nicht gefunden", [
                 'path' => $fullPath,
             ]);
@@ -22,7 +23,8 @@ class SmbHelper
 
         $items = @scandir($fullPath);
 
-        if ($items === false) {
+        if ($items === false) 
+		{
             $error = error_get_last();
             Logger::db('system', 'error', "Fehler beim Auflisten des Verzeichnisses", [
                 'path' => $fullPath,
@@ -33,7 +35,8 @@ class SmbHelper
 
         $result = [];
 
-        foreach ($items as $item) {
+        foreach ($items as $item) 
+		{
             if ($item === '.' || $item === '..') continue;
 
             $itemPath = $fullPath . DIRECTORY_SEPARATOR . $item;
@@ -48,10 +51,12 @@ class SmbHelper
 
             $result[] = $entry;
 
-            // Rekursiv
-            if ($recursive && $isDir) {
+            if ($recursive && $isDir) 
+			{
                 $subItems = self::listDirectory($itemPath, true);
-                if ($subItems !== false) {
+				
+                if ($subItems !== false) 
+				{
                     $result = array_merge($result, $subItems);
                 }
             }
@@ -69,58 +74,77 @@ class SmbHelper
     {
         Logger::debug("Lösche Pfad", ['path' => $fullPath]);
 
-        if (!@file_exists($fullPath)) {
+        if (!@file_exists($fullPath)) 
+		{
             Logger::db('system', 'error', "Pfad nicht gefunden", ['path' => $fullPath]);
             return false;
         }
 
-        try {
-            if (is_dir($fullPath)) {
+        try 
+		{
+            if (is_dir($fullPath)) 
+			{
                 self::deleteDirectory($fullPath);
                 Logger::debug("Verzeichnis gelöscht", ['path' => $fullPath]);
-            } else {
-                if (!@unlink($fullPath)) {
+            } 
+			else 
+			{
+                if (!@unlink($fullPath)) 
+				{
                     throw new \Exception("Datei konnte nicht gelöscht werden");
                 }
+				
                 Logger::debug("Datei gelöscht", ['path' => $fullPath]);
             }
 
             return true;
-        } catch (\Exception $e) {
+        } 
+		catch (\Exception $e) 
+		{
             Logger::db('system', 'error', "Fehler beim Löschen", [
                 'path' => $fullPath,
                 'error' => $e->getMessage(),
             ]);
+			
             return false;
         }
     }
 
     protected static function deleteDirectory(string $dir): void
     {
-        if (!is_dir($dir)) {
+        if (!is_dir($dir)) 
+		{
             throw new \Exception("Kein Verzeichnis: {$dir}");
         }
 
         $items = @scandir($dir);
-        if ($items === false) {
+		
+        if ($items === false) 
+		{
             throw new \Exception("Verzeichnis kann nicht gelesen werden: {$dir}");
         }
 
-        foreach ($items as $item) {
+        foreach ($items as $item) 
+		{
             if ($item === '.' || $item === '..') continue;
 
             $path = $dir . DIRECTORY_SEPARATOR . $item;
 
-            if (is_dir($path)) {
+            if (is_dir($path)) 
+			{
                 self::deleteDirectory($path);
-            } else {
-                if (!@unlink($path)) {
+            } 
+			else 
+			{
+                if (!@unlink($path)) 
+				{
                     throw new \Exception("Datei kann nicht gelöscht werden: {$path}");
                 }
             }
         }
 
-        if (!@rmdir($dir)) {
+        if (!@rmdir($dir)) 
+		{
             throw new \Exception("Verzeichnis kann nicht gelöscht werden: {$dir}");
         }
     }

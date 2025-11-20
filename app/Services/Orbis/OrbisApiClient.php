@@ -16,7 +16,8 @@ class OrbisApiClient
         $user = env('ORBIS_USERNAME');
         $pass = env('ORBIS_PASSWORD');
         
-        if (!$this->baseUrl || !$user || !$pass) {
+        if (!$this->baseUrl || !$user || !$pass) 
+		{
             throw new InvalidArgumentException('Orbis-Konfiguration unvollständig. Bitte prüfe die Umgebungsvariablen.');
         }
         
@@ -36,7 +37,8 @@ class OrbisApiClient
 			"Accept: application/json",
 		];
 		
-		if (in_array($method, ['POST', 'PUT'])) {
+		if (in_array($method, ['POST', 'PUT'])) 
+		{
 			$headers[] = "Content-Type: application/json";
 		}
 		
@@ -54,24 +56,21 @@ class OrbisApiClient
 		preg_match('/HTTP\/\d+\.\d+ (\d+)/', $statusLine, $matches);
 		$status = (int)($matches[1] ?? 0);
 
-		// SPEZIALFALL: OE-GRUPPEN DÜRFEN 404 WERFEN → IGNORIEREN
-		if ($status === 404 && str_contains($endpoint, 'organizationalunitgroups')) {
+		// Kein Fehler bei 404
+		if ($status === 404 && str_contains($endpoint, 'organizationalunitgroups')) 
+		{
 			Log::info("OE-Gruppe nicht gefunden: {$url}");
-			return $withHeaders
-				? ['body' => null, 'headers' => $http_response_header]
-				: [];
+			return $withHeaders ? ['body' => null, 'headers' => $http_response_header] : [];
 		}
 
-		// Normale Fehlerbehandlung
-		if ($status >= 400) {
+		if ($status >= 400) 
+		{
 			Log::error("Orbis-Fehler {$status} bei {$method} {$url}");
 			throw new RuntimeException("Orbis API Fehler ({$status})", $status);
 		}
 		
 		$decoded = json_decode($response, true) ?? [];
 		
-		return $withHeaders
-			? ['body' => $decoded, 'headers' => $http_response_header]
-			: $decoded;
+		return $withHeaders ? ['body' => $decoded, 'headers' => $http_response_header] : $decoded;
 	}
 }

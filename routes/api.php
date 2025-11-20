@@ -8,10 +8,12 @@ use App\Http\Controllers\Api\MutationController;
 use App\Http\Controllers\Api\AustrittController;
 use App\Http\Controllers\Api\IncidentController;
 
-Route::middleware('apiauthswitcher')->group(function () {
+Route::middleware('apiauthswitcher')->group(function () 
+{
     Route::get('/me', [AuthController::class, 'me']);
 
-    Route::middleware('role:admin')->group(function () {
+    Route::middleware('role:admin')->group(function () 
+	{
         Route::apiResource('users', UserController::class);
         
 		Route::get('eroeffnungen/open', [EroeffnungController::class, 'open']);

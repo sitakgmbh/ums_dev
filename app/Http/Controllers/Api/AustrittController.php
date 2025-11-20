@@ -41,7 +41,6 @@ class AustrittController extends Controller
      */
     public function store(Request $request)
     {
-        // Validierung
         $validated = $request->validate([
             "sid"            => "required|string",
             "vertragsende"   => "required|date_format:Y-m-d",
@@ -58,16 +57,16 @@ class AustrittController extends Controller
 			"request"   => $request->all(),
 			"validated" => $validated,
 		]);
-        // AD-User suchen
+
         $adUser = AdUser::where("sid", $validated["sid"])->first();
 		
-        if (!$adUser) {
+        if (!$adUser) 
+		{
             return response()->json([
                 "message" => "Kein AD-Benutzer mit der angegebenen SID gefunden."
             ], 404);
         }
 
-        // Austritt erstellen
         $austritt = Austritt::create([
             "ad_user_id"       => $adUser->id,
             "vertragsende"     => $validated["vertragsende"],

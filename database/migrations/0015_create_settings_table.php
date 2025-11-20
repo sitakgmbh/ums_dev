@@ -8,19 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('settings', function (Blueprint $table) {
+        Schema::create("settings", function (Blueprint $table) 
+		{
             $table->id();
-            $table->string('key')->unique();         // z. B. "mail_host"
-            $table->string('name');                  // Anzeigename
-            $table->text('description')->nullable(); // Erklärung für UI
-            $table->text('value')->nullable();       // gespeicherter Wert
-            $table->string('type')->default('string'); // string, bool, int, float, json usw.
+            $table->string("key")->unique();
+            $table->string("name");
+            $table->text("description")->nullable();
+            $table->text("value")->nullable();
+            $table->string("type")->default("string");
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('settings');
+        Schema::dropIfExists("settings");
     }
 };

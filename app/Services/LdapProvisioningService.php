@@ -41,7 +41,7 @@ class LdapProvisioningService
             "is_enabled" => null,
         ]);
 
-		// Fuer LDAP-User niemals Passwort speichern
+		// Kein Hash speichern bei LDAP-Benutzer
 		$user->password = null;
 
         $user->save();

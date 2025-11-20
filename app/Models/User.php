@@ -110,63 +110,35 @@ class User extends Authenticatable
 		return $this->hasOne(AdUser::class, "sid", "ad_sid");
 	}
 
+	public function myRepresentation()
+	{
+		return $this->belongsToMany(
+			AdUser::class,
+			'stellvertretungen',
+			'user_id',
+			'ad_user_id'
+		)->withTimestamps();
+	}
 
+	public function representedBy()
+	{
+		return $this->belongsToMany(
+			User::class,
+			'stellvertretungen',
+			'ad_user_id',
+			'user_id'
+		)->withTimestamps();
+	}
 
+	public function getMyRepresentersAttribute()
+	{
+		return \App\Models\User::whereHas('myRepresentation', function($q) {
+			$q->where('ad_user_id', $this->adUser?->id);
+		})->with('adUser')->get();
+	}
 
-// Alle AD-User, die ich vertreten darf
-public function vertretungen()
-{
-    return $this->hasMany(Stellvertretung::class, 'user_id');
-}
-
-public function vertreteneAdUsers()
-{
-    return $this->belongsToMany(
-        AdUser::class,
-        'stellvertretungen',
-        'user_id',
-        'ad_user_id'
-    )->withTimestamps();
-}
-
-
-// Alle AD‑User, die ich vertreten darf
-public function myRepresentation()
-{
-    return $this->belongsToMany(
-        AdUser::class,
-        'stellvertretungen',
-        'user_id',      // Ich (App\User)
-        'ad_user_id'    // AD‑User, die ich vertreten darf
-    )->withTimestamps();
-}
-
-public function representedBy()
-{
-    return $this->belongsToMany(
-        User::class,
-        'stellvertretungen',
-        'ad_user_id',   // Ich als AD‑User‑Vertreter
-        'user_id'       // Benutzer, den ich vertrete
-    )->withTimestamps();
-}
-
-
-public function getMyRepresentersAttribute()
-{
-    // Hole alle User, bei denen ICH als Stellvertreter hinterlegt bin
-    return \App\Models\User::whereHas('myRepresentation', function($q) {
-        $q->where('ad_user_id', $this->adUser?->id);
-    })->with('adUser')->get();
-}
-
-
-public function getRepresentedByIdsAttribute()
-{
-    return $this->representedBy()->pluck('id')->toArray();
-}
-
-
-
-
+	public function getRepresentedByIdsAttribute()
+	{
+		return $this->representedBy()->pluck('id')->toArray();
+	}
 }

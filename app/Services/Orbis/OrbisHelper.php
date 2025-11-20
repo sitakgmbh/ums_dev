@@ -15,10 +15,13 @@ class OrbisHelper
         $users = $this->client->send($endpoint)['user'] ?? [];
         $today = Carbon::now()->toDateString();
         
-        foreach ($users as $user) {
+        foreach ($users as $user) 
+		{
             $from = $user['validityperiod']['from']['date'] ?? null;
             $thru = $user['validityperiod']['thru']['date'] ?? null;
-            if ((!$from || $from <= $today) && (!$thru || $thru >= $today)) {
+			
+            if ((!$from || $from <= $today) && (!$thru || $thru >= $today)) 
+			{
                 return $user;
             }
         }
@@ -65,13 +68,17 @@ class OrbisHelper
     {
         $endpoint = "resources/external/employees/{$employeeId}/facilityassignments?referencedate={$today}";
         
-        try {
+        try 
+		{
             $response = $this->client->send($endpoint);
             $result = [];
             
-            foreach ($response['employeefacilityassignment'] ?? [] as $entry) {
+            foreach ($response['employeefacilityassignment'] ?? [] as $entry) 
+			{
                 $fid = $entry['facility']['id'] ?? null;
-                if ($fid) {
+				
+                if ($fid) 
+				{
                     $detail = $this->client->send("resources/external/facilities/{$fid}");
                     $result[] = [
                         'id' => $fid,
@@ -82,7 +89,9 @@ class OrbisHelper
             }
             
             return $result;
-        } catch (\Exception $e) {
+        } 
+		catch (\Exception $e) 
+		{
             return [];
         }
     }
@@ -91,15 +100,17 @@ class OrbisHelper
     {
         $endpoint = "resources/external/employees/{$employeeId}/organizationalunitassignments?referencedate={$today}";
         
-        try {
+        try 
+		{
             $response = $this->client->send($endpoint);
             $result = [];
             
-            foreach ($response['employeeorganizationalunitassignment'] ?? [] as $assignment) {
+            foreach ($response['employeeorganizationalunitassignment'] ?? [] as $assignment) 
+			{
                 $unitId = $assignment['organizationalunit']['id'] ?? null;
                 
-                if ($unitId) {
-                    // Fetch full organizational unit details
+                if ($unitId) 
+				{
                     $detail = $this->client->send("resources/external/organizationalunits/{$unitId}");
                     
                     $result[] = [
@@ -113,7 +124,9 @@ class OrbisHelper
             }
             
             return $result;
-        } catch (\Exception $e) {
+        } 
+		catch (\Exception $e) 
+		{
             return [];
         }
     }
@@ -122,24 +135,25 @@ class OrbisHelper
     {
         $endpoint = "resources/external/employees/{$employeeId}/organizationalunitgroupassignments?referencedate={$today}";
         
-        try {
+        try 
+		{
             $response = $this->client->send($endpoint);
             $result = [];
             
-            foreach ($response['employeeorganizationalunitgroupassignment'] ?? [] as $assignment) {
+            foreach ($response['employeeorganizationalunitgroupassignment'] ?? [] as $assignment) 
+			{
                 $groupId = $assignment['organizationalunitgroup']['id'] ?? null;
                 
                 if (!$groupId) continue;
                 
-                // Fetch full organizational unit group details
                 $detail = $this->client->send("resources/external/organizationalunitgroups/{$groupId}");
                 
                 $name = $detail['name'] ?? null;
                 $shortname = $detail['shortname'] ?? null;
                 $type = $detail['organizationalunitgrouptypeassignments']['organizationalunitgrouptypeassignment'][0]['type']['catalogcoding']['code'] ?? null;
                 
-                // Nur hinzufügen wenn alle 3 Felder vorhanden sind
-                if ($name && $shortname && $type) {
+                if ($name && $shortname && $type) 
+				{
                     $result[] = [
                         'id' => $groupId,
                         'name' => $name,
@@ -150,7 +164,9 @@ class OrbisHelper
             }
             
             return $result;
-        } catch (\Exception $e) {
+        } 
+		catch (\Exception $e) 
+		{
             return [];
         }
     }
@@ -159,11 +175,13 @@ class OrbisHelper
     {
         $endpoint = "resources/external/employees/{$employeeId}/users?referencedate={$today}";
         
-        try {
+        try 
+		{
             $response = $this->client->send($endpoint);
             $result = [];
             
-            foreach ($response['user'] ?? [] as $user) {
+            foreach ($response['user'] ?? [] as $user) 
+			{
                 $userId = $user['id'];
                 $result[] = [
                     'id' => $userId,
@@ -179,26 +197,28 @@ class OrbisHelper
             }
             
             return $result;
-        } catch (\Exception $e) {
+        } 
+		catch (\Exception $e) 
+		{
             return [];
         }
     }
     
     public function getUserRoles(int $userId, string $today): array
     {
-        // WICHTIG: Endpoint ist roleassignments NICHT userroleassignments!
         $endpoint = "resources/external/users/{$userId}/roleassignments?referencedate={$today}";
         
-        try {
+        try 
+		{
             $response = $this->client->send($endpoint);
             $result = [];
             
-            foreach ($response['userroleassignment'] ?? [] as $assignment) {
+            foreach ($response['userroleassignment'] ?? [] as $assignment) 
+			{
                 $roleId = $assignment['role']['id'] ?? null;
                 
                 if (!$roleId) continue;
                 
-                // Fetch full role details
                 $details = $this->client->send("resources/external/roles/{$roleId}");
                 
                 $result[] = [
@@ -208,25 +228,31 @@ class OrbisHelper
             }
             
             return $result;
-        } catch (\Exception $e) {
+        } 
+		catch (\Exception $e) 
+		{
             return [];
         }
     }
     
     public function getRank(?array $rank): ?array
     {
-        if (!isset($rank['id'])) {
+        if (!isset($rank['id'])) 
+		{
             return null;
         }
         
-        try {
+        try 
+		{
             $details = $this->client->send("resources/external/catalogs/{$rank['id']}");
             
             return [
                 'id' => $rank['id'],
                 'code' => $details['catalogcoding']['code'] ?? null,
             ];
-        } catch (\Exception $e) {
+        } 
+		catch (\Exception $e) 
+		{
             return null;
         }
     }
@@ -237,7 +263,8 @@ class OrbisHelper
         
         $endpoint = "resources/external/catalogs?codesystem={$codesystem}&code=" . urlencode($code) . "&includecatalogtranslations=true";
         
-        try {
+        try 
+		{
             $data = $this->client->send($endpoint);
             
             $result = [
@@ -247,8 +274,10 @@ class OrbisHelper
                 'longname' => null,
             ];
             
-            foreach ($data['catalogtranslations']['catalogtranslation'] ?? [] as $trans) {
-                if (in_array($trans['languageoftranslation']['id'] ?? '', ['de', 'de_CH'])) {
+            foreach ($data['catalogtranslations']['catalogtranslation'] ?? [] as $trans) 
+			{
+                if (in_array($trans['languageoftranslation']['id'] ?? '', ['de', 'de_CH'])) 
+				{
                     $result['shortname'] = $trans['shortname'] ?? null;
                     $result['longname'] = $trans['longname'] ?? null;
                     break;
@@ -256,7 +285,9 @@ class OrbisHelper
             }
             
             return $result;
-        } catch (\Exception $e) {
+        } 
+		catch (\Exception $e) 
+		{
             return [];
         }
     }

@@ -28,29 +28,20 @@ class MutationObserver
         $username = $antragsteller?->username ?? "unbekannt";
         $fullname = $antragsteller?->name ?? ($antragsteller?->firstname . " " . $antragsteller?->lastname);
 
-		// Logeintrag erstellen
         Logger::db("antraege", "info", "Mutation ID {$mutation->id} erstellt durch {$fullname} ({$username})", [
             "mutation_id" => $mutation->id,
             "form_data"   => $this->filterData($mutation->getAttributes(), $mutation),
         ]);
-
-		// Bestätigungsmail versenden nur wenn Vorname und Nachname leer sind
-		if (empty($mutation->vorname) && empty($mutation->nachname)) 
-		{
-			$to = $mutation->antragsteller?->email;
-			SafeMail::send(new Bestaetigung($mutation), $to);
-		}
-
-		// Ticket erstellen
+		
+		$to = $mutation->antragsteller?->email;
+		SafeMail::send(new Bestaetigung($mutation), $to);
+	
         app(OtoboService::class)->createTicket($mutation);
     }
 
 	public function updated(Mutation $mutation): void
 	{
-		if ($mutation->shouldSuppressObserver()) 
-		{
-			return;
-		}
+		if ($mutation->shouldSuppressObserver()) return;
 		
 		$user = Auth::user();
 		$username = $user?->username ?? "unbekannt";
@@ -65,7 +56,6 @@ class MutationObserver
 			"original"    => $original,
 		]);
 
-		// Ticket schliessen wenn archiviert
 		if ($mutation->wasChanged('archiviert') && $mutation->archiviert)
 		{
 			$msg = "Mutation wurde archiviert durch {$fullname} ({$username}).";
@@ -73,7 +63,6 @@ class MutationObserver
 			return;
 		}
 	}
-
 
     public function deleted(Mutation $mutation): void
     {
@@ -83,13 +72,11 @@ class MutationObserver
 
         $deletedData = $this->filterData($mutation->getOriginal(), $mutation);
 
-		// Logeintrag erstellen
         Logger::db("antraege", "info", "Mutation ID {$mutation->id} gelöscht durch {$fullname} ({$username})", [
             "mutation_id" => $mutation->id,
             "deleted_data" => $deletedData,
         ]);
 
-		// Ticket abschliessen
         $message = "Mutation wurde gelöscht durch {$fullname} ({$username}).";
         app(OtoboService::class)->updateTicket($mutation, $message, true);
     }

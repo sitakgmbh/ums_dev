@@ -39,7 +39,6 @@ class MutationController extends Controller
      */
     public function store(Request $request)
     {
-        // Validierung
         $validated = $request->validate([
             "sid"             => "required|string",
             "vertragsbeginn"  => "required|date_format:Y-m-d",
@@ -50,16 +49,15 @@ class MutationController extends Controller
             "status_kis"      => "nullable|bool",
         ]);
 
-        // AD-User suchen
         $adUser = AdUser::where("sid", $validated["sid"])->first();
 
-        if (! $adUser) {
+        if (! $adUser) 
+		{
             return response()->json([
                 "message" => "Kein AD-Benutzer mit der angegebenen SID gefunden."
             ], 404);
         }
 
-		// Alte Werte aus AD speichern
 		$oldData = [
 			"vorname_old" => $adUser->firstname,
 			"nachname_old" => $adUser->lastname,
@@ -71,7 +69,6 @@ class MutationController extends Controller
 			"funktion_id_old" => $adUser->funktion?->id,
 		];
 
-		// Neue Mutation erstellen (alte Werte + neue Werte)
 		$mutation = Mutation::create(array_merge($oldData, [
 			"ad_user_id"     => $adUser->id,
 			"vertragsbeginn" => $validated["vertragsbeginn"],
@@ -118,7 +115,8 @@ class MutationController extends Controller
 	{
 		$mutation = Mutation::find($id);
 
-		if (! $mutation) {
+		if (! $mutation) 
+		{
 			return response()->json(["error" => "Mutation nicht gefunden"], 404);
 		}
 
@@ -129,7 +127,8 @@ class MutationController extends Controller
 
 		$data = $request->only($allowed);
 
-		if (empty($data)) {
+		if (empty($data)) 
+		{
 			return response()->json(["error" => "Keine gültigen Attribute übergeben"], 422);
 		}
 
@@ -138,5 +137,4 @@ class MutationController extends Controller
 
 		return response()->json($mutation, 200);
 	}
-
 }

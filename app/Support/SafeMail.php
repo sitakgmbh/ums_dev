@@ -23,10 +23,14 @@ class SafeMail
         $username = $user?->username ?? "system";
         $fullname = trim(($user?->firstname ?? "") . " " . ($user?->lastname ?? ""));
 
-		if (method_exists($mailable, "build")) {
-			try {
+		if (method_exists($mailable, "build")) 
+		{
+			try 
+			{
 				$mailable->build();
-			} catch (\Throwable $e) {
+			} 
+			catch (\Throwable $e) 
+			{
 				// ignorieren
 			}
 		}

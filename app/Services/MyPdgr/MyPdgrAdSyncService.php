@@ -37,26 +37,29 @@ class MyPdgrAdSyncService
 		Logger::debug("MyPdgrAdSyncService: Start");
 
         $MyPdgrUsers = $this->getMyPdgrEntries();
-        if (!$MyPdgrUsers || count($MyPdgrUsers) === 0) {
+		
+        if (!$MyPdgrUsers || count($MyPdgrUsers) === 0) 
+		{
 			throw new \RuntimeException("Unerwarteter Fehler beim Abfragen der Daten aus MyPdgr");
 		}
 		
 		Logger::debug("MyPdgrAdSyncService: MyPdgr-Einträge geladen: " . count($MyPdgrUsers));
 		
-		// OPTIMIERT: MyPdgr-Einträge in Map konvertieren für schnellen Zugriff
 		$myPdgrMap = [];
-		foreach ($MyPdgrUsers as $entry) {
+		
+		foreach ($MyPdgrUsers as $entry) 
+		{
 			$pdgrNummer = $entry['per_pdgrnummer'] ?? null;
-			if ($pdgrNummer) {
+			
+			if ($pdgrNummer) 
+			{
 				$myPdgrMap[$pdgrNummer] = $entry;
 			}
 		}
 		
 		Logger::debug("MyPdgrAdSyncService: MyPdgr-Map erstellt mit " . count($myPdgrMap) . " Einträgen");
-
 		Logger::debug("MyPdgrAdSyncService: AD-Benutzer abfragen");
 
-		// OPTIMIERT: Nur benötigte Attribute laden
         $adUsers = LdapUser::select([
 			'samaccountname',
 			'displayname',
@@ -70,7 +73,6 @@ class MyPdgrAdSyncService
 		->in(config("ums.ldap.ad_users_to_sync"))
 		->get();
 
-		// Filter anwenden
 		$adUsers = $adUsers->filter(function ($user) {
 			$initials = $user->getFirstAttribute("initials");
 			return $initials !== "00000" && $initials !== "11111" && $initials !== "99999";
@@ -88,12 +90,12 @@ class MyPdgrAdSyncService
             $initials = $adUser->getFirstAttribute("initials");
             $userAccountControl = $adUser->getFirstAttribute("useraccountcontrol");
 
-            if (empty($initials)) {
+            if (empty($initials)) 
+			{
                 $this->stats["not_found"]++;
                 continue;
             }
 
-			// OPTIMIERT: Lookup in Map statt Collection durchsuchen
             $MyPdgrEntry = $myPdgrMap[$initials] ?? null;
 
             if (!$MyPdgrEntry) 
@@ -111,8 +113,6 @@ class MyPdgrAdSyncService
             }
 
             $this->stats["found"]++;
-
-            // Adressattribute synchronisieren
             $this->syncAddressAttributes($adUser, $MyPdgrEntry, $username, $initials);
 
             if (!empty($this->changes)) 
@@ -147,11 +147,11 @@ class MyPdgrAdSyncService
             $password = env("MyPdgr_DB_PASSWORD");
             $table = env("MyPdgr_DB_TABLE", "avs_personen");
 
-            if (!$host || !$database || !$username || !$password) {
+            if (!$host || !$database || !$username || !$password) 
+			{
 				throw new \RuntimeException("MyPdgr Datenbank-Konfiguration in .env nicht vollständig");
 			}
 
-            // Temporäre Verbindung zur MyPdgr-Datenbank erstellen
             config([
                 "database.connections.MyPdgr_temp" => [
                     "driver" => "mysql",
@@ -168,7 +168,6 @@ class MyPdgrAdSyncService
                 ]
             ]);
 
-            // Prüfen ob Tabelle existiert
             $tableExists = DB::connection("MyPdgr_temp")
                 ->select("SELECT COUNT(*) as count FROM information_schema.tables WHERE table_schema = ? AND table_name = ?", [$database, $table]);
 
@@ -179,7 +178,6 @@ class MyPdgrAdSyncService
                 throw new \RuntimeException($msg);
             }
 
-            // Anzahl Einträge prüfen
             $rowCount = DB::connection("MyPdgr_temp")
                 ->table($table)
                 ->count();
@@ -191,7 +189,6 @@ class MyPdgrAdSyncService
                 throw new \RuntimeException($msg);
             }
 
-			// OPTIMIERT: Nur benötigte Felder selektieren
             $results = DB::connection("MyPdgr_temp")
                 ->table($table)
 				->select([
@@ -227,7 +224,6 @@ class MyPdgrAdSyncService
             $MyPdgrValue = trim($MyPdgrEntry[$MyPdgrField] ?? "");
             $adValue = $adUser->getFirstAttribute(strtolower($adAttr));
 
-            // Nur aktualisieren wenn MyPdgr-Wert nicht leer ist UND unterschiedlich zum AD-Wert
             if (!empty($MyPdgrValue) && $adValue !== $MyPdgrValue) 
 			{
                 try 

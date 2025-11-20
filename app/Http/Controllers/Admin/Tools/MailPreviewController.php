@@ -34,9 +34,7 @@ class MailPreviewController extends Controller
         $mailable = $request->get('mailable');
         $modelId  = $request->get('model_id');
 
-        if (!$mailable) {
-            abort(404, 'Kein Mailable angegeben');
-        }
+        if (!$mailable) abort(404, 'Kein Mailable angegeben');
 
         $mailable = Str::lower($mailable);
 
@@ -59,38 +57,26 @@ class MailPreviewController extends Controller
             'mutationen.auftragzutrittsrechte' => fn($id) => new MutationAuftragZutrittsrechte(Mutation::findOrFail($id)),
             'mutationen.infomail' => fn($id) => new MutationInfoMail(Mutation::findOrFail($id)),
 			
-			// Sonstiges
+			// Sonstige
             'testmail' => fn() => new TestMail('demo@example.ch', url('/admin/tools/mail-preview/render?mailable=testmail')),
         ];
 
-        if (!isset($map[$mailable])) {
-            abort(404, "Mailable '{$mailable}' nicht gefunden");
-        }
+        if (!isset($map[$mailable])) abort(404, "Mailable '{$mailable}' nicht gefunden");
 
-
-		// **Diesen Block hast du vergessen!**
 		$factory = $map[$mailable];
 		$needsModel = !in_array($mailable, ['testmail']);
 		$instance = $needsModel ? $factory($modelId) : $factory();
 
-		$instance->build(); // Jetzt existiert $instance!
+		$instance->build(); // Build für Empfänger
 
 		$subject = $instance->subject ?? null;
 
-		// View-Name extrahieren
 		$viewName = $instance->view;
-		if ($viewName instanceof \Illuminate\View\View) {
-			$viewName = $viewName->name();
-		}
+		
+		if ($viewName instanceof \Illuminate\View\View) $viewName = $viewName->name();
 
-		// View-Daten holen
-		$data = method_exists($instance, 'buildViewData')
-			? $instance->buildViewData()
-			: [];
+		$data = method_exists($instance, 'buildViewData') ? $instance->buildViewData() : [];
 
-		// Subject reinmergen
 		return view($viewName, array_merge($data, ['subject' => $subject]));
-
-
     }
 }

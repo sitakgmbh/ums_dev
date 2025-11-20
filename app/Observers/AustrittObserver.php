@@ -30,16 +30,12 @@ class AustrittObserver
             "form_data"   => $this->filterData($austritt->getAttributes(), $austritt),
         ]);
 
-        // Ticket erstellen
         app(OtoboService::class)->createTicket($austritt);
     }
 
     public function updated(Austritt $austritt): void
     {
-		if ($austritt->shouldSuppressObserver()) 
-		{
-			return;
-		}
+		if ($austritt->shouldSuppressObserver()) return;
 		
 		$user = Auth::user();
         $username = $user?->username ?? "unbekannt";
@@ -54,7 +50,6 @@ class AustrittObserver
             "original"    => $original,
         ]);
 
-        // Ticket schliessen wenn archiviert
         if ($austritt->wasChanged('archiviert') && $austritt->archiviert) 
 		{
             $msg = "Austritt wurde archiviert durch {$fullname} ({$username}).";
@@ -71,13 +66,11 @@ class AustrittObserver
 
         $deletedData = $this->filterData($austritt->getOriginal(), $austritt);
 		
-		// Logeintrag erstellen
         Logger::db("antraege", "info", "Austritt ID {$austritt->id} gelöscht durch {$fullname} ({$username})", [
             "austritt_id" => $austritt->id,
             "deleted_data" => $deletedData,
         ]);
 
-		// Ticket abschliessen
         $message = "Austritt wurde gelöscht durch {$fullname} ({$username}).";
         app(OtoboService::class)->updateTicket($austritt, $message, true);
     }

@@ -11,12 +11,12 @@ use Throwable;
 
 class CheckEmploymentStarts extends Command
 {
-    protected $signature = 'check:employment-starts';
-    protected $description = 'Weist Mitarbeitenden, die am heutigen Tag eintreten, eine M365-Lizenz zu.';
+    protected $signature = "check:employment-starts";
+    protected $description = "Weist Mitarbeitenden, die am heutigen Tag eintreten, eine M365-Lizenz zu.";
 
     public function handle(): int
     {
-        $this->info('Starte Lizenz-Zuweisung für heutige Eintritte');
+        $this->info("Starte Lizenz-Zuweisung für heutige Eintritte");
 
         try 
         {
@@ -32,7 +32,6 @@ class CheckEmploymentStarts extends Command
 
             $this->info("Gefunden: {$eroeffnungen->count()} Eröffnung(en)");
 
-            // Lizenz-Konfiguration laden
             $config = config('ums.m365_licenses', []);
             $licenseMap = $config['licenses'] ?? [];
             $defaultGroupCn = $config['default'] ?? null;
@@ -42,7 +41,6 @@ class CheckEmploymentStarts extends Command
                 throw new \RuntimeException('Keine Default-Lizenzgruppe in Config definiert.');
             }
 
-            // Default-AD-Gruppe abrufen
             $defaultGroup = LdapGroup::query()
                 ->whereEquals('cn', $defaultGroupCn)
                 ->first();
@@ -64,7 +62,6 @@ class CheckEmploymentStarts extends Command
                 $username = $eroeffnung->benutzername;
                 $this->line("Verarbeite '{$username}'...");
 
-                // Tracking für diesen Benutzer
                 $userActions = [
                     'removed' => [],
                     'added' => [],
@@ -82,10 +79,9 @@ class CheckEmploymentStarts extends Command
                         throw new \RuntimeException('AD-Benutzer nicht gefunden');
                     }
 
-                    // Alle Lizenzgruppen entfernen außer Default
+                    // Alle Lizenzgruppen entfernen ausser Default
                     foreach ($licenseMap as $license => $groupCn) 
                     {
-                        // Default überspringen
                         if ($groupCn === $defaultGroupCn) 
                         {
                             continue;
@@ -104,7 +100,6 @@ class CheckEmploymentStarts extends Command
                         }
                     }
 
-                    // Standardlizenz-Zuweisung sicherstellen
                     if (! $defaultGroup->members()->exists($user)) 
                     {
                         $defaultGroup->members()->attach($user);
@@ -118,8 +113,8 @@ class CheckEmploymentStarts extends Command
                         $userActions['skipped'][] = "Default-Lizenz bereits vorhanden";
                     }
 
-					// Nur loggen wenn tatsächlich etwas geändert wurde
-					if (!empty($userActions['added']) || !empty($userActions['removed'])) {
+					if (!empty($userActions['added']) || !empty($userActions['removed'])) 
+					{
 						Logger::db('ad', 'info', "M365-Lizenzierung Benutzer '{$username}' angepasst", [
 							'eroeffnung_id' => $eroeffnung->id,
 							'username' => $username,
@@ -141,7 +136,6 @@ class CheckEmploymentStarts extends Command
                 }
             }
 
-            // Zusammenfassung
             $this->newLine();
             $this->info('Zusammenfassung:');
             $this->line("Verarbeitet:     {$stats['processed']}");

@@ -1,4 +1,3 @@
-<!-- /dashboard -->
 <div>
 
 	@role('admin')

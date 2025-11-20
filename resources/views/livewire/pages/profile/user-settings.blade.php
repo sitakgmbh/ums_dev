@@ -60,33 +60,27 @@ document.addEventListener('livewire:init', () => {
     const $select = $('#representations');
     
     function initSelect2(values = []) {
-        // Destroy existing instance
         if ($select.data('select2')) {
             $select.off('change.select2custom');
             $select.select2('destroy');
         }
         
-        // Initialize Select2
         $select.select2({
             placeholder: 'Bitte auswählen',
             width: '100%',
             allowClear: true,
         });
         
-        // Set values
         $select.val(values).trigger('change.select2');
         
-        // Sync with Livewire on change
         $select.on('change.select2custom', function () {
             const ids = $(this).val() || [];
             @this.set('representations', ids);
         });
     }
     
-    // Initial setup
     initSelect2(@json($representations));
     
-    // Listen for updates from Livewire
     Livewire.on('select2Updated', (event) => {
         initSelect2(event.representations);
     });

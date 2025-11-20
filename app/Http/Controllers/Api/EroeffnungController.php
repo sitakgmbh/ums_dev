@@ -75,7 +75,7 @@ class EroeffnungController extends Controller
     {
         $eroeffnung = Eroeffnung::find($id);
 
-        if (! $eroeffnung) 
+        if (!$eroeffnung) 
 		{
             return response()->json(["error" => "Eröffnung nicht gefunden"], 404);
         }
@@ -86,7 +86,8 @@ class EroeffnungController extends Controller
 
         $data = $request->only($allowed);
 
-        if (empty($data)) {
+        if (empty($data)) 
+		{
             return response()->json(["error" => "Keine gültigen Attribute übergeben"], 422);
         }
 

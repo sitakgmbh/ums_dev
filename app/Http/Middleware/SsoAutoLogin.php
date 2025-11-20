@@ -50,9 +50,8 @@ class SsoAutoLogin
 
         $user = User::where("username", $username)->first();
 
-		// Gruppenzuordnung pruefen
-		if (! $service->userHasAccess($ldapUser)) {
-
+		if (! $service->userHasAccess($ldapUser)) 
+		{
 			$this->logDb("auth", "warning",
 				"Login Benutzer '{$username}' fehlgeschlagen: Keine Berechtigung");
 
@@ -61,11 +60,13 @@ class SsoAutoLogin
 			abort(401, "Nicht berechtigt");
 		}
 
-		if (! $user) {
+		if (! $user) 
+		{
 			$user = $service->provisionOrUpdateUserFromLdap($ldapUser, $username, true);
 			Logger::debug("SSO-AutoLogin: Benutzer '{$username}' provisioniert (ID {$user->id})");
 		} 
-		else {
+		else 
+		{
 			$service->provisionOrUpdateUserFromLdap($ldapUser, $username, false, $user);
 			Logger::debug("SSO-AutoLogin: Benutzer '{$username}' aktualisiert (ID {$user->id})");
 		}
