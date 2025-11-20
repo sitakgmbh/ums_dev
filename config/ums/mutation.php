@@ -3,6 +3,12 @@
 return [
 	'taskDefinitions' => [
 		[
+			'field'   => 'status_ad',
+			'label'   => 'Berechtigungen',
+			'icon'    => 'mdi mdi-account-cog',
+			'modal'   => 'components.modals.mutationen.ad',
+		],
+		[
 			'field'   => 'status_pep',
 			'label'   => 'PEP-Benutzer',
 			'icon'    => 'mdi mdi-clock',
@@ -13,12 +19,6 @@ return [
 			'label'   => 'KIS-Benutzer',
 			'icon'    => 'mdi mdi-doctor',
 			'modal'   => 'components.modals.mutationen.kis',
-		],
-		[
-			'field'   => 'status_ad',
-			'label'   => 'Berechtigungen',
-			'icon'    => 'mdi mdi-account-cog',
-			'modal'   => 'components.modals.mutationen.ad',
 		],
 		[
 			'field'   => 'status_mail',

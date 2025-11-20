@@ -13,9 +13,9 @@ class Verarbeitung extends Component
     public Mutation $entry;
 
     protected $listeners = [
-        'pep-updated'         => 'refreshEntry',
-        'kis-updated'         => 'refreshEntry',
         'ad-updated'          => 'refreshEntry',
+		'pep-updated'         => 'refreshEntry',
+        'kis-updated'         => 'refreshEntry',
         'email-updated'        => 'refreshEntry',
         'telefonie-updated'   => 'refreshEntry',
         'auftraege-versendet' => 'refreshEntry',
