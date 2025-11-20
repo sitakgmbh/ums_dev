@@ -105,217 +105,213 @@ class Auftraege extends BaseModal
 		};
 	}
 
-private function resolveMailConfig(string $key): array
-{
-    $configs = [];
+	private function resolveMailConfig(string $key): array
+	{
+		$configs = [];
 
-    $arbeitsort = $this->entry->arbeitsort?->name;
+		$arbeitsort = $this->entry->arbeitsort?->name;
 
-    switch ($key) {
+		switch ($key) 
+		{
+			case "sap":
+				$to = config("ums.mutation.mail.sap.to", []);
+				$cc = config("ums.mutation.mail.sap.cc", []);
 
-        /*
-        |--------------------------------------------------------------------------
-        | SAP (1 Mail)
-        |--------------------------------------------------------------------------
-        */
-        case "sap":
-            $to = config("ums.mutation.mail.sap.to", []);
-            $cc = config("ums.mutation.mail.sap.cc", []);
+				// LEI zu CC hinzufügen
+				if ($this->entry->komm_lei) 
+				{
+					$cc = array_merge(
+						$cc,
+						config("ums.mutation.mail.sap_lei.to", [])
+					);
+				}
 
-            // LEI zu CC hinzufügen
-            if ($this->entry->komm_lei) {
-                $cc = array_merge(
-                    $cc,
-                    config("ums.mutation.mail.sap_lei.to", [])
-                );
-            }
+				$configs[] = [
+					"standort" => null,
+					"to"       => $to,
+					"cc"       => $cc,
+					"mailable" => new \App\Mail\Mutationen\AuftragSap($this->entry),
+				];
+				
+				break;
 
-            $configs[] = [
-                "standort" => null,
-                "to"       => $to,
-                "cc"       => $cc,
-                "mailable" => new \App\Mail\Mutationen\AuftragSap($this->entry),
-            ];
-            break;
+			case "raumbeschriftung":
 
+				if ($arbeitsort === "Chur") 
+				{
+					$to = config("ums.mutation.mail.raumbeschriftung_wh.to", []);
+					$cc = config("ums.mutation.mail.raumbeschriftung_wh.cc", []);
+				} 
+				elseif ($arbeitsort === "Cazis") 
+				{
+					$to = config("ums.mutation.mail.raumbeschriftung_be.to", []);
+					$cc = config("ums.mutation.mail.raumbeschriftung_be.cc", []);
+				} 
+				elseif ($arbeitsort === "Rothenbrunnen") 
+				{
+					$to = config("ums.mutation.mail.raumbeschriftung_rb.to", []);
+					$cc = config("ums.mutation.mail.raumbeschriftung_rb.cc", []);
+				} 
+				else 
+				{
+					$to = [];
+					$cc = [];
+				}
 
-        /*
-        |--------------------------------------------------------------------------
-        | RAUMBESCHRIFTUNG (1 Mail basierend auf Arbeitsort)
-        |--------------------------------------------------------------------------
-        */
-        case "raumbeschriftung":
+				$configs[] = [
+					"standort" => $arbeitsort,
+					"to"       => $to,
+					"cc"       => $cc,
+					"mailable" => new \App\Mail\Mutationen\AuftragRaumbeschriftung($this->entry),
+				];
+				
+				break;
 
-            if ($arbeitsort === "Chur") {
-                $to = config("ums.mutation.mail.raumbeschriftung_wh.to", []);
-                $cc = config("ums.mutation.mail.raumbeschriftung_wh.cc", []);
-            } elseif ($arbeitsort === "Cazis") {
-                $to = config("ums.mutation.mail.raumbeschriftung_be.to", []);
-                $cc = config("ums.mutation.mail.raumbeschriftung_be.cc", []);
-            } elseif ($arbeitsort === "Rothenbrunnen") {
-                $to = config("ums.mutation.mail.raumbeschriftung_rb.to", []);
-                $cc = config("ums.mutation.mail.raumbeschriftung_rb.cc", []);
-            } else {
-                $to = [];
-                $cc = [];
-            }
+			case "berufskleider":
 
-            $configs[] = [
-                "standort" => $arbeitsort,
-                "to"       => $to,
-                "cc"       => $cc,
-                "mailable" => new \App\Mail\Mutationen\AuftragRaumbeschriftung($this->entry),
-            ];
-            break;
+				$configs[] = [
+					"standort" => null,
+					"to"       => config("ums.mutation.mail.berufskleider.to", []),
+					"cc"       => config("ums.mutation.mail.berufskleider.cc", []),
+					"mailable" => new \App\Mail\Mutationen\AuftragBerufskleider($this->entry),
+				];
+				
+				break;
 
+			case "garderobe":
 
-        /*
-        |--------------------------------------------------------------------------
-        | BERUFSKLEIDER (1 Mail)
-        |--------------------------------------------------------------------------
-        */
-        case "berufskleider":
+				$configs[] = [
+					"standort" => null,
+					"to"       => config("ums.mutation.mail.garderobe.to", []),
+					"cc"       => config("ums.mutation.mail.garderobe.cc", []),
+					"mailable" => new \App\Mail\Mutationen\AuftragGarderobe($this->entry),
+				];
+				
+				break;
 
-            $configs[] = [
-                "standort" => null,
-                "to"       => config("ums.mutation.mail.berufskleider.to", []),
-                "cc"       => config("ums.mutation.mail.berufskleider.cc", []),
-                "mailable" => new \App\Mail\Mutationen\AuftragBerufskleider($this->entry),
-            ];
-            break;
+			case "zutrittsrechte":
 
+				$standorte = [];
 
-        /*
-        |--------------------------------------------------------------------------
-        | GARDEROBE (1 Mail)
-        |--------------------------------------------------------------------------
-        */
-        case "garderobe":
+				if ($this->entry->key_wh_badge || $this->entry->key_wh_schluessel) 
+				{
+					$standorte[] = "Chur";
+				}
+				
+				if ($this->entry->key_be_badge || $this->entry->key_be_schluessel) 
+				{
+					$standorte[] = "Cazis";
+				}
+				
+				if ($this->entry->key_rb_badge || $this->entry->key_rb_schluessel) 
+				{
+					$standorte[] = "Rothenbrunnen";
+				}
 
-            $configs[] = [
-                "standort" => null,
-                "to"       => config("ums.mutation.mail.garderobe.to", []),
-                "cc"       => config("ums.mutation.mail.garderobe.cc", []),
-                "mailable" => new \App\Mail\Mutationen\AuftragGarderobe($this->entry),
-            ];
-            break;
+				foreach ($standorte as $ort) 
+				{
+					switch ($ort) 
+					{
+						case "Chur":
+							$to = config("ums.mutation.mail.zutrittsrechte_wh.to", []);
+							$cc = config("ums.mutation.mail.zutrittsrechte_wh.cc", []);
+							break;
 
+						case "Cazis":
+							$to = config("ums.mutation.mail.zutrittsrechte_be.to", []);
+							$cc = config("ums.mutation.mail.zutrittsrechte_be.cc", []);
+							break;
 
-        /*
-        |--------------------------------------------------------------------------
-        | ZUTRITTSRECHTE (MEHRERE Mails — je Standort)
-        |--------------------------------------------------------------------------
-        */
-        case "zutrittsrechte":
+						case "Rothenbrunnen":
+							$to = config("ums.mutation.mail.zutrittsrechte_rb.to", []);
+							$cc = config("ums.mutation.mail.zutrittsrechte_rb.cc", []);
+							break;
 
-            $standorte = [];
+						default:
+							continue 2;
+					}
 
-            if ($this->entry->key_wh_badge || $this->entry->key_wh_schluessel) {
-                $standorte[] = "Chur";
-            }
-            if ($this->entry->key_be_badge || $this->entry->key_be_schluessel) {
-                $standorte[] = "Cazis";
-            }
-            if ($this->entry->key_rb_badge || $this->entry->key_rb_schluessel) {
-                $standorte[] = "Rothenbrunnen";
-            }
+					$configs[] = [
+						"standort" => $ort,
+						"to"       => $to,
+						"cc"       => $cc,
+						"mailable" => new \App\Mail\Mutationen\AuftragZutrittsrechte($this->entry, $ort),
+					];
+				}
+				
+			break;
+		}
 
-            foreach ($standorte as $ort) {
+		return $configs;
+	}
 
-                switch ($ort) {
-                    case "Chur":
-                        $to = config("ums.mutation.mail.zutrittsrechte_wh.to", []);
-                        $cc = config("ums.mutation.mail.zutrittsrechte_wh.cc", []);
-                        break;
+	public function confirm(): void
+	{
+		if (! $this->entry) 
+		{
+			$this->addError("general", "Keine Mutation gefunden");
+			return;
+		}
 
-                    case "Cazis":
-                        $to = config("ums.mutation.mail.zutrittsrechte_be.to", []);
-                        $cc = config("ums.mutation.mail.zutrittsrechte_be.cc", []);
-                        break;
+		foreach ($this->pendingAuftraege as $key => $label) 
+		{
+			$configs = $this->resolveMailConfig($key);
 
-                    case "Rothenbrunnen":
-                        $to = config("ums.mutation.mail.zutrittsrechte_rb.to", []);
-                        $cc = config("ums.mutation.mail.zutrittsrechte_rb.cc", []);
-                        break;
+			foreach ($configs as $conf) 
+			{
 
-                    default:
-                        continue 2;
-                }
+				$recipients = $conf["to"] ?? [];
+				$cc         = $conf["cc"] ?? [];
+				$mailable   = $conf["mailable"] ?? null;
 
-                $configs[] = [
-                    "standort" => $ort,
-                    "to"       => $to,
-                    "cc"       => $cc,
-                    "mailable" => new \App\Mail\Mutationen\AuftragZutrittsrechte($this->entry, $ort),
-                ];
-            }
-            break;
-    }
+				if ($key === "sap" && $this->entry->komm_lei) 
+				{
+					$cc = array_merge(
+						$cc,
+						config("ums.mutation.mail.sap_lei.to", [])
+					);
+				}
 
-    return $configs;
-}
+				if (empty($recipients) && empty($cc)) 
+				{
+					$this->addError("general", "Keine Empfänger für {$label} definiert");
+					continue;
+				}
 
+				if (! $mailable) 
+				{
+					$this->addError("general", "Kein Mailable für {$label} gefunden");
+					continue;
+				}
 
-public function confirm(): void
-{
-    if (! $this->entry) {
-        $this->addError("general", "Keine Mutation gefunden");
-        return;
-    }
+				logger()->info("Versand {$label}", [
+					"to"    => $recipients,
+					"cc"    => $cc,
+					"entry" => $this->entry->id,
+				]);
 
-    foreach ($this->pendingAuftraege as $key => $label) {
+				SafeMail::send($mailable, $recipients, $cc);
 
-        // Alle Mail-Konfigurationen holen
-        $configs = $this->resolveMailConfig($key);
+				try 
+				{
+					$username = $this->entry->adUser->username;
+					$date = Carbon::now()->format("Ymd");
+					LdapHelper::setAdAttribute($username, "extensionAttribute4", $date);
+				} 
+				catch (\Throwable $e) 
+				{
+					Logger::error("Fehler beim Setzen extensionAttribute4: " . $e->getMessage());
+				}
+			}
+		}
 
-        foreach ($configs as $conf) {
-
-            $recipients = $conf["to"] ?? [];
-            $cc         = $conf["cc"] ?? [];
-            $mailable   = $conf["mailable"] ?? null;
-
-            // Sonderfall SAP → LEI
-            if ($key === "sap" && $this->entry->komm_lei) {
-                $cc = array_merge(
-                    $cc,
-                    config("ums.mutation.mail.sap_lei.to", [])
-                );
-            }
-
-            if (empty($recipients) && empty($cc)) {
-                $this->addError("general", "Keine Empfaenger fuer {$label} definiert");
-                continue;
-            }
-
-            if (! $mailable) {
-                $this->addError("general", "Kein Mailable fuer {$label} gefunden");
-                continue;
-            }
-
-            logger()->info("Versand {$label}", [
-                "to"    => $recipients,
-                "cc"    => $cc,
-                "entry" => $this->entry->id,
-            ]);
-
-            SafeMail::send($mailable, $recipients, $cc);
-
-            try {
-                $username = $this->entry->adUser->username;
-                $date = Carbon::now()->format("Ymd");
-                LdapHelper::setAdAttribute($username, "extensionAttribute4", $date);
-            } catch (\Throwable $e) {
-                Logger::error("Fehler beim Setzen extensionAttribute4: " . $e->getMessage());
-            }
-        }
-    }
-
-    if (! $this->getErrorBag()->isNotEmpty()) {
-        $this->entry->update(["status_auftrag" => 2]);
-        $this->dispatch("auftraege-versendet");
-        $this->closeModal();
-    }
-}
+		if (!$this->getErrorBag()->isNotEmpty()) 
+		{
+			$this->entry->update(["status_auftrag" => 2]);
+			$this->dispatch("auftraege-versendet");
+			$this->closeModal();
+		}
+	}
 
     public function render()
     {

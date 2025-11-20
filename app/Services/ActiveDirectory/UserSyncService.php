@@ -180,7 +180,7 @@ class UserSyncService
 		if (!$value) return null;
 		if ($value instanceof Carbon) return $value;
 
-		// FILETIME -> Unix
+		// Unix Timestamp
 		if (is_numeric($value)) 
 		{
 			// Sonderwerte für "nie"

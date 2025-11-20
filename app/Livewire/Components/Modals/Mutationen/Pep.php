@@ -11,14 +11,14 @@ class Pep extends BaseModal
 
     protected function openWith(array $payload): bool
     {
-        if (! isset($payload["entryId"])) 
+        if (!isset($payload["entryId"])) 
 		{
             return false;
         }
 
         $this->entry = Mutation::find($payload["entryId"]);
 
-        if (! $this->entry) 
+        if (!$this->entry) 
 		{
             return false;
         }

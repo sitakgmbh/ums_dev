@@ -35,11 +35,11 @@ class InfoMail extends BaseModal
             $this->entry = Mutation::find($payload["entryId"]);
         }
 
-        if (!$this->entry) {
+        if (!$this->entry) 
+		{
             return false;
         }
 
-        // Vorausfüllen mit Config-Werten
         $defaultRecipients = config("ums.mutation.mail.info.to", []);
         $defaultCc = config("ums.mutation.mail.info.cc", []);
 
@@ -72,7 +72,6 @@ class InfoMail extends BaseModal
 
         try 
         {
-            // Parse Empfänger (Komma- oder Semikolon-getrennt)
             $recipientsList = array_map('trim', preg_split('/[,;]+/', $this->recipients));
             $recipientsList = array_filter($recipientsList);
 

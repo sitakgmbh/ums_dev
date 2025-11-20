@@ -35,11 +35,11 @@ class InfoMail extends BaseModal
             $this->entry = Eroeffnung::find($payload["entryId"]);
         }
 
-        if (!$this->entry) {
+        if (!$this->entry) 
+		{
             return false;
         }
 
-        // Vorausfüllen mit Config-Werten
         $defaultRecipients = config("ums.eroeffnung.mail.info.to", []);
         $defaultCc = config("ums.eroeffnung.mail.info.cc", []);
         $toHr = config("ums.eroeffnung.mail.info-hr.to", []);
@@ -79,13 +79,13 @@ class InfoMail extends BaseModal
 
         try 
         {
-            // Parse Empfänger (Komma- oder Semikolon-getrennt)
             $recipientsList = array_map('trim', preg_split('/[,;]+/', $this->recipients));
             $recipientsList = array_filter($recipientsList);
 
             $ccList = [];
 			
-            if (!empty($this->cc)) {
+            if (!empty($this->cc)) 
+			{
                 $ccList = array_map('trim', preg_split('/[,;]+/', $this->cc));
                 $ccList = array_filter($ccList);
             }

@@ -37,7 +37,6 @@ class MutationForm extends Form
 
 	public array $adusersForSelection = [];
 
-    // Stammdaten
     public ?int $ad_user_id = null;
     public ?int $arbeitsort_id = null;
     public ?int $unternehmenseinheit_id = null;
@@ -69,7 +68,6 @@ class MutationForm extends Form
     public bool $filter_mitarbeiter = true;
     public ?string $kommentar = null;
 
-    // Status-Flags
     public bool $kis_status = false;
     public bool $sap_status = false;
 	public bool $sap_delete = false;
@@ -80,7 +78,6 @@ class MutationForm extends Form
     public array $sapRollen = [];
     public ?int $sap_rolle_id = null;
 
-    // Telefonie
     public ?string $tel_auswahl = null;
     public ?string $tel_nr = null;
     public bool $tel_tischtel = false;
@@ -89,7 +86,6 @@ class MutationForm extends Form
     public bool $tel_alarmierung = false;
     public ?string $tel_headset = null;
 
-    // Keys & Ausstattung
     public ?string $raumbeschriftung = null;
 
     public bool $key_waldhaus = false;
@@ -108,18 +104,14 @@ class MutationForm extends Form
     public bool $garderobe = false;
     public bool $buerowechsel = false;
 
-    // Kommentar-Felder für bestimmte Optionen
     public ?string $komm_lei = null;
     public ?string $komm_berufskleider = null;
     public ?string $komm_garderobe = null;
     public ?string $komm_buerowechsel = null;
 
-    // Kalender
     public bool $vorab_lizenzierung = false;
-    // public array $kalender_berechtigungen = [];
     public array $adusersKalender = [];
 
-    // Status-Felder
     public int $status_ad = 0;
 	public int $status_mail = 0;
 	public int $status_sap = 0;
@@ -302,8 +294,8 @@ class MutationForm extends Form
 				};
 			}
 
-			// Headset wenn Tischtelefon oder UC Standard
-			if ($this->tel_tischtel || $this->tel_ucstd) {
+			if ($this->tel_tischtel || $this->tel_ucstd) 
+			{
 				$rules["tel_headset"][] = "required";
 			}
 		}
@@ -473,42 +465,39 @@ class MutationForm extends Form
 		];
 	}
 
-public function loadAdusers(\App\Models\Mutation|int|null $context = null): void
-{
-    // Wenn Abteilungs-ID übergeben wurde (int)
-    if (is_int($context)) {
-        $this->adusers = \App\Models\AdUser::query()
-            ->with('funktion')
-            ->where('abteilung_id', $context)
-            ->where('is_existing', true)
-            ->where('is_enabled', true)
-            ->orderBy('display_name')
-            ->get()
-            ->map(fn($user) => [
-                'id' => $user->id,
-                'display_name' => \Illuminate\Support\Str::limit(
-                    $user->funktion
-                        ? "{$user->display_name} ({$user->funktion->name})"
-                        : $user->display_name,
-                    40
-                ),
-            ])
-            ->toArray();
-        return;
-    }
+	public function loadAdusers(\App\Models\Mutation|int|null $context = null): void
+	{
+		if (is_int($context)) {
+			$this->adusers = \App\Models\AdUser::query()
+				->with('funktion')
+				->where('abteilung_id', $context)
+				->where('is_existing', true)
+				->where('is_enabled', true)
+				->orderBy('display_name')
+				->get()
+				->map(fn($user) => [
+					'id' => $user->id,
+					'display_name' => \Illuminate\Support\Str::limit(
+						$user->funktion
+							? "{$user->display_name} ({$user->funktion->name})"
+							: $user->display_name,
+						40
+					),
+				])
+				->toArray();
+			return;
+		}
 
-    // Standardfall: Mutation-Objekt oder kein Argument
-    $extraIds = collect([
-        $context instanceof \App\Models\Mutation ? $context->vorlage_benutzer_id : $this->vorlage_benutzer_id,
-    ])->filter()->unique()->values()->toArray();
+		$extraIds = collect([
+			$context instanceof \App\Models\Mutation ? $context->vorlage_benutzer_id : $this->vorlage_benutzer_id,
+		])->filter()->unique()->values()->toArray();
 
-    $this->loadAdUserDropdown($extraIds, 'adusers');
-}
+		$this->loadAdUserDropdown($extraIds, 'adusers');
+	}
 
 
 	public function loadAdUser(\App\Models\Mutation|int|null $context = null): void
 	{
-		// Aehnliche Logik aber fuers andere Ziel ('adusersForSelection')
 		if (is_int($context)) 
 		{
 			$this->adusersForSelection = \App\Models\AdUser::query()
@@ -532,12 +521,8 @@ public function loadAdusers(\App\Models\Mutation|int|null $context = null): void
 			return;
 		}
 
-		$extraIds = $context instanceof \App\Models\Mutation
-			? [$context->ad_user_id]
-			: [$this->ad_user_id];
-
+		$extraIds = $context instanceof \App\Models\Mutation ? [$context->ad_user_id] : [$this->ad_user_id];
 		$extraIds = collect($extraIds)->filter()->unique()->values()->toArray();
-
 		$this->loadAdUserDropdown($extraIds, 'adusersForSelection');
 	}
 
@@ -552,23 +537,20 @@ public function loadAdusers(\App\Models\Mutation|int|null $context = null): void
 
 		if ($active) 
 		{
-			// Wenn noch nicht erledigt (0), auf "in Bearbeitung" (1) setzen
 			if ($current === 0) 
 			{
 				$this->{$field} = 1;
 			}
-			// wenn bereits 1 oder 2, unverändert lassen
 		} 
 		else 
 		{
-			// Deaktiviert -> sicher auf 0
 			$this->{$field} = 0;
 		}
 	}
 
 	public function applyStatus(?Mutation $existing = null): void
 	{
-		// AD nur wenn Vorlage-Benutzer gesetzt ist
+		// Vorlagen-Benutzer
 		if ($this->vorlage_benutzer_id) 
 		{
 			$this->setStatus('status_ad', true);
@@ -734,114 +716,125 @@ public function loadAdusers(\App\Models\Mutation|int|null $context = null): void
 		}
 	}
 
-public function fillFromModel(\App\Models\Mutation $mutation): void
-{
-    // Mutation-Daten laden
-    $this->fill($mutation->toArray());
-    $this->has_abteilung2 = !empty($mutation->abteilung2_id);
-    $this->vertragsbeginn = $mutation->vertragsbeginn ? $mutation->vertragsbeginn->format('Y-m-d') : null;
+	public function fillFromModel(\App\Models\Mutation $mutation): void
+	{
+		$this->fill($mutation->toArray());
+		$this->has_abteilung2 = !empty($mutation->abteilung2_id);
+		$this->vertragsbeginn = $mutation->vertragsbeginn ? $mutation->vertragsbeginn->format('Y-m-d') : null;
 
-    // Flags, ob Feld in DB vorhanden war
-    $hadArbeitsort = !empty($mutation->arbeitsort_id);
-    $hadUE = !empty($mutation->unternehmenseinheit_id);
-    $hadAbteilung = !empty($mutation->abteilung_id);
-    $hadFunktion = !empty($mutation->funktion_id);
-    $hadAnrede = !empty($mutation->anrede_id);
-    $hadTitel = !empty($mutation->titel_id);
-    $hadMailendung = !empty($mutation->mailendung);
-    $hadVorlage = !empty($mutation->vorlage_benutzer_id);
+		$hadArbeitsort = !empty($mutation->arbeitsort_id);
+		$hadUE = !empty($mutation->unternehmenseinheit_id);
+		$hadAbteilung = !empty($mutation->abteilung_id);
+		$hadFunktion = !empty($mutation->funktion_id);
+		$hadAnrede = !empty($mutation->anrede_id);
+		$hadTitel = !empty($mutation->titel_id);
+		$hadMailendung = !empty($mutation->mailendung);
+		$hadVorlage = !empty($mutation->vorlage_benutzer_id);
 
-    // Zugehörigen Benutzer laden für Fallbacks
-    $user = $mutation->adUser()->with([
-        'arbeitsort', 'unternehmenseinheit', 'abteilung', 'funktion', 'anrede', 'titel'
-    ])->first();
+		$user = $mutation->adUser()->with([
+			'arbeitsort', 'unternehmenseinheit', 'abteilung', 'funktion', 'anrede', 'titel'
+		])->first();
 
-    if ($user) {
-        // Fehlende Werte aus ADUser übernehmen
-        if (!$this->arbeitsort_id) {
-            $this->arbeitsort_id = $user->arbeitsort_id;
-        }
-        if (!$this->unternehmenseinheit_id) {
-            $this->unternehmenseinheit_id = $user->unternehmenseinheit_id;
-        }
-        if (!$this->abteilung_id) {
-            $this->abteilung_id = $user->abteilung_id;
-        }
-        if (!$this->funktion_id) {
-            $this->funktion_id = $user->funktion_id;
-        }
-        if (!$this->anrede_id) {
-            $this->anrede_id = $user->anrede_id;
-        }
-        if (!$this->titel_id) {
-            $this->titel_id = $user->titel_id;
-        }
-    }
+		if ($user) 
+		{
+			if (!$this->arbeitsort_id) 
+			{
+				$this->arbeitsort_id = $user->arbeitsort_id;
+			}
+			
+			if (!$this->unternehmenseinheit_id) 
+			{
+				$this->unternehmenseinheit_id = $user->unternehmenseinheit_id;
+			}
+			
+			if (!$this->abteilung_id) 
+			{
+				$this->abteilung_id = $user->abteilung_id;
+			}
+			
+			if (!$this->funktion_id) 
+			{
+				$this->funktion_id = $user->funktion_id;
+			}
+			
+			if (!$this->anrede_id) 
+			{
+				$this->anrede_id = $user->anrede_id;
+			}
+			
+			if (!$this->titel_id) 
+			{
+				$this->titel_id = $user->titel_id;
+			}
+		}
 
-    // Checkboxen NUR aktivieren, wenn Mutation-Daten existierten
-    $this->enable_arbeitsort = $hadArbeitsort;
-    $this->enable_unternehmenseinheit = $hadUE;
-    $this->enable_abteilung = $hadAbteilung;
-    $this->enable_funktion = $hadFunktion;
-    $this->enable_anrede = $hadAnrede;
-    $this->enable_titel = $hadTitel;
-    $this->enable_mailendung = $hadMailendung;
-    $this->enable_vorlage = $hadVorlage;
+		$this->enable_arbeitsort = $hadArbeitsort;
+		$this->enable_unternehmenseinheit = $hadUE;
+		$this->enable_abteilung = $hadAbteilung;
+		$this->enable_funktion = $hadFunktion;
+		$this->enable_anrede = $hadAnrede;
+		$this->enable_titel = $hadTitel;
+		$this->enable_mailendung = $hadMailendung;
+		$this->enable_vorlage = $hadVorlage;
 
-    // Weitere Felder
-    $this->sap_status = (bool)$mutation->status_sap;
-    $this->sap_rolle_id = $mutation->sap_rolle_id;
-    $this->tel_status = (bool)$mutation->status_tel;
-    $this->raumbeschriftung_flag = !empty($mutation->raumbeschriftung);
-    $this->key_waldhaus = (bool)$mutation->key_wh_badge || (bool)$mutation->key_wh_schluessel;
-    $this->key_beverin = (bool)$mutation->key_be_badge || (bool)$mutation->key_be_schluessel;
-    $this->key_rothenbr = (bool)$mutation->key_rb_badge || (bool)$mutation->key_rb_schluessel;
-    $this->berufskleider = (bool)$mutation->berufskleider;
-    $this->garderobe = (bool)$mutation->garderobe;
-    $this->buerowechsel = (bool)$mutation->buerowechsel;
+		$this->sap_status = (bool)$mutation->status_sap;
+		$this->sap_rolle_id = $mutation->sap_rolle_id;
+		$this->tel_status = (bool)$mutation->status_tel;
+		$this->raumbeschriftung_flag = !empty($mutation->raumbeschriftung);
+		$this->key_waldhaus = (bool)$mutation->key_wh_badge || (bool)$mutation->key_wh_schluessel;
+		$this->key_beverin = (bool)$mutation->key_be_badge || (bool)$mutation->key_be_schluessel;
+		$this->key_rothenbr = (bool)$mutation->key_rb_badge || (bool)$mutation->key_rb_schluessel;
+		$this->berufskleider = (bool)$mutation->berufskleider;
+		$this->garderobe = (bool)$mutation->garderobe;
+		$this->buerowechsel = (bool)$mutation->buerowechsel;
 
-    $this->komm_lei = $mutation->komm_lei;
-    $this->komm_berufskleider = $mutation->komm_berufskleider;
-    $this->komm_garderobe = $mutation->komm_garderobe;
-    $this->komm_buerowechsel = $mutation->komm_buerowechsel;
-}
-
+		$this->komm_lei = $mutation->komm_lei;
+		$this->komm_berufskleider = $mutation->komm_berufskleider;
+		$this->komm_garderobe = $mutation->komm_garderobe;
+		$this->komm_buerowechsel = $mutation->komm_buerowechsel;
+	}
 
 	private function clearDisabledFields(array &$data): void
 	{
-		// Nur speichern, wenn das zugehoerige enable_* aktiv ist
-		if (!$this->enable_arbeitsort) {
+		if (!$this->enable_arbeitsort) 
+		{
 			$data["arbeitsort_id"] = null;
 		}
 
-		if (!$this->enable_unternehmenseinheit) {
+		if (!$this->enable_unternehmenseinheit) 
+		{
 			$data["unternehmenseinheit_id"] = null;
 		}
 
-		if (!$this->enable_abteilung) {
+		if (!$this->enable_abteilung) 
+		{
 			$data["abteilung_id"] = null;
 			$data["abteilung2_id"] = null;
 		}
 
-		if (!$this->enable_funktion) {
+		if (!$this->enable_funktion) 
+		{
 			$data["funktion_id"] = null;
 		}
 
-		if (!$this->enable_anrede) {
+		if (!$this->enable_anrede) 
+		{
 			$data["anrede_id"] = null;
 		}
 
-		if (!$this->enable_titel) {
+		if (!$this->enable_titel) 
+		{
 			$data["titel_id"] = null;
 		}
 
-		if (!$this->enable_mailendung) {
+		if (!$this->enable_mailendung) 
+		{
 			$data["mailendung"] = null;
 		}
 
-		if (!$this->enable_vorlage) {
+		if (!$this->enable_vorlage) 
+		{
 			$data["vorlage_benutzer_id"] = null;
 		}
 	}
-
 }

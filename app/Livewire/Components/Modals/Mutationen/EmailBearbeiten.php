@@ -14,17 +14,17 @@ class EmailBearbeiten extends BaseModal
     public ?Mutation $entry = null;
 
     #[Rule('required|email')]
-    public string $mail1 = "";   // Neue/Primäre Mail
+    public string $mail1 = "";
 
     #[Rule('nullable|email')]
-    public ?string $mail2 = null; // Alias (alte Mail)
+    public ?string $mail2 = null;
 
     public string $infoText = "";
     public string $errorMessage = "";
 
-    public array $aliases = [];          // Alle Aliases im AD
-    public ?string $generatedMail = null; // falls neu generiert
-    public array $reasons = [];           // Gründe für Änderung
+    public array $aliases = [];
+    public ?string $generatedMail = null;
+    public array $reasons = [];
 
     protected function openWith(array $payload): bool
     {
@@ -43,11 +43,9 @@ class EmailBearbeiten extends BaseModal
         $username = $this->entry->adUser->username ?? null;
         $adUser   = $username ? LdapHelper::getAdUser($username) : null;
 
-        // Standard: aktuelle Primär-Mail aus AD
         $this->mail1 = $this->entry->adUser->email ?? "";
         $this->mail2 = null;
 
-        // Aliases aus AD laden
         if ($adUser) 
 		{
             $proxies = $adUser->getAttribute("proxyAddresses", []);
@@ -59,10 +57,8 @@ class EmailBearbeiten extends BaseModal
 				->toArray();
         }
 
-        // prüfen, ob Mail neu generiert werden soll
         if ($this->entry->vorname || $this->entry->nachname || $this->entry->mailendung) 
 		{
-            // Domain bestimmen: falls keine Mailendung → Domain aus alter Mail extrahieren
             $domain = $this->entry->mailendung;
 			
             if (! $domain && $this->mail1 && str_contains($this->mail1, "@")) 
@@ -80,16 +76,13 @@ class EmailBearbeiten extends BaseModal
 
             if ($this->generatedMail) 
 			{
-                // alte primäre als Alias übernehmen
                 if ($this->mail1) 
 				{
                     $this->mail2 = $this->mail1;
                 }
 				
-                // neue generierte als Primär übernehmen
                 $this->mail1 = $this->generatedMail;
 
-                // Gründe dokumentieren
                 if ($this->entry->vorname)   $this->reasons[] = "Vorname";
                 if ($this->entry->nachname)  $this->reasons[] = "Nachname";
                 if ($this->entry->mailendung)$this->reasons[] = "Mailendung";
@@ -151,7 +144,6 @@ class EmailBearbeiten extends BaseModal
 
 			Logger::debug("Prüfe E-Mail-Unique für {$mail1} und Alias {$mail2}");
 
-			// uniqueness prüfen
 			if (LdapHelper::emailExists($mail1, $username)) 
 			{
 				Logger::debug("Fehler: Primäre Mail {$mail1} existiert bereits");
@@ -166,7 +158,6 @@ class EmailBearbeiten extends BaseModal
 				return;
 			}
 
-			// bestehende Aliases holen
 			$currentProxies = $adUser->getAttribute("proxyAddresses", []) ?? [];
 			Logger::debug("Aktuelle AD-Proxies: " . json_encode($currentProxies));
 
@@ -174,7 +165,6 @@ class EmailBearbeiten extends BaseModal
 				->map(fn($v) => strtolower($v))
 				->toArray();
 
-			// Neue Liste aufbauen
 			$proxies = [];
 			$proxies[] = "SMTP:{$mail1}";
 			
@@ -196,7 +186,6 @@ class EmailBearbeiten extends BaseModal
 			$proxies = array_values(array_unique($proxies));
 			Logger::debug("Neue Proxy-Liste: " . json_encode($proxies));
 
-			// AD updaten
 			Logger::debug("Schreibe proxyAddresses für {$username}");
 			LdapHelper::setAdAttribute($username, "proxyAddresses", $proxies);
 

@@ -67,7 +67,7 @@ class MailPreviewController extends Controller
 		$needsModel = !in_array($mailable, ['testmail']);
 		$instance = $needsModel ? $factory($modelId) : $factory();
 
-		$instance->build(); // Build für Empfänger
+		$instance->build(); // Build damit Empfänger vorhanden ist
 
 		$subject = $instance->subject ?? null;
 

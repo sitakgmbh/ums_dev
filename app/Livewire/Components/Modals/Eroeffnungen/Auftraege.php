@@ -24,7 +24,9 @@ class Auftraege extends BaseModal
         }
 
         $this->entry = Eroeffnung::find($payload["entryId"]);
-        if (! $this->entry) {
+		
+        if (! $this->entry) 
+		{
             return false;
         }
 
@@ -59,13 +61,14 @@ class Auftraege extends BaseModal
 	{
 		$details = [];
 
-		foreach ($this->pendingAuftraege as $key => $label) {
+		foreach ($this->pendingAuftraege as $key => $label) 
+		{
 
 			$configs = $this->resolveMailConfig($key);
-
 			$details[$key] = [];
 
-			foreach ($configs as $conf) {
+			foreach ($configs as $conf) 
+			{
 				$details[$key][] = [
 					"label"    => $label,
 					"standort" => $conf["standort"] ?? null,
@@ -78,21 +81,13 @@ class Auftraege extends BaseModal
 		return $details;
 	}
 
-
 	private function resolveMailConfig(string $key): array
 	{
-		// Standard: genau 1 Mail-Konfiguration
 		$configs = [];
-
 		$arbeitsort = $this->entry->arbeitsort?->name;
 
-		switch ($key) {
-
-			/*
-			|--------------------------------------------------------------------------
-			| SAP (1 Mail)
-			|--------------------------------------------------------------------------
-			*/
+		switch ($key) 
+		{
 			case "sap":
 				$to = config("ums.eroeffnung.mail.sap.to", []);
 				$cc = config("ums.eroeffnung.mail.sap.cc", []);
@@ -113,12 +108,6 @@ class Auftraege extends BaseModal
 				
 				break;
 
-
-			/*
-			|--------------------------------------------------------------------------
-			| RAUMBESCHRIFTUNG (1 Mail basierend auf arbeitsort)
-			|--------------------------------------------------------------------------
-			*/
 			case "raumbeschriftung":
 
 				if ($arbeitsort === "Chur") {
@@ -143,12 +132,6 @@ class Auftraege extends BaseModal
 				];
 				break;
 
-
-			/*
-			|--------------------------------------------------------------------------
-			| BERUFSKLEIDER (1 Mail)
-			|--------------------------------------------------------------------------
-			*/
 			case "berufskleider":
 
 				$configs[] = [
@@ -159,12 +142,6 @@ class Auftraege extends BaseModal
 				];
 				break;
 
-
-			/*
-			|--------------------------------------------------------------------------
-			| GARDEROBE (1 Mail)
-			|--------------------------------------------------------------------------
-			*/
 			case "garderobe":
 
 				$configs[] = [
@@ -175,29 +152,30 @@ class Auftraege extends BaseModal
 				];
 				break;
 
-
-			/*
-			|--------------------------------------------------------------------------
-			| ZUTRITTSRECHTE (MEHRERE Mails – je Standort)
-			|--------------------------------------------------------------------------
-			*/
 			case "zutrittsrechte":
 
 				$standorte = [];
 
-				if ($this->entry->key_wh_badge || $this->entry->key_wh_schluessel) {
+				if ($this->entry->key_wh_badge || $this->entry->key_wh_schluessel) 
+				{
 					$standorte[] = "Chur";
 				}
-				if ($this->entry->key_be_badge || $this->entry->key_be_schluessel) {
+				
+				if ($this->entry->key_be_badge || $this->entry->key_be_schluessel) 
+				{
 					$standorte[] = "Cazis";
 				}
-				if ($this->entry->key_rb_badge || $this->entry->key_rb_schluessel) {
+				
+				if ($this->entry->key_rb_badge || $this->entry->key_rb_schluessel) 
+				{
 					$standorte[] = "Rothenbrunnen";
 				}
 
-				foreach ($standorte as $ort) {
+				foreach ($standorte as $ort) 
+				{
 
-					switch ($ort) {
+					switch ($ort) 
+					{
 						case "Chur":
 							$to = config("ums.eroeffnung.mail.zutrittsrechte_wh.to", []);
 							$cc = config("ums.eroeffnung.mail.zutrittsrechte_wh.cc", []);
@@ -225,64 +203,70 @@ class Auftraege extends BaseModal
 					];
 				}
 
-				break;
+			break;
 		}
 
 		return $configs;
 	}
 
-public function confirm(): void
-{
-    if (! $this->entry) {
-        $this->addError("general", "Keine Eroeffnung gefunden");
-        return;
-    }
+	public function confirm(): void
+	{
+		if (! $this->entry) 
+		{
+			$this->addError("general", "Keine Eroeffnung gefunden");
+			return;
+		}
 
-    foreach ($this->pendingAuftraege as $key => $label) {
+		foreach ($this->pendingAuftraege as $key => $label) 
+		{
+			$configs = $this->resolveMailConfig($key);
 
-        $configs = $this->resolveMailConfig($key);
+			foreach ($configs as $conf) 
+			{
+				$recipients = $conf["to"] ?? [];
+				$cc         = $conf["cc"] ?? [];
+				$mailable   = $conf["mailable"] ?? null;
 
-        foreach ($configs as $conf) {
+				if (empty($recipients) && empty($cc)) 
+				{
+					$this->addError("general", "Keine Empfänger für {$label} definiert");
+					continue;
+				}
 
-            $recipients = $conf["to"] ?? [];
-            $cc         = $conf["cc"] ?? [];
-            $mailable   = $conf["mailable"] ?? null;
+				if (! $mailable) 
+				{
+					$this->addError("general", "Kein Mailable für {$label} gefunden");
+					continue;
+				}
 
-            if (empty($recipients) && empty($cc)) {
-                $this->addError("general", "Keine Empfaenger fuer {$label} definiert");
-                continue;
-            }
+				logger()->info("Versand {$label}", [
+					"to"    => $recipients,
+					"cc"    => $cc,
+					"entry" => $this->entry->id,
+				]);
 
-            if (! $mailable) {
-                $this->addError("general", "Kein Mailable fuer {$label} gefunden");
-                continue;
-            }
+				SafeMail::send($mailable, $recipients, $cc);
 
-            logger()->info("Versand {$label}", [
-                "to"    => $recipients,
-                "cc"    => $cc,
-                "entry" => $this->entry->id,
-            ]);
+				try 
+				{
+					$username = $this->entry->benutzername;
+					$date = Carbon::now()->format("Ymd");
+					LdapHelper::setAdAttribute($username, "extensionAttribute4", $date);
+				} 
+				catch (\Throwable $e) 
+				{
+					Logger::error("Fehler beim Setzen extensionAttribute4: " . $e->getMessage());
+				}
+			}
+		}
 
-            SafeMail::send($mailable, $recipients, $cc);
-
-            try {
-                $username = $this->entry->benutzername;
-                $date = Carbon::now()->format("Ymd");
-                LdapHelper::setAdAttribute($username, "extensionAttribute4", $date);
-            } catch (\Throwable $e) {
-                Logger::error("Fehler beim Setzen extensionAttribute4: " . $e->getMessage());
-            }
-        }
-    }
-
-    if (! $this->getErrorBag()->isNotEmpty()) {
-        $this->entry->update(["status_auftrag" => 2]);
-        $this->dispatch("auftraege-versendet");
-        $this->closeModal();
-    }
-}
-
+		if (! $this->getErrorBag()->isNotEmpty()) 
+		{
+			$this->entry->update(["status_auftrag" => 2]);
+			$this->dispatch("auftraege-versendet");
+			$this->closeModal();
+		}
+	}
 
     public function render()
     {

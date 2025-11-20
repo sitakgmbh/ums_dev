@@ -12,22 +12,14 @@ class TestError extends Command
 
     public function handle(): int
     {
-        // Konsolenausgabe
         $this->info('Starte Test-Befehl (mit Fehler)...');
 
-        // Logging über deine Logger-Utility
         Logger::debug('Test-Befehl gestartet', [
             'user' => auth()->user()->username ?? 'cli',
             'time' => now()->toDateTimeString(),
         ]);
 
-        // künstliche Verzögerung
         sleep(2);
-
-        // absichtlicher Fehler
         throw new \RuntimeException('Dies ist ein absichtlich ausgelöster Fehler im Test-Befehl.');
-
-        // (wird nicht mehr erreicht)
-        return Command::SUCCESS;
     }
 }

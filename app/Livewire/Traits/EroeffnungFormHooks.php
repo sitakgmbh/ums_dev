@@ -12,10 +12,8 @@ trait EroeffnungFormHooks
 {
 	use ModalFlow;
 		
-	// Event Arbeitsort geändert
 	public function updatedFormArbeitsortId(?int $value): void
 	{
-		// Wenn kein Arbeitsort alle Folgefelder leeren
 		if (!$value) 
 		{
 			$this->form->unternehmenseinheit_id = null;
@@ -33,16 +31,13 @@ trait EroeffnungFormHooks
 			return;
 		}
 
-		// Unternehmenseinheiten basierend auf Arbeitsort laden
 		$this->form->loadUnternehmenseinheiten();
 
-		// Falls Auswahl ungültig wird Felder zurücksetzen
 		if ($this->form->unternehmenseinheit_id && !collect($this->form->unternehmenseinheiten)->pluck('id')->contains($this->form->unternehmenseinheit_id)) 
 		{
 			$this->form->unternehmenseinheit_id = null;
 		}
 
-		// Abteilungen und Funktionen neu laden
 		$this->form->loadAbteilungen();
 		$this->form->loadFunktionen();
 
@@ -50,7 +45,6 @@ trait EroeffnungFormHooks
 		$this->dispatch('select2-options', id: 'abteilung_id', options: $this->form->abteilungen, value: $this->form->abteilung_id);
 		$this->dispatch('select2-options', id: 'funktion_id', options: $this->form->funktionen, value: $this->form->funktion_id);
 
-		// Mitarbeiterliste aktualisieren
 		if ($this->form->filter_mitarbeiter) 
 		{
 			$this->form->loadAdusers();
@@ -59,14 +53,11 @@ trait EroeffnungFormHooks
 		}
 	}
 
-    // Event Unternehmenseinheit geändert
 	public function updatedFormUnternehmenseinheitId(?int $value): void
 	{
-		// Abteilungen und Funktionen zurücksetzen
 		$this->form->abteilung_id = null;
 		$this->form->funktion_id = null;
 
-		// Neue Daten laden
 		$this->form->loadAbteilungen();
 		$this->form->loadFunktionen();
 
@@ -74,7 +65,6 @@ trait EroeffnungFormHooks
 		$this->dispatch('select2-options', id: 'funktion_id', options: $this->form->funktionen, value: $this->form->funktion_id);
 		$this->dispatch('select2-options', id: 'abteilung2_id', options: $this->form->abteilungen, value: $this->form->abteilung2_id);
 
-		// Mitarbeiter laden
 		if ($this->form->filter_mitarbeiter) 
 		{
 			$this->form->loadAdusers();
@@ -83,13 +73,11 @@ trait EroeffnungFormHooks
 		}
 	}
 
-    // Event Abteilung geändert
 	public function updatedFormAbteilungId(?int $value): void
 	{
 		$this->form->funktion_id = null;
 		$this->form->loadFunktionen();
 
-		// Mitarbeiter neu laden (abhängig vom Filter)
 		if ($this->form->filter_mitarbeiter) 
 		{
 			$this->form->loadAdusers();
@@ -99,7 +87,6 @@ trait EroeffnungFormHooks
 			$this->form->loadAdusers(null);
 		}
 
-		// Select2-Updates
 		$this->dispatch('select2-options', id: 'funktion_id', options: $this->form->funktionen, value: $this->form->funktion_id);
 		$this->dispatch('select2-options', id: 'bezugsperson_id', options: $this->form->adusers, value: $this->form->bezugsperson_id);
 		$this->dispatch('select2-options', id: 'vorlage_benutzer_id', options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
@@ -110,12 +97,10 @@ trait EroeffnungFormHooks
 		}
 	}
 
-    // Checkbox Neue Konstellation geklickt
     public function updatedFormNeueKonstellation($value)
     {
 		if ($value) 
 		{
-			// Neue Konstellation
 			$this->form->loadArbeitsorte();
 			$this->form->loadUnternehmenseinheiten();
 			$this->form->loadAbteilungen();
@@ -147,34 +132,28 @@ trait EroeffnungFormHooks
         $this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
     }
 
-    // Checkbox Mitarbeiter filtern geklickt
 	public function updatedFormFilterMitarbeiter(bool $value): void
 	{
-		// Wenn Filter aktiv ist nur Benutzer aus gewählter Abteilung
 		if ($value) 
 		{
 			if ($this->form->abteilung_id) 
 			{
-				// Nur Benutzer der gewählten Abteilung
 				$this->form->loadAdusers($this->form->abteilung_id);
 			} 
 			else 
 			{
-				// Leeres Dropdown wenn keine Abteilung ausgewählt
 				$this->form->adusers = [];
 			}
 		} 
 		else 
 		{
-			$this->form->loadAdusers(); // Wenn Filter deaktiviert ist alle aktiven Benutzer
+			$this->form->loadAdusers();
 		}
 
-		// Select2 Dropdowns aktualisieren
 		$this->dispatch('select2-options', id: 'bezugsperson_id', options: $this->form->adusers, value: $this->form->bezugsperson_id);
 		$this->dispatch('select2-options', id: 'vorlage_benutzer_id', options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
 	}
 
-    // Checkbox Zweite Abteilung geklickt
     public function updatedFormHasAbteilung2($value)
     {
         if (!$value) 
@@ -189,19 +168,16 @@ trait EroeffnungFormHooks
         }
     }
 
-	// Wert Feld Vorname geändert
 	public function updatedFormVorname($value): void
 	{
 		$this->checkAllFlows();
 	}
 
-	// Wert Feld Nachname geändert
 	public function updatedFormNachname($value): void
 	{
 		$this->checkAllFlows();
 	}
 
-	// Modal-Flow starten
 	protected function checkAllFlows(): void
 	{
 		if (empty($this->form->vorname) || empty($this->form->nachname)) 
@@ -211,7 +187,6 @@ trait EroeffnungFormHooks
 
 		$flow = [];
 
-		// Eröffnung mit Vor- und Nachname vorhanden?
 		$eroeffnung = \App\Models\Eroeffnung::query()
 			->where("archiviert", false)
 			->where("vorname", $this->form->vorname)
@@ -234,7 +209,6 @@ trait EroeffnungFormHooks
 			];
 		}
 
-		// Wiedereintritt?
 		$users = AdUser::query()
 			->where("firstname", $this->form->vorname)
 			->where("lastname", $this->form->nachname)
@@ -261,7 +235,6 @@ trait EroeffnungFormHooks
 			];
 		}
 
-		// Doppelnamen?
 		if (str_contains(trim($this->form->vorname), " ") || str_contains(trim($this->form->nachname), " ")) 
 		{
 			$mailendung = $this->form->mailendung ?? "pdgr.ch";
@@ -279,14 +252,12 @@ trait EroeffnungFormHooks
 		}
 	}
 
-	// Beim Bestätigen eines Wiedereintritts
 	#[\Livewire\Attributes\On("wiedereintritt-selected")]
 	public function handleWiedereintrittSelected($payload = []): void
 	{
 		$this->form->wiedereintritt = true;
 	}
 
-	// Beim Speichern der vorläufigen E-Mail-Adresse
 	#[\Livewire\Attributes\On("email-bearbeiten-selected")]
 	public function handleEmailOverrideSelected($payload = []): void
 	{

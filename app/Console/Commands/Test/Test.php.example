@@ -12,18 +12,14 @@ class Test extends Command
 
     public function handle(): int
     {
-        // Konsolenausgabe
         $this->info('Test-Befehl wurde ausgeführt.');
 
-        // Logging über deine Logger-Utility
         Logger::debug('Das ist eine Debug-Meldung aus test:do', [
             'user' => auth()->user()->username ?? 'cli',
             'time' => now()->toDateTimeString(),
         ]);
 
-		sleep(5);
-
-        // Erfolgscode zurückgeben
+		sleep(2);
         return Command::SUCCESS;
     }
 }

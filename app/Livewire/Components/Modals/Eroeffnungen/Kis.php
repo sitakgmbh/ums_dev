@@ -12,7 +12,7 @@ use Livewire\Attributes\Validate;
 class Kis extends BaseModal
 {
     public ?Eroeffnung $entry = null;
-    public string $modalType = 'eroeffnung'; // 'eroeffnung' oder 'mutation'
+    public string $modalType = 'eroeffnung';
     
     #[Validate('required|string|min:2')]
     public string $username = '';
@@ -28,7 +28,6 @@ class Kis extends BaseModal
     #[Validate('required|in:merge,replace')]
     public string $permissionMode = 'merge';
     
-    // Selected items
     public array $selectedOrgUnits = [];
     public array $selectedOrgGroups = [];
     public array $selectedRoles = [];
@@ -39,17 +38,18 @@ class Kis extends BaseModal
 
     protected function openWith(array $payload): bool
     {
-        if (!isset($payload['entryId'])) {
+        if (!isset($payload['entryId'])) 
+		{
             return false;
         }
 
 		$this->entry = Eroeffnung::with('vorlageBenutzer')->find($payload['entryId']);
         
-        if (!$this->entry) {
+        if (!$this->entry) 
+		{
             return false;
         }
 
-        // Reset state
         $this->reset([
             'username', 
             'userDetails', 
@@ -63,21 +63,21 @@ class Kis extends BaseModal
             'selectedUserId'
         ]);
         
-        // Set modal type from payload or default to 'eroeffnung'
         $this->modalType = $payload['type'] ?? 'eroeffnung';
         
-        // Pre-fill username from vorlageBenutzer relation or fallback to berechtigung
-        if ($this->entry->vorlageBenutzer && $this->entry->vorlageBenutzer->username) {
+        if ($this->entry->vorlageBenutzer && $this->entry->vorlageBenutzer->username) 
+		{
             $this->username = strtoupper($this->entry->vorlageBenutzer->username);
-        } else {
+        } 
+		else 
+		{
             $this->username = strtoupper($this->entry->berechtigung ?? '');
         }
         
-        // Set permission mode based on abteilung2_id
         $this->permissionMode = $this->shouldUseMergeMode() ? 'merge' : 'replace';
         
-        // Auto-select employee function if SAP Leistungserbringer
-        if ($this->entry->is_lei) {
+        if ($this->entry->is_lei) 
+		{
             $this->employeeFunction = 34;
         }
         
@@ -104,7 +104,8 @@ class Kis extends BaseModal
         $this->userFound = false;
         $this->isSearching = true;
 
-        try {
+        try 
+		{
             $this->validate(['username' => 'required|string|min:2']);
             
             $details = $service->getUserDetails($this->username);
@@ -113,55 +114,63 @@ class Kis extends BaseModal
             $this->employeeDetails = $details['employee'];
             $this->userFound = true;
             
-            // Pre-select all items
             $this->preselectItems();
-            
-        } catch (\InvalidArgumentException $e) {
-            // User not found or validation error
+        } 
+		catch (\InvalidArgumentException $e) 
+		{
             $this->errorMessage = $e->getMessage();
-        } catch (\RuntimeException $e) {
-            // API errors (404, 500, etc.)
+        } 
+		catch (\RuntimeException $e) 
+		{
             $statusCode = $e->getCode();
-            if ($statusCode === 404) {
+			
+            if ($statusCode === 404) 
+			{
                 $this->errorMessage = "Benutzer '{$this->username}' wurde nicht gefunden.";
-            } else {
+            } 
+			else 
+			{
                 $this->errorMessage = $e->getMessage();
             }
-            Log::error('Orbis API-Fehler bei Benutzersuche', [
+            
+			Log::error('Orbis API-Fehler bei Benutzersuche', [
                 'username' => $this->username,
                 'status' => $statusCode,
                 'error' => $e->getMessage()
             ]);
-        } catch (\Exception $e) {
+        } 
+		catch (\Exception $e) 
+		{
             Log::error('Fehler bei Orbis-Benutzersuche', [
                 'username' => $this->username,
                 'error' => $e->getMessage()
             ]);
+			
             $this->errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.';
-        } finally {
+        } 
+		finally 
+		{
             $this->isSearching = false;
         }
     }
     
     protected function preselectItems(): void
     {
-        // Pre-select all organizational units
         $this->selectedOrgUnits = collect($this->employeeDetails['organizationalunits'] ?? [])
             ->pluck('id')
             ->toArray();
         
-        // Pre-select all organizational groups
         $this->selectedOrgGroups = collect($this->employeeDetails['organizationalunitgroups'] ?? [])
             ->pluck('id')
             ->toArray();
         
-        // Select first user by default
         $users = $this->employeeDetails['users'] ?? [];
-        if (!empty($users)) {
+		
+        if (!empty($users)) 
+		{
             $firstUser = $users[0];
             $this->selectedUserId = $firstUser['id'];
             
-            // Pre-select all roles of first user
             $this->selectedRoles = collect($firstUser['roles'] ?? [])
                 ->pluck('id')
                 ->toArray();
@@ -170,11 +179,11 @@ class Kis extends BaseModal
     
     public function updatedSelectedUserId($userId): void
     {
-        // Update selected roles when user changes
         $users = $this->employeeDetails['users'] ?? [];
         $selectedUser = collect($users)->firstWhere('id', $userId);
         
-        if ($selectedUser) {
+        if ($selectedUser) 
+		{
             $this->selectedRoles = collect($selectedUser['roles'] ?? [])
                 ->pluck('id')
                 ->toArray();
@@ -186,8 +195,8 @@ class Kis extends BaseModal
         $this->errorMessage = '';
         $this->successMessage = '';
 
-        // Check if function is selected
-        if (!$this->employeeFunction) {
+        if (!$this->employeeFunction) 
+		{
             $this->dispatch('confirm-no-function');
             return;
         }
@@ -202,37 +211,38 @@ class Kis extends BaseModal
 
     public function markAsComplete(): void
     {
-        if ($this->entry) {
+        if ($this->entry) 
+		{
             $this->entry->update(['status_kis' => 2]);
             $this->successMessage = "Status erfolgreich auf 'Erledigt' gesetzt.";
             $this->dispatch('kis-updated');
             
-            // Close modal after short delay
             $this->dispatch('close-modal-delayed');
         }
     }
 
     protected function processSubmit(OrbisUserService $service): void
     {
-        try {
+        try
+		{
             $this->validate([
                 'employeeFunction' => 'nullable|integer',
                 'permissionMode' => 'required|in:merge,replace',
                 'selectedUserId' => 'required|integer',
             ]);
 
-            // Get reference username
             $users = $this->employeeDetails['users'] ?? [];
             $selectedUser = collect($users)->firstWhere('id', $this->selectedUserId);
             $referenceUser = $selectedUser['username'] ?? null;
 
-            // Build organizational units with rank
             $orgUnits = collect($this->selectedOrgUnits)->map(function ($unitId) {
                 $unit = collect($this->employeeDetails['organizationalunits'] ?? [])
                     ->firstWhere('id', $unitId);
                 
                 $result = ['id' => $unitId];
-                if (isset($unit['rank']['id'])) {
+				
+                if (isset($unit['rank']['id'])) 
+				{
                     $result['rank'] = $unit['rank']['id'];
                 }
                 return $result;
@@ -251,22 +261,27 @@ class Kis extends BaseModal
 
             $result = $service->updateKisUser($this->entry->id, $input);
 
-            if ($result['success']) {
+            if ($result['success']) 
+			{
                 $this->successMessage = implode('<br>', $result['log']);
                 $this->entry->update(['status_kis' => 2]);
                 $this->dispatch('kis-user-updated', log: $result['log']);
                 
-                // Close modal after short delay to show success message
                 $this->dispatch('close-modal-delayed');
             }
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } 
+		catch (\Illuminate\Validation\ValidationException $e) 
+		{
             $this->errorMessage = 'Bitte überprüfe deine Eingaben.';
-        } catch (\Exception $e) {
+        } 
+		catch (\Exception $e) 
+		{
             Log::error('Fehler beim Erstellen des KIS-Benutzers', [
                 'entry_id' => $this->entry->id,
                 'error' => $e->getMessage()
             ]);
+			
             $this->errorMessage = 'Fehler beim Erstellen des Benutzers: ' . $e->getMessage();
         }
     }

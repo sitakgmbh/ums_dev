@@ -10,7 +10,6 @@ use Illuminate\Support\Str;
  */
 trait MutationDropdownHandlers
 {
-	// Lädt generische Dropdowns (z. B. Arbeitsort, Abteilung, Funktion, SAP-Rolle)
     protected function loadDropdown(string $modelClass, array|int|null $extraIds, string $targetProperty, string $labelField = 'name', string $enabledField = 'enabled', ?callable $scope = null): void 
 	{
         $extraIds = collect($extraIds)->filter()->unique()->values()->toArray();

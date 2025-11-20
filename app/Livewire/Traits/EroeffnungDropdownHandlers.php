@@ -10,12 +10,10 @@ use Illuminate\Support\Str;
  */
 trait EroeffnungDropdownHandlers
 {
-     // Lädt generische Dropdowns (z. B. Arbeitsort, Abteilung, Funktion, SAP-Rolle)
 	protected function loadDropdown(string $modelClass, array|int|null $extraIds, string $targetProperty, string $labelField = 'name', string $enabledField = 'enabled', ?callable $scope = null): void 
 	{
 		$extraIds = collect($extraIds)->filter()->unique()->values()->toArray();
 
-		// Aktive Einträge laden (nach optionalem Scope)
 		$activeQuery = $modelClass::query()->orderBy($labelField);
 		
 		if (!$this->neue_konstellation && $scope) 
@@ -34,7 +32,6 @@ trait EroeffnungDropdownHandlers
 
 		$active = $activeQuery->get(['id', $labelField]);
 
-		// Gespeicherte Einträge nachladen (ohne Filter)
 		$extras = collect();
 		
 		if (!empty($extraIds)) 
@@ -44,10 +41,8 @@ trait EroeffnungDropdownHandlers
 				->get(['id', $labelField]);
 		}
 
-		// Zusammenführen
 		$records = $extras->merge($active)->unique('id');
 
-		// Ergebnis mappen
 		$this->{$targetProperty} = $records
 			->map(fn($item) => [
 				'id' => $item->id,
@@ -56,7 +51,6 @@ trait EroeffnungDropdownHandlers
 			->toArray();
 	}
 
-    // Lädt Dropdown für AD-Benutzer (Bezugsperson, Vorlage, Kalender)
 	protected function loadAdUserDropdown(array|int|null $extraIds, string $targetProperty, string $enabledField = 'is_enabled'): void 
 	{
 		$extraIds = collect($extraIds)->filter()->unique()->values()->toArray();
@@ -67,7 +61,6 @@ trait EroeffnungDropdownHandlers
 			->where('is_existing', true)
 			->where($enabledField, true);
 
-		// Mitarbeiter-Filter (immer prüfen, egal ob neue Konstellation)
 		if ($this->filter_mitarbeiter && $this->abteilung_id && $targetProperty !== 'adusersKalender') 
 		{
 			$activeQuery->where('abteilung_id', $this->abteilung_id);

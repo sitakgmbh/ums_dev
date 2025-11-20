@@ -13,13 +13,15 @@ class IncidentDetails extends BaseModal
     {
         $id = $payload['id'] ?? null;
 
-        if (!$id || !($this->incident = Incident::find($id))) {
+        if (!$id || !($this->incident = Incident::find($id))) 
+		{
             $this->dispatch('open-modal', modal: 'alert-modal', payload: [
                 'message'  => 'Der Incident konnte nicht gefunden werden.',
                 'headline' => 'Fehler',
                 'color'    => 'bg-danger',
                 'icon'     => 'ri-close-circle-line',
             ]);
+			
             return false;
         }
 

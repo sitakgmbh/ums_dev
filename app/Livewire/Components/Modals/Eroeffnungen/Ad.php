@@ -17,21 +17,20 @@ class Ad extends BaseModal
 
     protected function openWith(array $payload): bool
     {
-        if (! isset($payload["entryId"])) 
+        if (!isset($payload["entryId"])) 
 		{
             return false;
         }
 
         $this->entry = Eroeffnung::find($payload["entryId"]);
 
-        if (! $this->entry) 
+        if (!$this->entry) 
 		{
             return false;
         }
 
         if ($this->entry->wiedereintritt) 
 		{
-            // Wiedereintritt: Username fix, E-Mail aus DB
             $this->username = $this->entry->benutzername ?? "";
             $this->email    = $this->entry->email ?? "";
             $this->usernameReadonly = true;

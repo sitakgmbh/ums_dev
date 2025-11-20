@@ -11,7 +11,6 @@ trait MutationFormHooks
 {
     use ModalFlow;
 
-    // Event Arbeitsort geändert
     public function updatedFormArbeitsortId($value)
     {
         $this->form->unternehmenseinheit_id = null;
@@ -30,7 +29,6 @@ trait MutationFormHooks
         $this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: null);
     }
 
-    // Event Unternehmenseinheit geändert
     public function updatedFormUnternehmenseinheitId($value)
     {
         $this->form->abteilung_id = null;
@@ -47,13 +45,11 @@ trait MutationFormHooks
         $this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: null);
     }
 
-    // Event Abteilung geändert
 	public function updatedFormAbteilungId($value): void
 	{
 		$this->form->funktion_id = null;
 		$this->form->loadFunktionen();
 
-		// Mitarbeiterliste korrekt filtern oder leeren
 		if ($this->form->filter_mitarbeiter && $value) 
 		{
 			$this->form->loadAdusers($value);
@@ -72,8 +68,6 @@ trait MutationFormHooks
 		}
 	}
 
-
-    // Checkbox: Neue Konstellation
     public function updatedFormNeueKonstellation($value)
     {
         if ($value) 
@@ -107,7 +101,6 @@ trait MutationFormHooks
         $this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
     }
 
-    // Checkbox Mitarbeiter filtern angegklickt
     public function updatedFormFilterMitarbeiter(bool $value): void
     {
         if ($value) 
@@ -124,7 +117,6 @@ trait MutationFormHooks
         $this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
     }
 
-    // Checkbox Zweite Abteilung angegklickt
     public function updatedFormHasAbteilung2($value)
     {
         if (!$value) 
@@ -148,7 +140,6 @@ trait MutationFormHooks
 
 		$flow = [];
 
-		// Eröffnung vorhanden?
 		$eroeffnung = \App\Models\Eroeffnung::query()
 			->where("vorname", $this->form->vorname)
 			->where("nachname", $this->form->nachname)
@@ -185,7 +176,6 @@ trait MutationFormHooks
 
 		if (!$user) return;
 
-		// Stammdaten übernehmen
 		$this->form->anrede_id = $user->anrede_id;
 		$this->form->titel_id = $user->titel_id;
 		$this->form->arbeitsort_id = $user->arbeitsort_id;
@@ -193,12 +183,10 @@ trait MutationFormHooks
 		$this->form->abteilung_id = $user->abteilung_id;
 		$this->form->funktion_id = $user->funktion_id;
 
-		// Dropdowns nachladen
 		$this->form->loadUnternehmenseinheiten();
 		$this->form->loadAbteilungen();
 		$this->form->loadFunktionen();
 
-		// Select2s neu befüllen
 		$this->dispatch("select2-options", id: "anrede_id", options: $this->form->anreden, value: $this->form->anrede_id);
 		$this->dispatch("select2-options", id: "titel_id", options: $this->form->titel, value: $this->form->titel_id);
 		$this->dispatch("select2-options", id: "arbeitsort_id", options: $this->form->arbeitsorte, value: $this->form->arbeitsort_id);
@@ -206,7 +194,6 @@ trait MutationFormHooks
 		$this->dispatch("select2-options", id: "abteilung_id", options: $this->form->abteilungen, value: $this->form->abteilung_id);
 		$this->dispatch("select2-options", id: "funktion_id", options: $this->form->funktionen, value: $this->form->funktion_id);
 
-		// Mutation vorhanden?
 		$mutation = \App\Models\Mutation::query()
 			->where("ad_user_id", $user->id)
 			->where("archiviert", false)
@@ -221,11 +208,10 @@ trait MutationFormHooks
 				],
 			]);
 
-			// Auswahl zurücksetzen
 			$this->form->ad_user_id = null;
 			$this->dispatch("select2-clear", id: "ad_user_id");
 
-			return; // Abbruch, keine Stammdaten übernehmen
+			return;
 		}
 
 		if ($this->form->filter_mitarbeiter) 
@@ -250,7 +236,6 @@ trait MutationFormHooks
 			$this->dispatch("select2-clear", id: "vorlage_benutzer_id");
 		}
 
-		// Select2-Options fuer "Berechtigungen übernehmen von" aktualisieren
 		$this->dispatch("select2-options", id: "vorlage_benutzer_id", options: $this->form->adusers, value: $this->form->vorlage_benutzer_id);
 	}
 

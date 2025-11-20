@@ -22,48 +22,45 @@ class LoginForm extends Form
     #[Validate("boolean")]
     public bool $remember = false;
 
-public function authenticate(): void
-{
-    $this->ensureIsNotRateLimited();
-
-    logger()->debug("LoginForm: Versuche Login mit Benutzer '{$this->username}' über Guard 'web'");
-
-    $credentials = [
-        'username' => $this->username,
-        'password' => $this->password,
-    ];
-
-    /** @var \App\Models\User|null $user */
-    $user = Auth::guard('web')->getProvider()?->retrieveByCredentials($credentials);
-
-    if (! $user) 
+	public function authenticate(): void
 	{
-        logger()->warning("LoginForm: Benutzer '{$this->username}' nicht gefunden");
-        RateLimiter::hit($this->throttleKey());
+		$this->ensureIsNotRateLimited();
 
-        throw ValidationException::withMessages([
-            'form.username' => trans('auth.failed'),
-        ]);
-    }
+		logger()->debug("LoginForm: Versuche Login mit Benutzer '{$this->username}' über Guard 'web'");
 
-    if (! Auth::guard('web')->getProvider()->validateCredentials($user, $credentials)) 
-	{
-        logger()->warning("LoginForm: Passwortprüfung fehlgeschlagen für '{$this->username}'");
-        RateLimiter::hit($this->throttleKey());
+		$credentials = [
+			'username' => $this->username,
+			'password' => $this->password,
+		];
 
-        throw ValidationException::withMessages([
-            'form.username' => trans('auth.failed'),
-        ]);
-    }
+		$user = Auth::guard('web')->getProvider()?->retrieveByCredentials($credentials);
 
-    logger()->debug("LoginForm: Login erfolgreich für '{$this->username}' – Benutzer-ID: {$user->id}");
+		if (! $user) 
+		{
+			logger()->warning("LoginForm: Benutzer '{$this->username}' nicht gefunden");
+			RateLimiter::hit($this->throttleKey());
 
-    Auth::guard('web')->login($user, $this->remember);
+			throw ValidationException::withMessages([
+				'form.username' => trans('auth.failed'),
+			]);
+		}
 
-    RateLimiter::clear($this->throttleKey());
-}
+		if (! Auth::guard('web')->getProvider()->validateCredentials($user, $credentials)) 
+		{
+			logger()->warning("LoginForm: Passwortprüfung fehlgeschlagen für '{$this->username}'");
+			RateLimiter::hit($this->throttleKey());
 
+			throw ValidationException::withMessages([
+				'form.username' => trans('auth.failed'),
+			]);
+		}
 
+		logger()->debug("LoginForm: Login erfolgreich für '{$this->username}' – Benutzer-ID: {$user->id}");
+
+		Auth::guard('web')->login($user, $this->remember);
+
+		RateLimiter::clear($this->throttleKey());
+	}
 
     protected function ensureIsNotRateLimited(): void
     {

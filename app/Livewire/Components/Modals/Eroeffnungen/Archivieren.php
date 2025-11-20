@@ -13,13 +13,15 @@ class Archivieren extends BaseModal
     {
         $id = $payload["entryId"] ?? null;
 
-        if (!$id || !($this->entry = Eroeffnung::find($id))) {
+        if (!$id || !($this->entry = Eroeffnung::find($id))) 
+		{
             $this->dispatch("open-modal", modal: "alert-modal", payload: [
                 "message"  => "Die Eröffnung konnte nicht gefunden werden (ID: {$id}).",
                 "headline" => "Fehler",
                 "color"    => "bg-danger",
                 "icon"     => "ri-close-circle-line",
             ]);
+			
             return false;
         }
 
@@ -35,7 +37,8 @@ class Archivieren extends BaseModal
 
 	public function confirm(): void
 	{
-		if ($this->entry) {
+		if ($this->entry) 
+		{
 			$this->entry->update(["archiviert" => 1]);
 			$this->closeModal();
 

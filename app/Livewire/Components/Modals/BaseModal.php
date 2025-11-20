@@ -16,7 +16,6 @@ abstract class BaseModal extends Component
     public string $headerBg = "";
     public string $headerText = "";
 
-    // Modal-ID automatisch aus Klassennamen.
 	protected function getModalId(): string
 	{
 		return static::getName(); 
@@ -38,7 +37,6 @@ abstract class BaseModal extends Component
 		}
     }
 
-	// Kann false zurückgeben, wenn kein Modal geöffnet werden soll
 	protected function openWith(array $payload): bool
 	{
 		return true;
