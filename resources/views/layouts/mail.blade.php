@@ -6,8 +6,6 @@
 </head>
 <body style="margin:0; padding:0; background-color:#f6f6f6;">
     <center style="width:100%; background:#f6f6f6; padding:20px 0; font-family:Arial,sans-serif;">
-
-        <!-- Logo ganz oben, NICHT im weißen Container -->
         @php
             $logoPath = public_path('assets/images/logo-mail.png');
             $logoBase64 = '';
@@ -33,7 +31,7 @@
             <tr>
                 <td style="padding:0;">
 
-                    <!-- Header (z. B. grüne Leiste mit Titel) -->
+                    <!-- Header -->
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                         <tr>
 							<td bgcolor="#61A621" style="padding:8px 15px; color:#ffffff; font-size:16px; font-weight:bold;">

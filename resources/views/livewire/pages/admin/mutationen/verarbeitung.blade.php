@@ -155,14 +155,6 @@
             </div>
         </div>
     </div>
-<script>
-    document.addEventListener("livewire:init", () => {
-        window.Livewire.on("open-modal", (modal, payload) => {
-            console.log("Livewire open-modal Event:", modal, payload);
-        });
-    });
-</script>
-
 
 
     {{-- Rechte Spalte: Details --}}

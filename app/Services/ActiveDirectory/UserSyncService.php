@@ -12,8 +12,6 @@ class UserSyncService
 {
     public function sync(): void
     {
-        Log::info("AD-Sync gestartet");
-
         $seenSids = [];
 
         $ldapUsers = LdapUser::query()
@@ -172,7 +170,6 @@ class UserSyncService
             "found"   => count($seenSids),
             "missing" => AdUser::where("is_existing", false)->count(),
 		]);
-
     }
 
 	protected function toCarbon($value): ?Carbon

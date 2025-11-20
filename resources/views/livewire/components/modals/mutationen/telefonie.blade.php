@@ -103,7 +103,7 @@
         @error('cloudExt3') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
 
-    {{-- Fehleranzeige allgemein --}}
+    {{-- Fehleranzeige --}}
     @if($errors->has('general'))
         <div class="alert alert-danger mt-3 mb-0">
             {{ $errors->first('general') }}

@@ -4,74 +4,69 @@
             $isLdap = $form->auth_type === 'ldap';
         @endphp
 
-{{-- Stammdaten --}}
-<div class="card mb-3">
-    <div class="card-header bg-primary text-white py-1">
-        <p class="mb-0"><strong>Stammdaten</strong></p>
-    </div>
-    <div class="card-body">
-        <div class="row g-3">
-            {{-- Benutzername + Rolle --}}
-            <div class="col-md-6">
-                <label for="username" class="form-label">Benutzername</label>
-                <input type="text"
-                       id="username"
-                       wire:model.defer="form.username"
-                       class="form-control @error('form.username') is-invalid @enderror"
-                       @if(!$form->isCreate || $isLdap) readonly disabled @endif>
-                @error('form.username') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
+		<div class="card mb-3">
+			<div class="card-header bg-primary text-white py-1">
+				<p class="mb-0"><strong>Stammdaten</strong></p>
+			</div>
+			<div class="card-body">
+				<div class="row g-3">
 
-            <div class="col-md-6">
-                <label for="role" class="form-label">Rolle</label>
-                <select id="role"
-                        wire:model.defer="form.role"
-                        class="form-select @error('form.role') is-invalid @enderror"
-                        @if($isLdap) disabled @endif>
-                    @foreach($roles as $role)
-                        <option value="{{ $role }}">{{ $role }}</option>
-                    @endforeach
-                </select>
-                @error('form.role') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
+					<div class="col-md-6">
+						<label for="username" class="form-label">Benutzername</label>
+						<input type="text"
+							   id="username"
+							   wire:model.defer="form.username"
+							   class="form-control @error('form.username') is-invalid @enderror"
+							   @if(!$form->isCreate || $isLdap) readonly disabled @endif>
+						@error('form.username') <div class="invalid-feedback">{{ $message }}</div> @enderror
+					</div>
 
-            {{-- Vorname + Nachname --}}
-            <div class="col-md-6">
-                <label for="firstname" class="form-label">Vorname</label>
-                <input type="text"
-                       id="firstname"
-                       wire:model.defer="form.firstname"
-                       class="form-control @error('form.firstname') is-invalid @enderror"
-                       @if($isLdap) disabled @endif>
-                @error('form.firstname') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
+					<div class="col-md-6">
+						<label for="role" class="form-label">Rolle</label>
+						<select id="role"
+								wire:model.defer="form.role"
+								class="form-select @error('form.role') is-invalid @enderror"
+								@if($isLdap) disabled @endif>
+							@foreach($roles as $role)
+								<option value="{{ $role }}">{{ $role }}</option>
+							@endforeach
+						</select>
+						@error('form.role') <div class="invalid-feedback">{{ $message }}</div> @enderror
+					</div>
 
-            <div class="col-md-6">
-                <label for="lastname" class="form-label">Nachname</label>
-                <input type="text"
-                       id="lastname"
-                       wire:model.defer="form.lastname"
-                       class="form-control @error('form.lastname') is-invalid @enderror"
-                       @if($isLdap) disabled @endif>
-                @error('form.lastname') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
+					<div class="col-md-6">
+						<label for="firstname" class="form-label">Vorname</label>
+						<input type="text"
+							   id="firstname"
+							   wire:model.defer="form.firstname"
+							   class="form-control @error('form.firstname') is-invalid @enderror"
+							   @if($isLdap) disabled @endif>
+						@error('form.firstname') <div class="invalid-feedback">{{ $message }}</div> @enderror
+					</div>
 
-            {{-- E-Mail --}}
-            <div class="col-md-6">
-                <label for="email" class="form-label">E-Mail</label>
-                <input type="email"
-                       id="email"
-                       wire:model.defer="form.email"
-                       class="form-control @error('form.email') is-invalid @enderror"
-                       @if($isLdap) disabled @endif>
-                @error('form.email') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-        </div>
-    </div>
-</div>
+					<div class="col-md-6">
+						<label for="lastname" class="form-label">Nachname</label>
+						<input type="text"
+							   id="lastname"
+							   wire:model.defer="form.lastname"
+							   class="form-control @error('form.lastname') is-invalid @enderror"
+							   @if($isLdap) disabled @endif>
+						@error('form.lastname') <div class="invalid-feedback">{{ $message }}</div> @enderror
+					</div>
 
+					<div class="col-md-6">
+						<label for="email" class="form-label">E-Mail</label>
+						<input type="email"
+							   id="email"
+							   wire:model.defer="form.email"
+							   class="form-control @error('form.email') is-invalid @enderror"
+							   @if($isLdap) disabled @endif>
+						@error('form.email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+					</div>
+				</div>
+			</div>
+		</div>
 
-        {{-- Passwort --}}
         @if(!$isLdap)
             <div class="card mb-3">
                 <div class="card-header text-white bg-primary py-1">
@@ -122,7 +117,6 @@
             </div>
         @endif
 
-        {{-- Status --}}
         @if(!$isLdap)
             <div class="card mb-3">
                 <div class="card-header text-white bg-primary py-1">
@@ -141,7 +135,6 @@
             </div>
         @endif
 
-        {{-- Alerts --}}
         @if (session()->has('success'))
             <div class="mb-3">
                 <div class="alert alert-success mb-0" role="alert">

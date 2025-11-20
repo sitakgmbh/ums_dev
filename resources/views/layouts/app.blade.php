@@ -28,10 +28,13 @@
     (function() {
         var dark = @json($darkMode);
 
-        if (dark) {
+        if (dark) 
+		{
             document.documentElement.setAttribute("data-bs-theme", "dark");
             document.documentElement.classList.add("dark-mode");
-        } else {
+        } 
+		else 
+		{
             document.documentElement.setAttribute("data-bs-theme", "light");
             document.documentElement.classList.remove("dark-mode");
         }

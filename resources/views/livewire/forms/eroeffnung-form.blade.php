@@ -1,14 +1,14 @@
 <form wire:submit.prevent="save">
     <div class="row">
-        {{-- Linke Spalte: Stammdaten + Kommentar --}}
+
         <div class="col-12 col-md-6 order-1 d-flex flex-column gap-3">
-            {{-- Stammdaten --}}
+
             <div class="card mb-0">
                 <div class="card-header bg-primary text-white py-1">
                     <p class="mb-0"><strong>Stammdaten</strong></p>
                 </div>
                 <div class="card-body d-flex flex-column gap-3">
-                    {{-- Personendaten --}}
+
                     <div class="row g-3">
                         <div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
                             <label for="anrede_id" class="form-label mb-0">Anrede</label>
@@ -28,7 +28,6 @@
                         </div>
                     </div>
 
-                    {{-- Organisation --}}
                     <div class="row g-3">
                         <div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
                             <label for="arbeitsort_id" class="form-label mb-0">Arbeitsort</label>
@@ -68,7 +67,6 @@
                         </div>
                     </div>
 
-                    {{-- Beziehungen --}}
                     <div class="row g-3">
                         <div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
                             <label for="bezugsperson_id" class="form-label mb-0">Bezugsperson</label>
@@ -95,7 +93,6 @@
                 </div>
             </div>
 
-            {{-- Kommentar --}}
             <div class="card mb-0">
                 <div class="card-header bg-primary text-white py-1">
                     <p class="mb-0"><strong>Kommentar</strong></p>
@@ -105,7 +102,6 @@
                 </div>
             </div>
 
-			{{-- Footer nur Desktop --}}
 			<div class="d-none d-md-block">
 				@if ($errors->any())
 					<div class="alert alert-danger mb-3">
@@ -128,7 +124,6 @@
 
         </div>
 
-        {{-- Rechte Spalte: Optionen --}}
         <div class="col-12 col-md-6 order-2">
             <div class="card mt-3 mt-md-0">
                 <div class="card-header bg-primary text-white py-1">
@@ -136,7 +131,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-						{{-- Checkboxen (links auf Desktop, oben auf Mobile) --}}
+						
 						<div class="col-12 col-md-6 d-flex flex-column gap-1">
 							@php
 								$fields = [
@@ -180,8 +175,6 @@
 							@endforeach
 						</div>
 
-
-                        {{-- Optionale Felder (rechts auf Desktop, unten auf Mobile) --}}
                         <div class="col-12 col-md-6 d-flex flex-column gap-3">
                             {{-- SAP Rolle --}}
                             <div x-data x-show="$wire.form.sap_status" x-cloak>
@@ -197,11 +190,9 @@
                                 </div>
                             </div>
 
-							{{-- Telefonie --}}
 							<div x-show="$wire.form.tel_status" x-cloak>
 								<div x-data="telefonieHandler()" x-init="init()" class="d-flex flex-column gap-2">
 									
-									{{-- Auswahl --}}
 									<div>
 										<label class="form-label" for="inputTelefonAuswahl">Telefonie</label>
 										<div class="input-group">
@@ -219,13 +210,12 @@
 										</div>
 									</div>
 
-									{{-- Telefonnummer --}}
 									<div>
 										<label class="form-label" for="inputTelefonnummer">Telefonnummer</label>
 										<div class="input-group">
 											<span class="input-group-text"><i class="mdi mdi-phone-incoming"></i></span>
 
-											{{-- Wenn "neu" → nur Textfeld mit fixem Wert, kein wire:model --}}
+											{{-- fixer Wert, kein wire:model --}}
 											<template x-if="auswahl === 'neu'">
 												<input type="text"
 													   id="inputTelefonnummer"
@@ -234,7 +224,7 @@
 													   disabled>
 											</template>
 
-											{{-- Sonst → mit Livewire Binding --}}
+											{{-- mit Livewire Binding --}}
 											<template x-if="auswahl !== 'neu'">
 												<input type="text"
 													   id="inputTelefonnummer"
@@ -246,7 +236,6 @@
 										</div>
 									</div>
 
-									{{-- Optionen --}}
 									<div>
 										<label class="form-label">Optionen</label>
 										<div class="d-flex flex-column gap-0">
@@ -280,7 +269,6 @@
 										</div>
 									</div>
 
-									{{-- Headset --}}
 									<div>
 										<label class="form-label" for="inputHeadset">Headset</label>
 										<div class="input-group">
@@ -300,7 +288,6 @@
 								</div>
 							</div>
 
-                            {{-- Raumbeschriftung --}}
                             <div x-data x-show="$wire.form.raumbeschriftung_flag" x-cloak>
                                 <label class="form-label" for="inputRaumbeschriftung">Raumbeschriftung</label>
                                 <div class="input-group">
@@ -310,7 +297,6 @@
                                 </div>
                             </div>
 
-                            {{-- Schlüssel Waldhaus --}}
                             <div x-data x-show="$wire.form.key_waldhaus" x-cloak>
                                 <label class="form-label">Schlüsselrecht Klinik Waldhaus</label>
                                 <div class="form-check">
@@ -323,7 +309,6 @@
                                 </div>
                             </div>
 
-                            {{-- Schlüssel Beverin --}}
                             <div x-data x-show="$wire.form.key_beverin" x-cloak>
                                 <label class="form-label">Schlüsselrecht Klinik Beverin</label>
                                 <div class="form-check">
@@ -336,7 +321,6 @@
                                 </div>
                             </div>
 
-                            {{-- Schlüssel Rothenbrunnen --}}
                             <div x-data x-show="$wire.form.key_rothenbr" x-cloak>
                                 <label class="form-label">Schlüsselrecht Rothenbrunnen</label>
                                 <div class="form-check">
@@ -349,7 +333,6 @@
                                 </div>
                             </div>
 
-							{{-- Kalender-Berechtigungen --}}
 							<div x-data x-show="$wire.form.vorab_lizenzierung" x-cloak wire:ignore>
 								<label class="form-label" for="kalender_berechtigungen">Berechtigungen Kalender</label>
 								<select id="kalender_berechtigungen" 
@@ -366,7 +349,6 @@
             </div>
         </div>
 
-        {{-- Footer nur Mobile --}}
         <div class="col-12 d-block d-md-none order-3 mt-0">
             @if ($errors->any())
                 <div class="alert alert-danger mb-3">
@@ -396,7 +378,9 @@
 	function initSelect2(selector) {
 		$(selector).each(function () {
 			const $s = $(this);
-			if (!$s.data('select2')) {
+			
+			if (!$s.data('select2')) 
+			{
 				$s.select2({
 					placeholder: 'Bitte auswählen',
 					width: '100%'
@@ -405,11 +389,12 @@
 			$s.off('change.select2-to-livewire').on('change.select2-to-livewire', function () {
 				const id = $(this).attr('id');
 				let val = $(this).val();
-				if ($(this).prop('multiple')) {
-					// Bei Multiselect → Array
+				if ($(this).prop('multiple')) 
+				{
 					@this.set('form.' + id, val || []);
-				} else {
-					// Normaler Single-Select
+				}
+				else 
+				{
 					const parsed = val ? (isNaN(val) ? val : parseInt(val, 10)) : null;
 					@this.set('form.' + id, parsed);
 				}
@@ -417,119 +402,116 @@
 		});
 	}
 
-
     Livewire.on('select2-options', (payload) => {
         const id = payload.id;
         const options = payload.options || [];
         const value = payload.value ?? null;
-
         const $select = $('#' + id);
+		
         if (!$select.length) return;
 
         $select.empty().append('<option></option>');
+		
         options.forEach(opt => {
-            if (opt.display_name) {
+            if (opt.display_name) 
+			{
                 $select.append(new Option(opt.display_name, opt.id, false, false));
-            } else {
+            } 
+			else 
+			{
                 $select.append(new Option(opt.name, opt.id, false, false));
             }
         });
 
 		initSelect2($select);
 
-		if (value !== null) {
+		if (value !== null) 
+		{
 			$select.val(value).trigger('change.select2');
 		}
     });
 
-function initCheckboxes(selector) {
-    $(selector).each(function () {
-        const $c = $(this);
-        if (!$c.data('bound')) {
-            $c.data('bound', true);
+	function initCheckboxes(selector) {
+		$(selector).each(function () {
+			const $c = $(this);
+			
+			if (!$c.data('bound')) 
+			{
+				$c.data('bound', true);
 
-            $c.on('change', function () {
-                const id = $(this).attr('id');
-                const checked = $(this).is(':checked');
-                console.log("[Checkbox] change:", id, "->", checked);
+				$c.on('change', function () {
+					const id = $(this).attr('id');
+					const checked = $(this).is(':checked');
 
-                // an Livewire schicken
-                @this.set('form.' + id, checked);
-            });
-
-            console.log("[Checkbox] Handler gebunden für:", $(this).attr('id'));
-        }
-    });
-}
+					@this.set('form.' + id, checked);
+				});
+			}
+		});
+	}
 
 
 
-function telefonieHandler() {
-    return {
-        auswahl: @entangle('form.tel_auswahl').live,
-        tischtelefon: @entangle('form.tel_tischtel').live,
-        mobiltelefon: @entangle('form.tel_mobiltel').live,
-        ucstandard: @entangle('form.tel_ucstd').live,
-        alarmierung: @entangle('form.tel_alarmierung').live,
-        headset: @entangle('form.tel_headset').live,
+	function telefonieHandler() {
+		return {
+			auswahl: @entangle('form.tel_auswahl').live,
+			tischtelefon: @entangle('form.tel_tischtel').live,
+			mobiltelefon: @entangle('form.tel_mobiltel').live,
+			ucstandard: @entangle('form.tel_ucstd').live,
+			alarmierung: @entangle('form.tel_alarmierung').live,
+			headset: @entangle('form.tel_headset').live,
 
-        nummerDisabled: false,
-        headsetDisabled: true,
+			nummerDisabled: false,
+			headsetDisabled: true,
 
-        init() {
-            if (@this.form.isReadonly) {
-                this.nummerDisabled = true;
-                this.headsetDisabled = true;
-                return;
-            }
-            this.updateHeadset();
-            this.updateAlarmierung();
-        },
+			init() {
+				if (@this.form.isReadonly) 
+				{
+					this.nummerDisabled = true;
+					this.headsetDisabled = true;
+					return;
+				}
+				this.updateHeadset();
+				this.updateAlarmierung();
+			},
 
-        applyState() {
-            // nur Headset/Alarmierung steuern
-            this.updateHeadset();
-            this.updateAlarmierung();
-        },
+			applyState() {
+				this.updateHeadset();
+				this.updateAlarmierung();
+			},
 
-        updateHeadset() {
-            if (@this.form.isReadonly) return;
-            this.headsetDisabled = !(this.tischtelefon || this.ucstandard);
-        },
+			updateHeadset() {
+				if (@this.form.isReadonly) return;
+				this.headsetDisabled = !(this.tischtelefon || this.ucstandard);
+			},
 
-        updateAlarmierung() {
-            if (!this.mobiltelefon) {
-                this.alarmierung = false;
-            }
-        }
-    }
-}
+			updateAlarmierung() {
+				if (!this.mobiltelefon) {
+					this.alarmierung = false;
+				}
+			}
+		}
+	}
 
+	document.addEventListener('livewire:load', () => {
+		initSelect2('.select2, .select2-multiple');
+		initCheckboxes('input[type=checkbox]');
+	});
 
+	document.addEventListener('livewire:navigated', () => {
+		initCheckboxes('input[type=checkbox]');
+	});
 
+	Livewire.hook('message.processed', () => {
+		initSelect2('.select2, .select2-multiple');
+		initCheckboxes('input[type=checkbox]');
+	});
 
-
-
-document.addEventListener('livewire:load', () => {
-    initSelect2('.select2, .select2-multiple');
-    initCheckboxes('input[type=checkbox]');
-});
-
-document.addEventListener('livewire:navigated', () => {
-    initCheckboxes('input[type=checkbox]');
-});
-
-Livewire.hook('message.processed', () => {
-    initSelect2('.select2, .select2-multiple');
-    initCheckboxes('input[type=checkbox]');
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    tooltipTriggerList.forEach(el => {
-        new bootstrap.Tooltip(el)
-    })
-})
+	document.addEventListener("DOMContentLoaded", () => {
+		const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+		tooltipTriggerList.forEach(el => {
+			new bootstrap.Tooltip(el)
+		})
+	})
 
 </script>
 @endpush

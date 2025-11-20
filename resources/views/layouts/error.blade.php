@@ -26,7 +26,6 @@
         </svg>
     </div>
 
-    {{-- Inhalt der Fehlerseite --}}
     @yield('content')
 
     <footer class="footer footer-alt text-center">

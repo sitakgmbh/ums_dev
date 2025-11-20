@@ -1,10 +1,9 @@
 @props(['action', 'class' => 'btn-primary'])
 
 @php
-    // Automatisch erkennen, ob es ein Event oder eine Methode ist
     $isJsAction = str($action)->startsWith('$'); // z. B. $dispatch('save')
     $clickAttr = $isJsAction ? $action : $action . '()';
-    $target = $isJsAction ? null : $action; // nur Methoden sollen loading anzeigen
+    $target = $isJsAction ? null : $action;
 @endphp
 
 <button type="button"

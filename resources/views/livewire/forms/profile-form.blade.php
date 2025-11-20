@@ -4,14 +4,13 @@
             $isLdap = $form->auth_type === 'ldap';
         @endphp
 
-        {{-- Stammdaten --}}
         <div class="card mb-3">
             <div class="card-header text-white bg-primary py-1">
                 <p class="mb-0"><strong>Stammdaten</strong></p>
             </div>
             <div class="card-body">
                 <div class="row g-3">
-                    {{-- Vorname --}}
+
                     <div class="col-md-6">
                         <label for="firstname" class="form-label">Vorname</label>
                         <input type="text"
@@ -22,7 +21,6 @@
                         @error('form.firstname') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
-                    {{-- Nachname --}}
                     <div class="col-md-6">
                         <label for="lastname" class="form-label">Nachname</label>
                         <input type="text"
@@ -33,7 +31,6 @@
                         @error('form.lastname') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
-                    {{-- E-Mail --}}
                     <div class="col-md-6">
                         <label for="email" class="form-label">E-Mail</label>
                         <input type="email"
@@ -47,7 +44,6 @@
             </div>
         </div>
 
-        {{-- Passwort nur für lokale User --}}
         @if($form->auth_type === 'local')
             <div class="card mb-3">
                 <div class="card-header text-white bg-primary py-1">
@@ -55,7 +51,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        {{-- Aktuelles Passwort --}}
+
                         <div class="col-md-6">
                             <label for="current_password" class="form-label">Aktuelles Passwort</label>
                             <input wire:model.defer="form.current_password" type="password"
@@ -64,7 +60,6 @@
                             @error('form.current_password') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        {{-- Neues Passwort --}}
                         <div class="col-md-6">
                             <label for="password" class="form-label">Neues Passwort</label>
                             <input wire:model.defer="form.password" type="password"
@@ -73,7 +68,6 @@
                             @error('form.password') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        {{-- Bestätigung --}}
                         <div class="col-12">
                             <label for="password_confirmation" class="form-label">Passwort bestätigen</label>
                             <input wire:model.defer="form.password_confirmation" type="password"
@@ -85,7 +79,6 @@
             </div>
         @endif
 
-        {{-- Alerts --}}
         @if (session()->has('success'))
             <div class="mb-3">
                 <div class="alert alert-success mb-0" role="alert">
@@ -102,7 +95,6 @@
             </div>
         @endif
 
-        {{-- Submit --}}
         <div class="mt-3">
             <button type="submit"
                     class="btn btn-primary"

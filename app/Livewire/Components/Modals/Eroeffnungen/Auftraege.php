@@ -239,12 +239,6 @@ class Auftraege extends BaseModal
 					continue;
 				}
 
-				logger()->info("Versand {$label}", [
-					"to"    => $recipients,
-					"cc"    => $cc,
-					"entry" => $this->entry->id,
-				]);
-
 				SafeMail::send($mailable, $recipients, $cc);
 
 				try 

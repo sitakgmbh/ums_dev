@@ -9,11 +9,6 @@ class BevorstehendeAustritte extends BaseModal
 {
     public $austritte = [];
 
-	public function mount()
-	{
-		logger()->info('Modal-Name: ' . static::getName());
-	}
-
     protected function openWith(array $payload): bool
     {	
 		$this->austritte = AdUser::with([

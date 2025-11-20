@@ -2,7 +2,7 @@
 
 @section('body')
     <div>
-        {{-- Benutzername-Suche --}}
+        {{-- Suche Benutzername --}}
         <div class="row mb-3">
             <div class="col-md-10">
                 <label for="username" class="form-label">Bitte Kürzel eingeben:</label>
@@ -295,18 +295,17 @@
 
 @push('scripts')
 <script>
-    // Confirmation dialog for missing employee function
     window.addEventListener('confirm-no-function', event => {
-        if (confirm('Es wurde keine Mitarbeiterfunktion ausgewählt.\nMöchtest du den Benutzer wirklich ohne Funktion erstellen?')) {
+        if (confirm('Es wurde keine Mitarbeiterfunktion ausgewählt.\nMöchtest du den Benutzer wirklich ohne Funktion erstellen?')) 
+		{
             @this.call('confirmSubmitWithoutFunction');
         }
     });
     
-    // Close modal with delay to show success message
     window.addEventListener('close-modal-delayed', event => {
         setTimeout(() => {
             @this.call('closeModal');
-        }, 2000);
+        }, 500);
     });
 </script>
 @endpush

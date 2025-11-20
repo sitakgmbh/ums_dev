@@ -1,17 +1,14 @@
 <form wire:submit.prevent="save">
     <div class="row">
-        {{-- Linke Spalte: Stammdaten + Kommentar --}}
+
         <div class="col-12 col-md-6 order-1 d-flex flex-column gap-3">
-            {{-- Stammdaten --}}
+
             <div class="card mb-0">
                 <div class="card-header bg-primary text-white py-1">
                     <p class="mb-0"><strong>Stammdaten</strong></p>
                 </div>
                 <div class="card-body d-flex flex-column gap-3">
 
-
-
-                    {{-- Zeile 1: Benutzer + Vertragsbeginn --}}
                     <div class="row g-3">
                         <div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
                             <label for="ad_user_id" class="form-label mb-0">Benutzer</label>
@@ -26,7 +23,6 @@
                         </div>
                     </div>
 
-                    {{-- Zeile 2: Anrede + Titel --}}
                     <div class="row g-3">
                         <div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
                             <label for="anrede_id" class="form-label mb-0">Anrede</label>
@@ -50,7 +46,6 @@
                         </div>
                     </div>
 
-                    {{-- Zeile 3: Arbeitsort + Unternehmenseinheit --}}
                     <div class="row g-3">
                         <div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
                             <label for="arbeitsort_id" class="form-label mb-0">Arbeitsort</label>
@@ -77,7 +72,6 @@
                         </div>
                     </div>
 
-                    {{-- Zeile 4: Abteilung + Funktion --}}
                     <div class="row g-3">
 						<div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
 							<label for="abteilung_id" class="form-label mb-0">Abteilung</label>
@@ -91,7 +85,6 @@
 									<label class="form-check-label" for="enable_abteilung">Abteilung anpassen</label>
 								</div>
 
-								{{-- zweite Abteilung --}}
 								<div class="form-check mb-0">
 									<input type="checkbox" id="has_abteilung2" wire:model="form.has_abteilung2"
 										   class="form-check-input" @disabled($form->isReadonly)>
@@ -128,9 +121,8 @@
 
                     </div>
 
-					{{-- Zeile 5: Berechtigungen + E-Mail-Domain --}}
 					<div class="row g-3">
-						{{-- Vorlage-Benutzer (falls noch benötigt) --}}
+
 						<div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
 							<label for="vorlage_benutzer_id" class="form-label mb-0">Berechtigungen übernehmen von</label>
 							<select id="vorlage_benutzer_id" class="form-control select2"
@@ -154,7 +146,6 @@
 
 						</div>
 
-						{{-- E-Mail Domain --}}
 						<div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
 							<label for="mailendung" class="form-label mb-0">E-Mail-Domain</label>
 							<select id="mailendung" class="form-control select2"
@@ -171,7 +162,6 @@
                 </div>
             </div>
 
-            {{-- Kommentar --}}
             <div class="card mb-0">
                 <div class="card-header bg-primary text-white py-1">
                     <p class="mb-0"><strong>Kommentar</strong></p>
@@ -181,7 +171,6 @@
                 </div>
             </div>
 
-			{{-- Footer nur Desktop --}}
 			<div class="d-none d-md-block">
 				@if ($errors->any())
 					<div class="alert alert-danger mb-3">
@@ -204,7 +193,6 @@
 
         </div>
 
-        {{-- Rechte Spalte: Optionen --}}
         <div class="col-12 col-md-6 order-2">
             <div class="card mt-3 mt-md-0">
                 <div class="card-header bg-primary text-white py-1">
@@ -212,7 +200,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-						{{-- Checkboxen (links auf Desktop, oben auf Mobile) --}}
+						
 						<div class="col-12 col-md-6 d-flex flex-column gap-1">
 							@php
 								$fields = [
@@ -252,7 +240,6 @@
 						</div>
 
 
-                        {{-- Optionale Felder (rechts auf Desktop, unten auf Mobile) --}}
                         <div class="col-12 col-md-6 d-flex flex-column gap-3">
                             {{-- SAP Rolle --}}
                             <div x-data x-show="$wire.form.sap_status" x-cloak>
@@ -268,7 +255,6 @@
                                 </div>
                             </div>
 
-							{{-- SAP Leistungserbringer --}}
 							<div x-data x-show="$wire.form.is_lei" x-cloak>
 								<label class="form-label" for="inputKommLei">Kommentar SAP-Leistungserbringer</label>
 								<div class="input-group">
@@ -281,11 +267,9 @@
 								</div>
 							</div>
 
-							{{-- Telefonie --}}
 							<div x-show="$wire.form.tel_status" x-cloak>
 								<div x-data="telefonieHandler()" x-init="init()" class="d-flex flex-column gap-2">
 									
-									{{-- Auswahl --}}
 									<div>
 										<label class="form-label" for="inputTelefonAuswahl">Telefonie</label>
 										<div class="input-group">
@@ -303,13 +287,12 @@
 										</div>
 									</div>
 
-									{{-- Telefonnummer --}}
 									<div>
 										<label class="form-label" for="inputTelefonnummer">Telefonnummer</label>
 										<div class="input-group">
 											<span class="input-group-text"><i class="mdi mdi-phone-incoming"></i></span>
 
-											{{-- Wenn "neu" → nur Textfeld mit fixem Wert, kein wire:model --}}
+											{{-- fixer Wert, kein wire:model --}}
 											<template x-if="auswahl === 'neu'">
 												<input type="text"
 													   id="inputTelefonnummer"
@@ -318,7 +301,7 @@
 													   disabled>
 											</template>
 
-											{{-- Sonst → mit Livewire Binding --}}
+											{{-- mit Livewire Binding --}}
 											<template x-if="auswahl !== 'neu'">
 												<input type="text"
 													   id="inputTelefonnummer"
@@ -330,7 +313,6 @@
 										</div>
 									</div>
 
-									{{-- Optionen --}}
 									<div>
 										<label class="form-label">Optionen</label>
 										<div class="d-flex flex-column gap-0">
@@ -364,7 +346,6 @@
 										</div>
 									</div>
 
-									{{-- Headset --}}
 									<div>
 										<label class="form-label" for="inputHeadset">Headset</label>
 										<div class="input-group">
@@ -384,7 +365,6 @@
 								</div>
 							</div>
 
-                            {{-- Schlüssel Waldhaus --}}
                             <div x-data x-show="$wire.form.key_waldhaus" x-cloak>
                                 <label class="form-label">Schlüsselrecht Klinik Waldhaus</label>
                                 <div class="form-check">
@@ -397,7 +377,6 @@
                                 </div>
                             </div>
 
-                            {{-- Schlüssel Beverin --}}
                             <div x-data x-show="$wire.form.key_beverin" x-cloak>
                                 <label class="form-label">Schlüsselrecht Klinik Beverin</label>
                                 <div class="form-check">
@@ -410,7 +389,6 @@
                                 </div>
                             </div>
 
-                            {{-- Schlüssel Rothenbrunnen --}}
                             <div x-data x-show="$wire.form.key_rothenbr" x-cloak>
                                 <label class="form-label">Schlüsselrecht Rothenbrunnen</label>
                                 <div class="form-check">
@@ -423,7 +401,6 @@
                                 </div>
                             </div>
 
-							{{-- Berufsbekleidung --}}
 							<div x-data x-show="$wire.form.berufskleider" x-cloak>
 								<label class="form-label" for="inputKommBerufskleider">Kommentar Berufsbekleidung</label>
 								<div class="input-group">
@@ -436,7 +413,6 @@
 								</div>
 							</div>
 
-							{{-- Garderobe --}}
 							<div x-data x-show="$wire.form.garderobe" x-cloak>
 								<label class="form-label" for="inputKommGarderobe">Kommentar Garderobe</label>
 								<div class="input-group">
@@ -449,7 +425,6 @@
 								</div>
 							</div>
 
-							{{-- Bürowechsel --}}
 							<div x-data x-show="$wire.form.buerowechsel" x-cloak>
 								<label class="form-label" for="inputKommBuerowechsel">Kommentar Bürowechsel</label>
 								<div class="input-group">
@@ -468,7 +443,6 @@
             </div>
         </div>
 
-        {{-- Footer nur Mobile --}}
         <div class="col-12 d-block d-md-none order-3 mt-0">
             @if ($errors->any())
                 <div class="alert alert-danger mb-3">
@@ -492,13 +466,14 @@
 </form>
 
 
-
 @push('scripts')
 <script>
 	function initSelect2(selector) {
 		$(selector).each(function () {
 			const $s = $(this);
-			if (!$s.data('select2')) {
+			
+			if (!$s.data('select2')) 
+			{
 				$s.select2({
 					placeholder: 'Bitte auswählen',
 					width: '100%'
@@ -507,18 +482,18 @@
 			$s.off('change.select2-to-livewire').on('change.select2-to-livewire', function () {
 				const id = $(this).attr('id');
 				let val = $(this).val();
-				if ($(this).prop('multiple')) {
-					// Bei Multiselect → Array
+				if ($(this).prop('multiple')) 
+				{
 					@this.set('form.' + id, val || []);
-				} else {
-					// Normaler Single-Select
+				} 
+				else 
+				{
 					const parsed = val ? (isNaN(val) ? val : parseInt(val, 10)) : null;
 					@this.set('form.' + id, parsed);
 				}
 			});
 		});
 	}
-
 
     Livewire.on('select2-options', (payload) => {
         const id = payload.id;
@@ -530,147 +505,138 @@
 
         $select.empty().append('<option></option>');
         options.forEach(opt => {
-            if (opt.display_name) {
+            if (opt.display_name) 
+			{
                 $select.append(new Option(opt.display_name, opt.id, false, false));
-            } else {
+            } 
+			else 
+			{
                 $select.append(new Option(opt.name, opt.id, false, false));
             }
         });
 
 		initSelect2($select);
 
-		if (value !== null) {
+		if (value !== null) 
+		{
 			$select.val(value).trigger('change.select2');
 		}
     });
 
-Livewire.on('toggle-select', (payload) => {
-    const $select = $('#' + payload.id);
-    if (!$select.length) return;
+	Livewire.on('toggle-select', (payload) => {
+		const $select = $('#' + payload.id);
+		if (!$select.length) return;
 
-    $select.prop('disabled', !payload.enabled);
+		$select.prop('disabled', !payload.enabled);
 
-    // Bei Select2 muss man auch den State refreshen
-    if ($select.hasClass('select2-hidden-accessible')) {
-        $select.select2();
-    }
+		// Bei Select2 muss man auch den State refreshen
+		if ($select.hasClass('select2-hidden-accessible')) 
+		{
+			$select.select2();
+		}
+	});
 
-    console.log("[Toggle] Select:", payload.id, "enabled:", payload.enabled);
-});
+	Livewire.on("select2-clear", ({ id }) => {
+		const el = document.getElementById(id);
+		if (el) $(el).val(null).trigger("change");
+	});
 
-Livewire.on("select2-clear", ({ id }) => {
-    const el = document.getElementById(id);
-    if (el) $(el).val(null).trigger("change");
-});
+	function initCheckboxes(selector) {
+		$(selector).each(function () {
+			const $c = $(this);
+			if (!$c.data('bound')) 
+			{
+				$c.data('bound', true);
 
+				$c.on('change', function () {
+					const id = $(this).attr('id');
+					const checked = $(this).is(':checked');
 
+					@this.set('form.' + id, checked);
+				});
+			}
+		});
+	}
 
-function initCheckboxes(selector) {
-    $(selector).each(function () {
-        const $c = $(this);
-        if (!$c.data('bound')) {
-            $c.data('bound', true);
+	function telefonieHandler() {
+		return {
+			auswahl: @entangle('form.tel_auswahl').live,
+			tischtelefon: @entangle('form.tel_tischtel').live,
+			mobiltelefon: @entangle('form.tel_mobiltel').live,
+			ucstandard: @entangle('form.tel_ucstd').live,
+			alarmierung: @entangle('form.tel_alarmierung').live,
+			headset: @entangle('form.tel_headset').live,
 
-            $c.on('change', function () {
-                const id = $(this).attr('id');
-                const checked = $(this).is(':checked');
-                console.log("[Checkbox] change:", id, "->", checked);
+			nummerDisabled: false,
+			headsetDisabled: true,
 
-                // an Livewire schicken
-                @this.set('form.' + id, checked);
-            });
+			init() {
+				if (@this.form.isReadonly) 
+				{
+					this.nummerDisabled = true;
+					this.headsetDisabled = true;
+					return;
+				}
+				this.updateHeadset();
+				this.updateAlarmierung();
+			},
 
-            console.log("[Checkbox] Handler gebunden für:", $(this).attr('id'));
-        }
-    });
-}
+			applyState() {
+				this.updateHeadset();
+				this.updateAlarmierung();
+			},
 
+			updateHeadset() {
+				if (@this.form.isReadonly) return;
+				this.headsetDisabled = !(this.tischtelefon || this.ucstandard);
+			},
 
+			updateAlarmierung() {
+				if (!this.mobiltelefon) 
+				{
+					this.alarmierung = false;
+				}
+			}
+		}
+	}
 
-function telefonieHandler() {
-    return {
-        auswahl: @entangle('form.tel_auswahl').live,
-        tischtelefon: @entangle('form.tel_tischtel').live,
-        mobiltelefon: @entangle('form.tel_mobiltel').live,
-        ucstandard: @entangle('form.tel_ucstd').live,
-        alarmierung: @entangle('form.tel_alarmierung').live,
-        headset: @entangle('form.tel_headset').live,
+	document.addEventListener('livewire:load', () => {
+		initSelect2('.select2, .select2-multiple');
+		initCheckboxes('input[type=checkbox]');
+	});
 
-        nummerDisabled: false,
-        headsetDisabled: true,
+	document.addEventListener('livewire:navigated', () => {
+		initCheckboxes('input[type=checkbox]');
+	});
 
-        init() {
-            if (@this.form.isReadonly) {
-                this.nummerDisabled = true;
-                this.headsetDisabled = true;
-                return;
-            }
-            this.updateHeadset();
-            this.updateAlarmierung();
-        },
+	Livewire.hook('message.processed', () => {
+		initSelect2('.select2, .select2-multiple');
+		initCheckboxes('input[type=checkbox]');
 
-        applyState() {
-            // nur Headset/Alarmierung steuern
-            this.updateHeadset();
-            this.updateAlarmierung();
-        },
+		const mapping = {
+			enable_anrede: 'anrede_id',
+			enable_titel: 'titel_id',
+			enable_arbeitsort: 'arbeitsort_id',
+			enable_unternehmenseinheit: 'unternehmenseinheit_id',
+			enable_abteilung: 'abteilung_id',
+			enable_funktion: 'funktion_id',
+			enable_mailendung: 'mailendung',
+			enable_vorlage: 'vorlage_benutzer_id'
+		};
 
-        updateHeadset() {
-            if (@this.form.isReadonly) return;
-            this.headsetDisabled = !(this.tischtelefon || this.ucstandard);
-        },
+		for (const flag in mapping) 
+		{
+			const selectId = mapping[flag];
+			const enabled = @this.get('form.' + flag);
+			const readonly = @this.get('form.isReadonly');
+			const $select = $('#' + selectId);
 
-        updateAlarmierung() {
-            if (!this.mobiltelefon) {
-                this.alarmierung = false;
-            }
-        }
-    }
-}
-
-
-
-
-
-
-document.addEventListener('livewire:load', () => {
-    initSelect2('.select2, .select2-multiple');
-    initCheckboxes('input[type=checkbox]');
-});
-
-document.addEventListener('livewire:navigated', () => {
-    initCheckboxes('input[type=checkbox]');
-});
-
-Livewire.hook('message.processed', () => {
-    initSelect2('.select2, .select2-multiple');
-    initCheckboxes('input[type=checkbox]');
-
-    // enable_* Flags auf Select2 disabled-Status anwenden
-    const mapping = {
-        enable_anrede: 'anrede_id',
-        enable_titel: 'titel_id',
-        enable_arbeitsort: 'arbeitsort_id',
-        enable_unternehmenseinheit: 'unternehmenseinheit_id',
-        enable_abteilung: 'abteilung_id',
-        enable_funktion: 'funktion_id',
-        enable_mailendung: 'mailendung',
-        enable_vorlage: 'vorlage_benutzer_id'
-    };
-
-    for (const flag in mapping) {
-        const selectId = mapping[flag];
-        const enabled = @this.get('form.' + flag);
-        const readonly = @this.get('form.isReadonly');
-        const $select = $('#' + selectId);
-
-        if ($select.length) {
-            $select.prop('disabled', readonly || !enabled);
-        }
-    }
-});
-
-
+			if ($select.length) 
+			{
+				$select.prop('disabled', readonly || !enabled);
+			}
+		}
+	});
 
 </script>
 @endpush

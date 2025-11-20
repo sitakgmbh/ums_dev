@@ -33,7 +33,7 @@
         </svg>
     </div>
 
-    {{-- Hier kommt Livewire-Page rein --}}
+    {{-- Livewire Content --}}
     {{ $slot }}
 
     <footer class="footer footer-alt text-center">

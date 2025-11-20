@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        {{-- Aufgaben-Cards --}}
+        {{-- Aufgaben --}}
         <div class="row g-2">
             @foreach($aufgaben as $task)
                 <div class="col-md-6">
