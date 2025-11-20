@@ -43,14 +43,9 @@ class InfoMail extends BaseModal
         $defaultRecipients = config("ums.mutation.mail.info.to", []);
         $defaultCc = config("ums.mutation.mail.info.cc", []);
 
-		if ($antragstellerMail = $this->entry->antragsteller->email ?? null) 
+		if ($aduserMail = $this->entry->adUser->email ?? null)
 		{
-			$defaultRecipients[] = $antragstellerMail;
-		}
-
-		if ($aduserMail = $this->entry->adUser->email ?? null) 
-		{
-			$defaultCc[] = $aduserMail;
+			$defaultRecipients[] = $aduserMail;
 		}
 
         $this->recipients = implode(', ', $defaultRecipients);

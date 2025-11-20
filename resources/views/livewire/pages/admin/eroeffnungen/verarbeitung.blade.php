@@ -314,7 +314,7 @@
 				@if($entry->kommentar)
 					<div>
 						<div class="fw-bold mb-2">Kommentar</div>
-						<div class="text-muted">
+						<div class="text-secondary">
 							{!! nl2br(e($entry->kommentar)) !!}
 						</div>
 					</div>
