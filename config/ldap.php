@@ -30,7 +30,7 @@ return [
     'connections' => [
 
         'default' => [
-            'hosts'    => [env('LDAP_HOST')],
+            'hosts'    => array_filter(explode(',', env('LDAP_HOSTS', env('LDAP_HOST')))),
             'port'     => env('LDAP_PORT', 389),
             'username' => env('LDAP_USERNAME'),
             'password' => env('LDAP_PASSWORD'),
