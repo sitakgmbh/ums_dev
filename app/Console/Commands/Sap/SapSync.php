@@ -25,7 +25,7 @@ class SapSync extends Command
             $importService->import($localCsvPath);
             $this->info("SAP-Import abgeschlossen");
             
-            Logger::info("SAP-Import abgeschlossen", [
+            Logger::debug("SAP-Import abgeschlossen", [
                 "user" => auth()->user()->username ?? "cli",
                 "file" => basename($localCsvPath),
             ]);
