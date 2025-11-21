@@ -44,7 +44,7 @@ class Verarbeitung extends Component
             'anrede', 'titel', 'arbeitsort', 'unternehmenseinheit', 'abteilung', 'funktion',
             'antragsteller', 'bezugsperson', 'vorlageBenutzer',
             'adUser.anrede', 'adUser.titel', 'adUser.arbeitsort', 'adUser.unternehmenseinheit',
-            'adUser.abteilung', 'adUser.funktion',
+            'adUser.abteilung', 'adUser.abteilung2', 'adUser.funktion',
         ]);
 
         $status = AntragHelper::statusForVerarbeitung($this->entry, auth()->user());

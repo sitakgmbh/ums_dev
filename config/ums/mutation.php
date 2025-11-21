@@ -127,6 +127,7 @@ return [
 			'Arbeitsort'         => 'arbeitsort.name',
 			'Unternehmenseinheit'=> 'unternehmenseinheit.name',
 			'Abteilung'          => 'abteilung.name',
+			'Abteilung 2'          => 'abteilung2.name',
 			'Funktion'           => 'funktion.name',
         ],
         'Personalien alt' => [
@@ -137,6 +138,7 @@ return [
 			'Arbeitsort'         => 'arbeitsortOld.name',
 			'Unternehmenseinheit'=> 'unternehmenseinheitOld.name',
 			'Abteilung'          => 'abteilungOld.name',
+			'Abteilung 2'          => 'abteilung2Old.name',
 			'Funktion'           => 'funktionOld.name',
         ],
         'Details' => [

@@ -172,29 +172,14 @@
                             <table class="table table-centered text-nowrap w-100 mb-0" style="border-collapse: collapse;">
                                 <tbody style="line-height: 1.2;">
                                     @foreach($fields as $label => $path)
-                                        @php
+										@php
+											// Rohwert neu
+											$value = data_get($entry, $path, '-');
 
-                        $value = data_get($entry, $path, '-');
-
-                        // Vergleich: Personalien neu vs alt
-                        $highlight = false;
-                        if ($section === 'Personalien neu') {
-                            // entsprechenden "alt"-Pfad ableiten
-                            $altPath = str_replace(['vorname','nachname','anrede','titel','arbeitsort','unternehmenseinheit','abteilung','funktion'], 
-                                                   ['vorname_old','nachname_old','anredeOld','titelOld','arbeitsortOld','unternehmenseinheitOld','abteilungOld','funktionOld'], 
-                                                   $path);
-                            $valueAlt = data_get($entry, $altPath, '-');
-
-                            if ($value != $valueAlt) {
-                                $highlight = true;
-                            }
-                        }
-
-                        $tdClass = $highlight ? 'bg-warning text-dark' : '';
-
-
+											// Nur fuer Personalien neu → Fallback anwenden
 											if ($section === 'Personalien neu') {
-												// Fallback auf adUser, falls Wert leer oder null
+
+												// Neu-Wert leer? Dann AD oder Old verwenden.
 												if (empty($value) || $value === '-') {
 													switch ($label) {
 														case 'Vorname':
@@ -209,9 +194,70 @@
 														case 'Titel':
 															$value = $entry->titel?->name ?? $entry->adUser?->titel?->name ?? '-';
 															break;
+														case 'Arbeitsort':
+															$value = $entry->arbeitsort?->name ?? $entry->adUser?->arbeitsort?->name ?? '-';
+															break;
+														case 'Unternehmenseinheit':
+															$value = $entry->unternehmenseinheit?->name ?? $entry->adUser?->unternehmenseinheit?->name ?? '-';
+															break;
+														case 'Abteilung':
+															$value = $entry->abteilung?->name ?? $entry->adUser?->abteilung?->name ?? '-';
+															break;
+														case 'Abteilung 2':
+															$value = $entry->abteilung2?->name ?? $entry->adUser?->abteilung2?->name ?? '-';
+															break;
+														case 'Funktion':
+															$value = $entry->funktion?->name ?? $entry->adUser?->funktion?->name ?? '-';
+															break;
 													}
 												}
+
+												// Jetzt ALT-Wert ermitteln (IMMER aus *_old)
+												switch ($label) {
+													case 'Vorname':
+														$valueAlt = $entry->vorname_old ?? '-';
+														break;
+													case 'Nachname':
+														$valueAlt = $entry->nachname_old ?? '-';
+														break;
+													case 'Anrede':
+														$valueAlt = $entry->anredeOld?->name ?? '-';
+														break;
+													case 'Titel':
+														$valueAlt = $entry->titelOld?->name ?? '-';
+														break;
+													case 'Arbeitsort':
+														$valueAlt = $entry->arbeitsortOld?->name ?? '-';
+														break;
+													case 'Unternehmenseinheit':
+														$valueAlt = $entry->unternehmenseinheitOld?->name ?? '-';
+														break;
+													case 'Abteilung':
+														$valueAlt = $entry->abteilungOld?->name ?? '-';
+														break;
+													case 'Abteilung 2':
+														$valueAlt = $entry->abteilung2Old?->name ?? '-';
+														break;
+													case 'Funktion':
+														$valueAlt = $entry->funktionOld?->name ?? '-';
+														break;
+													default:
+														$valueAlt = '-';
+												}
+
+												// Highlight erst jetzt (nach Fallback anwenden)
+												$highlight = ($value !== $valueAlt);
+											} 
+											else {
+												// Andere Bereiche nie highlighten
+												$highlight = false;
 											}
+
+											// HTML Klasse
+											$tdClass = $highlight ? 'bg-warning text-dark' : '';
+	
+	
+	
 
                                             if ($value === true || $value === 1 || $value === "1") {
                                                 $value = 'Ja';
