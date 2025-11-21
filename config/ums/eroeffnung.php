@@ -126,6 +126,7 @@ return [
             "Arbeitsort" => "arbeitsort.name",
             "Unternehmenseinheit" => "unternehmenseinheit.name",
             "Abteilung" => "abteilung.name",
+			"Zweite Abteilung" => "abteilung2.name",
             "Funktion" => "funktion.name",
         ],
         "Details" => [

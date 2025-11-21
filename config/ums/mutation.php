@@ -139,6 +139,9 @@ return [
 			'Abteilung'          => 'abteilungOld.name',
 			'Funktion'           => 'funktionOld.name',
         ],
+        'Zweite Abteilung' => [
+            'Name'          => 'abteilung2.name',
+        ],
         'Details' => [
             'Änderungsdatum' => 'vertragsbeginn',
             'Antragsteller'  => 'antragsteller.display_name',

@@ -214,7 +214,7 @@
                                         @endphp
 
                                         <tr>
-                                            <td style="width:1px; white-space: nowrap; padding: 5px 10px 2px 0;">
+                                            <td style="width:150px; white-space: nowrap; padding: 5px 10px 2px 0;">
                                                 {{ $label }}
                                             </td>
 											<td style="padding: 5px 10px 2px 0;">
@@ -267,7 +267,7 @@
                             <tbody style="line-height: 1.2;">
                                 @foreach($rows as $row)
                                     <tr>
-                                        <td style="width:1px; white-space: nowrap; padding: 5px 10px 2px 0;">
+                                        <td style="width:150px; white-space: nowrap; padding: 5px 10px 2px 0;">
                                             {{ $row['label'] }}
                                         </td>
                                         <td style="padding: 2px 0;">

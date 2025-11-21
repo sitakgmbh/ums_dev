@@ -130,7 +130,8 @@ class MutationForm extends Form
             "abteilung_id" => ["nullable", "exists:abteilungen,id"],
             "funktion_id" => ["nullable", "exists:funktionen,id"],
             "has_abteilung2" => ["boolean"],
-            "abteilung2_id" => ["required_if:has_abteilung2,true", "nullable", "exists:abteilungen,id"],
+            // "abteilung2_id" => ["required_if:has_abteilung2,true", "nullable", "exists:abteilungen,id"],
+			"abteilung2_id" => ["required_if:has_abteilung2,true", "exists:abteilungen,id"],
             "vorlage_benutzer_id" => ["nullable", "integer", "exists:ad_users,id"],
             "mailendung" => ["nullable", "string"],
             "neue_konstellation" => ["boolean"],
@@ -809,7 +810,12 @@ class MutationForm extends Form
 		if (!$this->enable_abteilung) 
 		{
 			$data["abteilung_id"] = null;
-			$data["abteilung2_id"] = null;
+
+			// abteilung2_id nur löschen, wenn keine zusätzliche Abteilung aktiv ist
+			if (!$this->has_abteilung2) 
+			{
+				$data["abteilung2_id"] = null;
+			}
 		}
 
 		if (!$this->enable_funktion) 
