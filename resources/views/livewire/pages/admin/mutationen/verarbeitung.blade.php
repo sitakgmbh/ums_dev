@@ -203,9 +203,6 @@
 														case 'Abteilung':
 															$value = $entry->abteilung?->name ?? $entry->adUser?->abteilung?->name ?? '-';
 															break;
-														case 'Abteilung 2':
-															$value = $entry->abteilung2?->name ?? $entry->adUser?->abteilung2?->name ?? '-';
-															break;
 														case 'Funktion':
 															$value = $entry->funktion?->name ?? $entry->adUser?->funktion?->name ?? '-';
 															break;
@@ -234,9 +231,6 @@
 														break;
 													case 'Abteilung':
 														$valueAlt = $entry->abteilungOld?->name ?? '-';
-														break;
-													case 'Abteilung 2':
-														$valueAlt = $entry->abteilung2Old?->name ?? '-';
 														break;
 													case 'Funktion':
 														$valueAlt = $entry->funktionOld?->name ?? '-';
