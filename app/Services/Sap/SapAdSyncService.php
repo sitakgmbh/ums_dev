@@ -23,11 +23,11 @@ class SapAdSyncService
         "extensionAttribute2"	=> ["sap" => "d_gbdat"],
         "extensionAttribute5"	=> ["sap" => "d_0032_batchbez"],
         "extensionAttribute6"	=> ["sap" => "d_pers_txt"],
-        "extensionAttribute7"	=> ["sap" => "d_zzkader", "if_sap_not_empty" => true],
+        "extensionAttribute7"	=> ["sap" => "d_zzkader"],
         "extensionAttribute8"	=> ["sap" => "d_zzbereit"],
         "extensionAttribute9"	=> ["sap" => "d_einri"],
         "extensionAttribute11"	=> ["sap" => "d_einda"],
-        "extensionAttribute13"	=> ["sap" => "d_titel", "if_sap_and_ad_not_empty" => true],
+        "extensionAttribute13"	=> ["sap" => "d_titel"],
         "extensionAttribute15"	=> ["sap" => "d_abt_nr"],
     ];
 
@@ -351,24 +351,6 @@ class SapAdSyncService
 			$sapValue = trim($row[$sapField] ?? "");
 			$sapValue = $sapValue === "" ? null : $sapValue;
 			$adValue = $adUser->getFirstAttribute($adAttr);
-
-            // Nur ändern wenn SAP und AD nicht leer sind
-            if (isset($config["if_sap_and_ad_not_empty"]) && $config["if_sap_and_ad_not_empty"]) 
-            {
-                if (empty($adValue) && empty($sapValue)) 
-				{
-					continue;
-				}
-            }
-
-            // Nur ändern wenn SAP nicht leer ist
-            if (isset($config["if_sap_not_empty"]) && $config["if_sap_not_empty"]) 
-            {
-                if (empty($sapValue)) 
-				{
-					continue;
-				}
-            }
 
 			if ($adValue !== $sapValue) 
 			{
