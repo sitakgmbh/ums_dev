@@ -131,7 +131,7 @@ class MutationForm extends Form
             "funktion_id" => ["nullable", "exists:funktionen,id"],
             "has_abteilung2" => ["boolean"],
             // "abteilung2_id" => ["required_if:has_abteilung2,true", "nullable", "exists:abteilungen,id"],
-			"abteilung2_id" => ["required_if:has_abteilung2,true", "exists:abteilungen,id"],
+			"abteilung2_id" => ["required_if:has_abteilung2,true", "nullable", "exists:abteilungen,id"],
             "vorlage_benutzer_id" => ["nullable", "integer", "exists:ad_users,id"],
             "mailendung" => ["nullable", "string"],
             "neue_konstellation" => ["boolean"],
