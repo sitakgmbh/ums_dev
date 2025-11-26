@@ -101,7 +101,9 @@ class SapAdSyncService
 			'extensionattribute11',
 			'extensionattribute13',
 			'extensionattribute15',
-		])->get();
+		])
+		->in(config("ums.ldap.ad_users_to_sync"))
+		->get();
 		
 		Logger::debug("SapAdSyncService: Erstelle AD-User Map");
 		
@@ -117,8 +119,8 @@ class SapAdSyncService
 			}
 		}
 		
-		$excludes = Setting::getValue('personalnummer_abgleich_excludes', '');
-		$excludeList = array_filter(array_map('trim', explode(',', $excludes)));
+		// $excludes = Setting::getValue('personalnummer_abgleich_excludes', '');
+		// $excludeList = array_filter(array_map('trim', explode(',', $excludes)));
 
 		Logger::debug("SapAdSyncService: Iteriere durch SAP-Export");
 
@@ -152,10 +154,12 @@ class SapAdSyncService
 
 			if (!$adUser) 
 			{
+				/*
 				if (!in_array($personalnummer, $excludeList)) 
 				{
 					// Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
 				}
+				*/
 				
 				$this->stats["not_found"]++;
 				continue;

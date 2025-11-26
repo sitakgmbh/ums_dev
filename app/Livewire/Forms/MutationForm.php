@@ -110,7 +110,7 @@ class MutationForm extends Form
     public ?string $komm_buerowechsel = null;
 
     public bool $vorab_lizenzierung = false;
-    public array $adusersKalender = [];
+    // public array $kalender_berechtigungen = [];
 
     public int $status_ad = 0;
 	public int $status_mail = 0;
