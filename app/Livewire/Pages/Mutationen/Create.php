@@ -51,7 +51,7 @@ class Create extends Component
 			"bezugsperson_id"          => $this->form->adusers,
 			"vorlage_benutzer_id"      => $this->form->adusers,
 			"abteilung2_id"            => [],
-			"kalender_berechtigungen"  => $this->form->adusersKalender,
+			// "kalender_berechtigungen"  => $this->form->adusersKalender,
 		] as $id => $options) {
 			$this->dispatch("select2-options", id: $id, options: $options, value: null);
 		}

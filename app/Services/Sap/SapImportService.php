@@ -15,38 +15,36 @@ use App\Utils\Logging\Logger;
 
 class SapImportService
 {
-    protected string $actor;
-
-    public function __construct()
-    {
-        $this->actor = auth()->user()->username ?? "cli";
-    }
-
+    // CSV einlesen und die Tabelle sap_export befüllen
     public function import(string $filePath): void
     {
         if (!file_exists($filePath)) 
-        {
+		{
             throw new \RuntimeException("SAP Export nicht gefunden: {$filePath}");
         }
 
-		$content = file_get_contents($filePath);
+        $content = file_get_contents($filePath);
 
-		$encoding = mb_detect_encoding($content, ["UTF-8", "ISO-8859-1", "Windows-1252", "ASCII"], true);
+        $encoding = mb_detect_encoding($content, [
+            "UTF-8", "ISO-8859-1", "Windows-1252", "ASCII"
+        ], true);
 
-		if ($encoding && $encoding !== "UTF-8") 
+        if ($encoding && $encoding !== "UTF-8") 
 		{
-			$content = mb_convert_encoding($content, "UTF-8", $encoding);
-		}
+            $content = mb_convert_encoding($content, "UTF-8", $encoding);
+        }
 
-		$raw = explode("\n", $content);
-		$raw = array_map("trim", $raw);
-		$raw = array_filter($raw);
+        $raw = array_filter(array_map("trim", explode("\n", $content)));
 
-		$lines = $raw;
-		$header = array_map("trim", explode(";", array_shift($lines)));
-		$rows = [];
+        if (empty($raw)) 
+		{
+            throw new \RuntimeException("SAP CSV ist leer oder ungültig.");
+        }
 
-        foreach ($lines as $line) 
+        $header = array_map("trim", explode(";", array_shift($raw)));
+        $rows = [];
+		
+        foreach ($raw as $line) 
 		{
             $values = array_map("trim", explode(";", $line));
 			
@@ -58,46 +56,26 @@ class SapImportService
             $rows[] = array_combine($header, $values);
         }
 
-		Logger::debug("SapImportService: Tabelle sap_export befüllen");
-		SapExport::truncate();
-		
-		$insertData = array_map(function($row) {
-			if (isset($row['d_pernr'])) 
-			{
-				$row['d_pernr'] = ltrim(trim($row['d_pernr']), "0");
-			}
-			
-			$row['created_at'] = now();
-			$row['updated_at'] = now();
-			return $row;
-		}, $rows);
-		
-		SapExport::insert($insertData);
-		
-		Logger::debug("SapImportService: Verknüpfungen sap_export zu ad_users erstellen");
-		
-		$adUsersMap = AdUser::whereNotNull('initials')
-			->where('is_existing', true)
-			->pluck('id', 'initials')
-			->toArray();
-		
-		$sapUpdateData = [];
-		
-		foreach ($insertData as $row) 
-		{
-			$personalnummer = $row["d_pernr"] ?? "";
-			if (empty($personalnummer)) continue;
-			
-			if (isset($adUsersMap[$personalnummer])) 
-			{
-				$sapUpdateData[$personalnummer] = $adUsersMap[$personalnummer];
-			}
-		}
-		
-		foreach ($sapUpdateData as $pernr => $adUserId) 
-		{
-			SapExport::where('d_pernr', $pernr)->update(['ad_user_id' => $adUserId]);
-		}
+        Logger::debug("SapImportService: Befülle Tabelle sap_export...");
+
+        SapExport::truncate();
+
+        $insertData = array_map(function ($row) {
+            $row["d_pernr"] = ltrim(trim($row["d_pernr"] ?? ""), "0");
+            $row["created_at"] = now();
+            $row["updated_at"] = now();
+            return $row;
+        }, $rows);
+
+        SapExport::insert($insertData);
+    }
+
+	// SAP-Stammdaten aktualisieren (z. B. Arbeitsort)
+    public function update(): void
+    {
+        Logger::debug("SapImportService: Aktualisiere Stammdaten...");
+
+        $rows = SapExport::all();
 
         $funktionenSeen = [];
         $abteilungenSeen = [];
@@ -130,7 +108,6 @@ class SapImportService
                     Logger::db("sap", "info", "{$type} {$model->name} angelegt", [
                         "id" => $model->id,
                         "name" => $model->name,
-                        "actor" => $this->actor,
                     ]);
                 }
             }
@@ -159,7 +136,6 @@ class SapImportService
                         "abteilung_id" => $abteilung->id,
                         "unternehmenseinheit_id" => $ue->id,
                         "arbeitsort_id" => $arbeitsort->id,
-                        "actor" => $this->actor,
                     ]);
                 }
 
@@ -184,59 +160,6 @@ class SapImportService
         Titel::whereIn("id", $titelSeen)->where("enabled", false)->update(["enabled" => true]);
         Anrede::whereIn("id", $anredenSeen)->where("enabled", false)->update(["enabled" => true]);
         Konstellation::whereIn("id", $konstellationenSeen)->where("enabled", false)->update(["enabled" => true]);
-
-		Logger::debug("SapImportService: AD User Abgleich - Lade alle Maps");
-		
-		$funktionenMap = Funktion::pluck('id', 'name')->toArray();
-		$abteilungenMap = Abteilung::pluck('id', 'name')->toArray();
-		$ueMap = Unternehmenseinheit::pluck('id', 'name')->toArray();
-		$arbeitsorteMap = Arbeitsort::pluck('id', 'name')->toArray();
-		$titelMap = Titel::pluck('id', 'name')->toArray();
-		$anredenMap = Anrede::pluck('id', 'name')->toArray();
-		
-		Logger::debug("SapImportService: AD User Abgleich - Verarbeite Rows");
-		
-		$adUserUpdates = [];
-		
-		foreach ($rows as $row) 
-		{
-			$funktionName   = trim($row["d_0032_batchbez"] ?? "");
-			$abteilungName  = trim($row["d_abt_txt"] ?? "");
-			$ueName         = trim($row["d_pers_txt"] ?? "");
-			$arbeitsortName = trim($row["d_arbortx"] ?? "");
-			$titelName      = trim($row["d_titel"] ?? "");
-			$anredeName     = trim($row["d_anrlt"] ?? "");
-			$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
-
-			$funktionId   = $funktionName ? ($funktionenMap[$funktionName] ?? null) : null;
-			$abteilungId  = $abteilungName ? ($abteilungenMap[$abteilungName] ?? null) : null;
-			$ueId         = $ueName ? ($ueMap[$ueName] ?? null) : null;
-			$arbeitsortId = $arbeitsortName ? ($arbeitsorteMap[$arbeitsortName] ?? null) : null;
-			$titelId      = $titelName ? ($titelMap[$titelName] ?? null) : null;
-			$anredeId     = $anredeName ? ($anredenMap[$anredeName] ?? null) : null;
-
-			$adUserId = $personalnummer ? ($adUsersMap[$personalnummer] ?? null) : null;
-
-			if ($adUserId) 
-			{
-				$adUserUpdates[$adUserId] = [
-					"funktion_id"            => $funktionId,
-					"abteilung_id"           => $abteilungId,
-					"unternehmenseinheit_id" => $ueId,
-					"arbeitsort_id"          => $arbeitsortId,
-					"titel_id"               => $titelId,
-					"anrede_id"              => $anredeId,
-					"is_existing"            => true,
-				];
-			}
-		}
-		
-		Logger::debug("SapImportService: AD User Abgleich - Update " . count($adUserUpdates) . " Benutzer");
-		
-		foreach ($adUserUpdates as $userId => $fields) 
-		{
-			AdUser::where('id', $userId)->update($fields);
-		}
 		
 		Logger::debug("SapImportService: Import abgeschlossen");
     }
@@ -253,21 +176,7 @@ class SapImportService
 			Logger::db("sap", "info", "{$modelName} {$item->name} deaktiviert", [
 				"id"    => $item->id,
 				"name"  => $item->name ?? null,
-				"actor" => $this->actor,
 			]);
 		});
-	}
-
-	protected function resolveName(string $field, int $id): array
-	{
-		return match ($field) {
-			"funktion_id" => ["id" => $id, "name" => Funktion::find($id)?->name],
-			"abteilung_id" => ["id" => $id, "name" => Abteilung::find($id)?->name],
-			"unternehmenseinheit_id" => ["id" => $id, "name" => Unternehmenseinheit::find($id)?->name],
-			"arbeitsort_id" => ["id" => $id, "name" => Arbeitsort::find($id)?->name],
-			"titel_id" => ["id" => $id, "name" => Titel::find($id)?->name],
-			"anrede_id" => ["id" => $id, "name" => Anrede::find($id)?->name],
-			default => ["id" => $id, "name" => null],
-		};
 	}
 }

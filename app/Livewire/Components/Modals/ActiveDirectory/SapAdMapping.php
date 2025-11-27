@@ -3,7 +3,7 @@
 namespace App\Livewire\Components\Modals\ActiveDirectory;
 
 use App\Livewire\Components\Modals\BaseModal;
-use App\Services\Sap\SapAdMappingService;
+use App\Services\Sap\SapAdStatusService;
 
 class SapAdMapping extends BaseModal
 {
@@ -16,7 +16,7 @@ class SapAdMapping extends BaseModal
 
     protected function openWith(array $payload): bool
     {   
-        $this->loadData(app(SapAdMappingService::class));
+        $this->loadData(app(SapAdStatusService::class));
         
         $this->title = "Details SAP ↔ AD";
         $this->size = "full-width";
@@ -31,15 +31,15 @@ class SapAdMapping extends BaseModal
     public function setFilter($filter)
     {
         $this->activeFilter = $filter;
-        $this->loadData(app(SapAdMappingService::class));
+        $this->loadData(app(SapAdStatusService::class));
     }
     
-	protected function loadData(SapAdMappingService $sapAdMappingService)
+	protected function loadData(SapAdStatusService $SapAdStatusService)
 	{
-		$this->data = $sapAdMappingService->getFilteredData($this->activeFilter);
-		$this->excludedInitials = $sapAdMappingService->getExcludedInitials();
-		$this->excludedUsernames = $sapAdMappingService->getExcludedUsernames();
-		$this->secondaryPns = $sapAdMappingService->getSecondaryPersonalnummern();
+		$this->data = $SapAdStatusService->getFilteredData($this->activeFilter);
+		$this->excludedInitials = $SapAdStatusService->getExcludedInitials();
+		$this->excludedUsernames = $SapAdStatusService->getExcludedUsernames();
+		$this->secondaryPns = $SapAdStatusService->getSecondaryPersonalnummern();
 	}
 
     public function render()

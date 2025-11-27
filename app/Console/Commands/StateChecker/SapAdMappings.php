@@ -4,7 +4,7 @@ namespace App\Console\Commands\StateChecker;
 
 use App\Models\AdUser;
 use App\Models\Incident;
-use App\Services\Sap\SapAdMappingService;
+use App\Services\Sap\SapAdStatusService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -13,19 +13,19 @@ class SapAdMappings extends Command
     protected $signature = 'check:sap-ad-mappings';
     protected $description = 'Sucht Benutzer ohne Personalnummer, fehlerhafter SAP ↔ AD-Zuordnung oder doppelte Personalnummern im AD und erstellt ggf. einen Incident.';
 
-    public function handle(SapAdMappingService $sapAdMappingService)
+    public function handle(SapAdStatusService $SapAdStatusService)
     {
 		$filter = ['keine_personalnummer', 'kein_sap_eintrag', 'kein_ad_benutzer'];
 
-		$excludedInitials = $sapAdMappingService->getExcludedInitials();
-		$excludedUsernames = $sapAdMappingService->getExcludedUsernames();
-		$secondaryPns = $sapAdMappingService->getSecondaryPersonalnummern();
+		$excludedInitials = $SapAdStatusService->getExcludedInitials();
+		$excludedUsernames = $SapAdStatusService->getExcludedUsernames();
+		$secondaryPns = $SapAdStatusService->getSecondaryPersonalnummern();
 
 		$incidentMetadata = [];
 
 		foreach ($filter as $f) 
 		{
-			$benutzer = $sapAdMappingService->getFilteredData($f);
+			$benutzer = $SapAdStatusService->getFilteredData($f);
 
 			if ($benutzer->isNotEmpty()) 
 			{

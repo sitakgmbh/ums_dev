@@ -12,9 +12,8 @@ use LdapRecord\Models\ActiveDirectory\User as LdapUser;
 
 class SapAdSyncService
 {
-    protected string $actor;
-    protected array $stats;
-    protected array $changes;
+    protected array $stats = [];
+    protected array $changes = [];
 
     protected array $attributeMap = [
         "title"					=> ["sap" => "d_0032_batchbez"],
@@ -31,9 +30,8 @@ class SapAdSyncService
         "extensionAttribute15"	=> ["sap" => "d_abt_nr"],
     ];
 
-    public function __construct()
+    public function sync(): void
     {
-        $this->actor = auth()->user()->username ?? "cli";
         $this->stats = [
             "found" => 0,
             "not_found" => 0,
@@ -41,40 +39,15 @@ class SapAdSyncService
             "no_changes" => 0,
             "mutations_created" => 0,
         ];
-    }
 
-	public function sync(string $filePath): void
-	{
 		Logger::debug("SapAdSyncService: Start");
-		
-		if (!file_exists($filePath)) 
-		{
-			throw new \RuntimeException("SAP Export nicht gefunden: {$filePath}");
-		}
 
 		$this->changes = [];
+     
+		$sapRows = SapExport::all();
 
-		$content = file_get_contents($filePath);
-		$encoding = mb_detect_encoding($content, ["UTF-8", "ISO-8859-1", "Windows-1252", "ASCII"], true);
-
-		if ($encoding && $encoding !== "UTF-8") 
-		{
-			$content = mb_convert_encoding($content, "UTF-8", $encoding);
-		}
-
-		$raw = explode("\n", $content);
-		$raw = array_map("trim", $raw);
-		$raw = array_filter($raw);
-
-		$lines = $raw;
-		$header = array_map("trim", explode(";", array_shift($lines)));
-		$rows = [];
-
-		foreach ($lines as $line) 
-		{
-			$values = array_map("trim", explode(";", $line));
-			if (count($values) !== count($header)) continue;
-			$rows[] = array_combine($header, $values);
+		if ($sapRows->isEmpty()) {
+			throw new \RuntimeException("SapExport Tabelle ist leer – bitte zuerst SapImportService::import() ausführen.");
 		}
 
 		Logger::debug("SapAdSyncService: AD-Benutzer abfragen");
@@ -119,48 +92,18 @@ class SapAdSyncService
 			}
 		}
 		
-		// $excludes = Setting::getValue('personalnummer_abgleich_excludes', '');
-		// $excludeList = array_filter(array_map('trim', explode(',', $excludes)));
-
 		Logger::debug("SapAdSyncService: Iteriere durch SAP-Export");
 
-		foreach ($rows as $row) 
+		foreach ($sapRows as $row) 
 		{
 			$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
 			
 			if (empty($personalnummer)) continue;
-			
-			$eintrittsdatum = trim($row["d_einda"] ?? "");
-			
-			if (!empty($eintrittsdatum)) 
-			{
-				try 
-				{
-					$eintritt = \Carbon\Carbon::createFromFormat('Ymd', $eintrittsdatum)->startOfDay();
-					
-					if ($eintritt->isFuture()) 
-					{
-						// Logger::debug("Personalnummer {$personalnummer} übersprungen: Eintrittsdatum {$eintritt->format('d.m.Y')} liegt in der Zukunft");
-						continue;
-					}
-				} 
-				catch (\Exception $e) 
-				{
-					// Ungültiges Datum ignorieren
-				}
-			}
 
 			$adUser = $adUsersMap[$personalnummer] ?? null;
 
 			if (!$adUser) 
 			{
-				/*
-				if (!in_array($personalnummer, $excludeList)) 
-				{
-					// Logger::warning("Kein AD-Benutzer zu Personalnummer {$personalnummer} gefunden");
-				}
-				*/
-				
 				$this->stats["not_found"]++;
 				continue;
 			}
@@ -180,7 +123,6 @@ class SapAdSyncService
 					"personalnummer" => $personalnummer,
 					"username" => $username,
 					"changes" => $this->changes,
-					"actor" => $this->actor,
 				]);
 				
 				$this->stats["updated"]++;
@@ -191,10 +133,6 @@ class SapAdSyncService
 				$this->stats["no_changes"]++;
 			}
 		}
-		
-		Logger::debug("SapAdSyncService: Start Personalnummerabgleich");
-		
-		$this->syncMissingInitials($adUsers, $rows);
 		
 		Logger::debug("SapAdSyncService: Ende");
 	}
@@ -230,7 +168,6 @@ class SapAdSyncService
                 Logger::db("sap", "error", "Fehler beim Aktualisieren des Vornamens des Benutzers '{$username}'", [
                     "username" => $username,
                     "error" => $e->getMessage(),
-                    "actor" => $this->actor,
                 ]);
             }
         }
@@ -258,7 +195,6 @@ class SapAdSyncService
                 Logger::db("sap", "error", "Fehler beim Aktualisieren des Nachnamens des Benutzers '{$username}'", [
                     "username" => $username,
                     "error" => $e->getMessage(),
-                    "actor" => $this->actor,
                 ]);
             }
         }
@@ -300,7 +236,6 @@ class SapAdSyncService
 				Logger::db("sap", "error", "Fehler beim Aktualisieren des Anzeigenamens des Benutzers '{$username}'", [
 					"username" => $username,
 					"error" => $e->getMessage(),
-					"actor" => $this->actor,
 				]);
 			}
 		}
@@ -339,7 +274,6 @@ class SapAdSyncService
 				Logger::db("sap", "error", "Fehler beim Umbenennen oder Aktualisieren des UPNs des Benutzers '{$username}'", [
 					"username" => $username,
 					"error" => $e->getMessage(),
-					"actor" => $this->actor,
 				]);
 			}
 		}
@@ -384,7 +318,6 @@ class SapAdSyncService
 					Logger::db("sap", "error", "Fehler bei beim Aktualisieren des Attributs '{$adAttr}' des Benutzers '{$username}'", [
                         "username" => $username,
                         "error" => $e->getMessage(),
-                        "actor" => $this->actor,
                     ]);
                 }
 			}
@@ -428,7 +361,6 @@ class SapAdSyncService
                 Logger::db("sap", "error", "Fehler bei beim Aktualisieren des Attributs 'Manager' des Benutzers '{$username}'", [
                     "username" => $username,
                     "error" => $e->getMessage(),
-                    "actor" => $this->actor,
                 ]);
             }
         }
@@ -482,69 +414,7 @@ class SapAdSyncService
 			Logger::db("sap", "error", "Fehler beim Erstellen der Mutation für '{$username}'", [
 				"username" => $username,
 				"error" => $e->getMessage(),
-				"actor" => $this->actor,
 			]);
 		}
 	}
-
-	protected function syncMissingInitials($adUsers, $rows): void
-	{
-		$usersWithoutInitials = $adUsers->filter(function ($user) {
-			return $user->getFirstAttribute("initials") === "99999";
-		});
-		
-		foreach ($usersWithoutInitials as $adUser) 
-		{
-			$username = $adUser->getFirstAttribute("samaccountname");
-			$vornameAD = $adUser->getFirstAttribute("givenname");
-			$nachnameAD = $adUser->getFirstAttribute("sn");
-			$descriptionAD = $adUser->getFirstAttribute("description");
-			
-			foreach ($rows as $row) 
-			{
-				$vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
-				$nachnameSAP = trim($row["d_name"] ?? "");
-				$batchbezSAP = trim($row["d_0032_batchbez"] ?? "");
-				
-				// Prüfen ob Vorname, Nachname und Beschreibung übereinstimmen
-				if ($vornameAD === $vornameSAP && $nachnameAD === $nachnameSAP && $descriptionAD === $batchbezSAP) 
-				{
-					$personalnummer = ltrim(trim($row["d_pernr"] ?? ""), "0");
-					
-					try 
-					{
-						// Personalnummer im AD setzen
-						$adUser->setFirstAttribute("initials", $personalnummer);
-						$adUser->save();
-						
-						Logger::db("sap", "info", "Personalnummer für Benutzer '{$username}' gesetzt", [
-							"username" => $username,
-							"alte_initials" => "99999",
-							"neue_initials" => $personalnummer,
-							"matched_by" => [
-								"vorname" => $vornameSAP,
-								"nachname" => $nachnameSAP,
-								"description" => $batchbezSAP,
-							],
-							"actor" => $this->actor,
-						]);
-						
-						$this->stats["initials_updated"] = ($this->stats["initials_updated"] ?? 0) + 1;
-						
-						break;
-					} 
-					catch (\Exception $e) 
-					{
-						Logger::db("sap", "error", "Fehler beim Setzen der Personalnummer für Benutzer '{$username}'", [
-							"username" => $username,
-							"personalnummer" => $personalnummer,
-							"error" => $e->getMessage(),
-							"actor" => $this->actor,
-						]);
-					}
-				}
-			}
-		}
-	}
-
 }
