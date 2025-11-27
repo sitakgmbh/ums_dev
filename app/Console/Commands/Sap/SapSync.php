@@ -48,17 +48,17 @@ class SapSync extends Command
             // SAP-AD-Mapping
             $this->info("Starte SAP-AD-Mapping...");
             $mappingService->map();
-            $this->info("SAP→AD Mapping abgeschlossen.");
+            $this->info("SAP → AD Mapping abgeschlossen.");
 
             // Sync SAP → AD
             $this->info("Starte SAP → AD Sync...");
             $adSyncService->sync();
-            $this->info("SAP→AD Sync abgeschlossen.");
+            $this->info("SAP → AD Sync abgeschlossen.");
 
             // Sync AD → DB
             $this->info("Starte AD → DB Sync...");
             $userSync->sync();
-            $this->info("AD→DB Sync abgeschlossen.");
+            $this->info("AD → DB Sync abgeschlossen.");
 
             $this->info("SAP Sync komplett abgeschlossen.");
 

@@ -6,8 +6,9 @@
 
 @section('intro')
     <p>Sehr geehrte Damen und Herren</p>
-	<p>Bitte erstellen Sie einen neuen SAP-Benutzer für <strong>{{ $eroeffnung->vorname }} {{ $eroeffnung->nachname }}</strong> mit der Rolle <strong>{{ $eroeffnung->sapRolle?->name ?? '-' }}</strong>.</p>
-
+	<p>Bitte erstellen Sie einen neuen SAP-Benutzer für <strong>{{ $eroeffnung->vorname }} {{ $eroeffnung->nachname }}</strong>.</p>
+	<p>Rolle: {{ $eroeffnung->sapRolle?->name ?? '-' }}</p>
+	
 	@if($eroeffnung->is_lei)
 		<p>Es handelt sich um einen Leistungserbringer.</p>
 	@endif
