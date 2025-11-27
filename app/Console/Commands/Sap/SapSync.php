@@ -55,8 +55,6 @@ class SapSync extends Command
             $adSyncService->sync();
             $this->info("SAP→AD Sync abgeschlossen.");
 
-			return Command::SUCCESS;
-
             // Sync AD → DB
             $this->info("Starte AD → DB Sync...");
             $userSync->sync();
