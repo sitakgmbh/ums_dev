@@ -26,6 +26,7 @@ class SapAdSyncService
         "extensionAttribute8"	=> ["sap" => "d_zzbereit"],
         "extensionAttribute9"	=> ["sap" => "d_einri"],
         "extensionAttribute11"	=> ["sap" => "d_einda"],
+		"extensionAttribute12"	=> ["sap" => "d_endda"],
         "extensionAttribute13"	=> ["sap" => "d_titel"],
         "extensionAttribute15"	=> ["sap" => "d_abt_nr"],
     ];
@@ -72,6 +73,7 @@ class SapAdSyncService
 			'extensionattribute8',
 			'extensionattribute9',
 			'extensionattribute11',
+			'extensionattribute12',
 			'extensionattribute13',
 			'extensionattribute15',
 		])
@@ -287,6 +289,10 @@ class SapAdSyncService
 		{
 			$sapField = $config["sap"];
 			$sapValue = trim($row[$sapField] ?? "");
+
+			// Ohne Austrittsdatum enthält der SAP-Export '00000000' und das wollen wir nicht. Wir nullen daher das Attribut im AD.
+			if ($adAttr === "extensionAttribute12" && $sapValue === "00000000") $sapValue = null;
+
 			$sapValue = $sapValue === "" ? null : $sapValue;
 			$adValue = $adUser->getFirstAttribute($adAttr);
 
