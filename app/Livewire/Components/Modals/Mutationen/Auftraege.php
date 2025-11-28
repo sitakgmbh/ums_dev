@@ -126,8 +126,8 @@ class Auftraege extends BaseModal
 			case "lei":
 				$configs[] = [
 					"standort" => null,
-					"to"       => config("ums.mutation.mail.lei.to", []),
-					"cc"       => config("ums.mutation.mail.lei.cc", []),
+					"to"       => config("ums.mutation.mail.sap_lei.to", []),
+					"cc"       => config("ums.mutation.mail.sap_lei.cc", []),
 					"mailable" => new \App\Mail\Mutationen\AuftragLei($this->entry),
 				];
 				break;
@@ -151,8 +151,8 @@ class Auftraege extends BaseModal
 				} 
 				else 
 				{
-					$to = [];
-					$cc = [];
+					$to = config("ums.mutation.mail.raumbeschriftung_wh.to", []); // Fallback
+					$cc = config("ums.mutation.mail.raumbeschriftung_wh.cc", []); // Fallback
 				}
 
 				$configs[] = [

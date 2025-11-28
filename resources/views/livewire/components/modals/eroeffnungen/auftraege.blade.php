@@ -6,7 +6,7 @@
     @endif
 
     @if(!empty($pendingAuftraege))
-        <p>Folgende Auftraege werden versendet:</p>
+        <p>Folgende Aufträge werden versendet:</p>
 
         <ul class="list-group">
 
@@ -20,7 +20,7 @@
                         <strong>
                             {{ $conf['label'] ?? $pendingAuftraege[$key] }}
                             @if(!empty($conf['standort']))
-                                ({{ $conf['standort'] }})
+                                Standort {{ $conf['standort'] }}
                             @endif
                         </strong>
 
@@ -44,7 +44,7 @@
         </ul>
 
     @else
-        <p>Keine Auftraege zum Versenden vorhanden.</p>
+        <p>Keine Aufträge zum Versenden vorhanden.</p>
     @endif
 @endsection
 

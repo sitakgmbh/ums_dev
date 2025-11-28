@@ -246,6 +246,13 @@ class EroeffnungenAdminTable extends BaseTable
 								 </span>";
 				}
 
+				if ($row->sap_rolle_id) 
+				{
+					$badges[] = "<span title='SAP-Benutzer'>
+									<i class='mdi mdi-account-hard-hat text-info'></i>
+								 </span>";
+				}
+
 				if ($row->vorab_lizenzierung) 
 				{
 					$badges[] = "<span title='M365-Lizenz bei Erstellung AD-Benutzer zuweisen'>

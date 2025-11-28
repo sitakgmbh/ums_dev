@@ -216,7 +216,6 @@ class MutationenAdminTable extends BaseTable
 				if ($row->status_mail)      $badges[] = $createBadge($row->status_ad, "mdi-email", "E-Mail");
                 if ($row->status_kis)     $badges[] = $createBadge($row->status_kis, "mdi-doctor", "KIS");
                 if ($row->status_tel)     $badges[] = $createBadge($row->status_tel, "mdi-phone", "Telefonie");
-                if ($row->status_sap)     $badges[] = $createBadge($row->status_sap, "mdi-hospital-building", "SAP");
                 if ($row->status_auftrag) $badges[] = $createBadge($row->status_auftrag, "mdi-clipboard-text", "Aufträge");
 				if ($row->status_info)     $badges[] = $createBadge($row->status_info, "mdi-information-variant", "Info-Mail");
 
@@ -232,12 +231,19 @@ class MutationenAdminTable extends BaseTable
                                  </span>";
                 }
 
-                if ($row->is_lei) 
+				if ($row->is_lei) 
 				{
-                    $badges[] = "<span title='Leistungserbringer'>
-                                    <i class='mdi mdi-doctor text-info'></i>
-                                 </span>";
-                }
+					$badges[] = "<span title='Leistungserbringer'>
+									<i class='mdi mdi-hospital-building text-info'></i>
+								 </span>";
+				}
+
+				if ($row->sap_rolle_id) 
+				{
+					$badges[] = "<span title='SAP-Benutzer'>
+									<i class='mdi mdi-account-hard-hat text-info'></i>
+								 </span>";
+				}
 
                 return "<div class='d-inline-flex align-items-center gap-1 flex-nowrap' style='white-space:nowrap;'>"
                     . implode('', $badges)

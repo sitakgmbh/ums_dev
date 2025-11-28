@@ -6,12 +6,11 @@
     @endif
 
     @if(!empty($pendingAuftraege))
-        <p>Folgende Auftraege werden versendet:</p>
+        <p>Folgende Aufträge werden versendet:</p>
 
         <ul class="list-group">
 
             @foreach($auftraegeDetails as $key => $configs)
-                {{-- $configs = Liste der Mail-Konfigurationen (1 oder mehrere) --}}
                 
                 @foreach($configs as $details)
                     <li class="list-group-item">
@@ -19,7 +18,7 @@
                         <strong>
                             {{ $details['label'] }}
                             @if(!empty($details['standort']))
-                                ({{ $details['standort'] }})
+                                Standort {{ $details['standort'] }}
                             @endif
                         </strong>
 
@@ -43,7 +42,7 @@
         </ul>
 
     @else
-        <p>Keine Auftraege zum Versenden vorhanden.</p>
+        <p>Keine Aufträge zum Versenden vorhanden.</p>
     @endif
 @endsection
 

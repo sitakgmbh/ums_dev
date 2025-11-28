@@ -101,8 +101,8 @@ class Auftraege extends BaseModal
 			case "lei":
 				$configs[] = [
 					"standort" => null,
-					"to"       => config("ums.eroeffnung.mail.lei.to", []),
-					"cc"       => config("ums.eroeffnung.mail.lei.cc", []),
+					"to"       => config("ums.eroeffnung.mail.sap_lei.to", []),
+					"cc"       => config("ums.eroeffnung.mail.sap_lei.cc", []),
 					"mailable" => new \App\Mail\Eroeffnungen\AuftragLei($this->entry),
 				];
 				break;
@@ -120,8 +120,8 @@ class Auftraege extends BaseModal
 					$to = config("ums.eroeffnung.mail.raumbeschriftung_rb.to", []);
 					$cc = config("ums.eroeffnung.mail.raumbeschriftung_rb.cc", []);
 				} else {
-					$to = [];
-					$cc = [];
+					$to = config("ums.eroeffnung.mail.raumbeschriftung_wh.to", []); // Fallback
+					$cc = config("ums.eroeffnung.mail.raumbeschriftung_wh.cc", []); // Fallback
 				}
 
 				$configs[] = [
