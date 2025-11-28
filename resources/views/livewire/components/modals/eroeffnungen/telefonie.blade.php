@@ -50,9 +50,9 @@
             <label class="form-label">Telefonnummer</label>
             <input type="text"
                    class="form-control @error('tel_nr') is-invalid @enderror"
-				   placeholder="+41 58 225 XXXX"
                    wire:model="tel_nr"
             @error('tel_nr') <div class="invalid-feedback">{{ $message }}</div> @enderror
+			<small>Erwartetes Format: +41 58 225 XXXX</small>
         </div>
     @endif
 

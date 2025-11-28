@@ -43,7 +43,7 @@ class Telefonie extends BaseModal
         }
 
         $this->tel_auswahl   = $this->entry->tel_auswahl;
-        $this->tel_nr        = $this->entry->tel_nr;
+        $this->tel_nr        = $this->entry->tel_nr ?? '+41 58 225 ';
         $this->cloudExt1     = $this->entry->cloudExt1 ?? null;
         $this->cloudExt2     = $this->entry->cloudExt2 ?? null;
 		$this->cloudExt3     = $this->entry->cloudExt3 ?? null;
