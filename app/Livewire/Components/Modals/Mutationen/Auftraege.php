@@ -47,7 +47,8 @@ class Auftraege extends BaseModal
 	private function determineAuftraege(): array
 	{
 		return array_filter([
-			"sap"    => ($this->entry->sap_rolle_id || $this->entry->sap_delete || $this->entry->komm_lei) ? "SAP" : null,
+			"sap"    => ($this->entry->sap_rolle_id || $this->entry->sap_delete) ? "SAP" : null,
+			"lei" => ($this->entry->is_lei) ? "LEI" : null,
 			"raumbeschriftung"=> $this->entry->raumbeschriftung ? "Raumbeschriftung" : null,
 			"berufskleider"   => $this->entry->berufskleider    ? "Berufskleider"    : null,
 			"garderobe"       => $this->entry->garderobe        ? "Garderobe"        : null,
@@ -114,25 +115,21 @@ class Auftraege extends BaseModal
 		switch ($key) 
 		{
 			case "sap":
-				$to = config("ums.mutation.mail.sap.to", []);
-				$cc = config("ums.mutation.mail.sap.cc", []);
-
-				// LEI zu CC hinzufügen
-				if ($this->entry->komm_lei) 
-				{
-					$cc = array_merge(
-						$cc,
-						config("ums.mutation.mail.sap_lei.to", [])
-					);
-				}
-
 				$configs[] = [
 					"standort" => null,
-					"to"       => $to,
-					"cc"       => $cc,
+					"to"       => config("ums.mutation.mail.sap.to", []),
+					"cc"       => config("ums.mutation.mail.sap.cc", []),
 					"mailable" => new \App\Mail\Mutationen\AuftragSap($this->entry),
 				];
-				
+				break;
+
+			case "lei":
+				$configs[] = [
+					"standort" => null,
+					"to"       => config("ums.mutation.mail.lei.to", []),
+					"cc"       => config("ums.mutation.mail.lei.cc", []),
+					"mailable" => new \App\Mail\Mutationen\AuftragLei($this->entry),
+				];
 				break;
 
 			case "raumbeschriftung":

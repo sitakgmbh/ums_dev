@@ -47,6 +47,7 @@ class Auftraege extends BaseModal
 	{
 		return array_filter([
 			"sap" => ($this->entry->sap_rolle_id) ? "SAP" : null,
+			"lei" => ($this->entry->is_lei) ? "LEI" : null,
 			"raumbeschriftung"=> $this->entry->raumbeschriftung  ? "Raumbeschriftung" : null,
 			"berufskleider"   => $this->entry->berufskleider     ? "Berufskleider"    : null,
 			"garderobe"       => $this->entry->garderobe         ? "Garderobe"        : null,
@@ -89,24 +90,23 @@ class Auftraege extends BaseModal
 		switch ($key) 
 		{
 			case "sap":
-				$to = config("ums.eroeffnung.mail.sap.to", []);
-				$cc = config("ums.eroeffnung.mail.sap.cc", []);
-
-				if ($this->entry->is_lei) {
-					$cc = array_merge(
-						$cc,
-						config("ums.eroeffnung.mail.sap_lei.to", [])
-					);
-				}
-
 				$configs[] = [
 					"standort" => null,
-					"to"       => $to,
-					"cc"       => $cc,
+					"to"       => config("ums.eroeffnung.mail.sap.to", []),
+					"cc"       => config("ums.eroeffnung.mail.sap.cc", []),
 					"mailable" => new \App\Mail\Eroeffnungen\AuftragSap($this->entry),
 				];
-				
 				break;
+
+			case "lei":
+				$configs[] = [
+					"standort" => null,
+					"to"       => config("ums.eroeffnung.mail.lei.to", []),
+					"cc"       => config("ums.eroeffnung.mail.lei.cc", []),
+					"mailable" => new \App\Mail\Eroeffnungen\AuftragLei($this->entry),
+				];
+				break;
+
 
 			case "raumbeschriftung":
 

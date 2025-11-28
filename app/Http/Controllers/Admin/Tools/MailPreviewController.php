@@ -9,6 +9,7 @@ use App\Mail\Eroeffnungen\{
     AuftragGarderobe as EroeffnungAuftragGarderobe,
     AuftragRaumbeschriftung as EroeffnungAuftragRaumbeschriftung,
     AuftragSap as EroeffnungAuftragSap,
+	AuftragLei as EroeffnungAuftragLei,
     AuftragZutrittsrechte as EroeffnungAuftragZutrittsrechte,
     InfoMail as EroeffnungInfoMail
 };
@@ -18,6 +19,7 @@ use App\Mail\Mutationen\{
     AuftragGarderobe as MutationAuftragGarderobe,
     AuftragRaumbeschriftung as MutationAuftragRaumbeschriftung,
     AuftragSap as MutationAuftragSap,
+	AuftragLei as MutationAuftragLei,
     AuftragZutrittsrechte as MutationAuftragZutrittsrechte,
     InfoMail as MutationInfoMail
 };
@@ -45,6 +47,7 @@ class MailPreviewController extends Controller
             'eroeffnungen.auftraggarderobe' => fn($id) => new EroeffnungAuftragGarderobe(Eroeffnung::findOrFail($id)),
             'eroeffnungen.auftragraumbeschriftung' => fn($id) => new EroeffnungAuftragRaumbeschriftung(Eroeffnung::findOrFail($id)),
             'eroeffnungen.auftragsap' => fn($id) => new EroeffnungAuftragSap(Eroeffnung::findOrFail($id)),
+			'eroeffnungen.auftraglei' => fn($id) => new EroeffnungAuftragLei(Eroeffnung::findOrFail($id)),
             'eroeffnungen.auftragzutrittsrechte' => fn($id) => new EroeffnungAuftragZutrittsrechte(Eroeffnung::findOrFail($id)),
             'eroeffnungen.infomail' => fn($id) => new EroeffnungInfoMail(Eroeffnung::findOrFail($id)),
 
@@ -54,6 +57,7 @@ class MailPreviewController extends Controller
             'mutationen.auftraggarderobe' => fn($id) => new MutationAuftragGarderobe(Mutation::findOrFail($id)),
             'mutationen.auftragraumbeschriftung' => fn($id) => new MutationAuftragRaumbeschriftung(Mutation::findOrFail($id)),
             'mutationen.auftragsap' => fn($id) => new MutationAuftragSap(Mutation::findOrFail($id)),
+			'mutationen.auftraglei' => fn($id) => new MutationAuftragLei(Mutation::findOrFail($id)),
             'mutationen.auftragzutrittsrechte' => fn($id) => new MutationAuftragZutrittsrechte(Mutation::findOrFail($id)),
             'mutationen.infomail' => fn($id) => new MutationInfoMail(Mutation::findOrFail($id)),
 			

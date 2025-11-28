@@ -1,12 +1,12 @@
 @extends('layouts.mail')
 
 @section('header')
-    <h2>Auftrag SAP-Eröffnung</h2>
+    <h2>Information Leistungserbringer</h2>
 @endsection
 
 @section('intro')
-    <p>Sehr geehrte Damen und Herren</p>
-	<p>Bitte erstellen Sie einen neuen SAP-Benutzer für <strong>{{ $eroeffnung->vorname }} {{ $eroeffnung->nachname }}</strong> mit der Rolle <strong>{{ $eroeffnung->sapRolle?->name ?? '-' }}</strong>.</p>
+    <p>Hallo</p>
+	<p>Der nachfolgende Mitarbeiter wurde uns als Leistungserbringer gemeldet.</p>
 
 @endsection
 
