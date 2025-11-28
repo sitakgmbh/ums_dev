@@ -46,8 +46,8 @@ class Auftraege extends BaseModal
 	private function determineAuftraege(): array
 	{
 		return array_filter([
-			"sap" => ($this->entry->sap_rolle_id) ? "SAP" : null,
-			"lei" => ($this->entry->is_lei) ? "LEI" : null,
+			"sap" => ($this->entry->sap_rolle_id) ? "SAP-Benutzer" : null,
+			"lei" => ($this->entry->is_lei) ? "Info Leistungserbringer" : null,
 			"raumbeschriftung"=> $this->entry->raumbeschriftung  ? "Raumbeschriftung" : null,
 			"berufskleider"   => $this->entry->berufskleider     ? "Berufskleider"    : null,
 			"garderobe"       => $this->entry->garderobe         ? "Garderobe"        : null,
