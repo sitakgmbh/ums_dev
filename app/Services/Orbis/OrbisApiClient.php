@@ -67,13 +67,13 @@ class OrbisApiClient
 		// Kein Fehler bei 404
 		if ($status === 404 && str_contains($endpoint, 'organizationalunitgroups')) 
 		{
-			Log::info("OE-Gruppe nicht gefunden: {$url}");
+			Logger::info("OE-Gruppe nicht gefunden: {$url}");
 			return $withHeaders ? ['body' => null, 'headers' => $http_response_header] : [];
 		}
 
 		if ($status >= 400) 
 		{
-			Log::error("Orbis-Fehler {$status} bei {$method} {$url}");
+			Logger::error("Orbis-Fehler {$status} bei {$method} {$url}");
 			throw new RuntimeException("Orbis API Fehler ({$status})", $status);
 		}
 		
