@@ -42,6 +42,14 @@ class OrbisApiClient
 			$headers[] = "Content-Type: application/json";
 		}
 		
+
+        Logger::debug('Orbis API Request', [
+            'url'     => $url,
+            'method'  => $method,
+            'headers' => $headers,
+            'body'    => $body,
+        ]);
+
 		$context = stream_context_create([
 			'ssl' => ['verify_peer' => false, 'verify_peer_name' => false],
 			'http' => [
@@ -70,7 +78,12 @@ class OrbisApiClient
 		}
 		
 		$decoded = json_decode($response, true) ?? [];
-		
+
+        Logger::debug('Orbis API Response', [
+            'status'  => $status,
+            'decoded' => $decoded,
+        ]);
+
 		return $withHeaders ? ['body' => $decoded, 'headers' => $http_response_header] : $decoded;
 	}
 }

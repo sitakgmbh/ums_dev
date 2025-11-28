@@ -1,9 +1,9 @@
 <?php
 namespace App\Services\Orbis;
 
-use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Carbon\Carbon;
+use App\Utils\Logging\Logger;
 
 class OrbisUserService
 {
@@ -333,7 +333,7 @@ class OrbisUserService
         } 
 		catch (\Exception $e) 
 		{
-            Log::warning('Fehler beim Deaktivieren von Organisationseinheiten', ['error' => $e->getMessage()]);
+            Logger::warning('Fehler beim Deaktivieren von Organisationseinheiten', ['error' => $e->getMessage()]);
         }
     }
 
@@ -356,7 +356,7 @@ class OrbisUserService
         } 
 		catch (\Exception $e) 
 		{
-            Log::warning('Fehler beim Deaktivieren von Organisationseinheitengruppen', ['error' => $e->getMessage()]);
+            Logger::warning('Fehler beim Deaktivieren von Organisationseinheitengruppen', ['error' => $e->getMessage()]);
         }
     }
 
@@ -379,7 +379,7 @@ class OrbisUserService
         } 
 		catch (\Exception $e) 
 		{
-            Log::warning('Fehler beim Deaktivieren von Benutzerrollen', ['error' => $e->getMessage()]);
+            Logger::warning('Fehler beim Deaktivieren von Benutzerrollen', ['error' => $e->getMessage()]);
         }
     }
 
@@ -410,7 +410,7 @@ class OrbisUserService
         } 
 		catch (\Exception $e) 
 		{
-            Log::warning("Fehler beim Setzen des Enddatums für {$resource}/{$id}", ['error' => $e->getMessage()]);
+            Logger::warning("Fehler beim Setzen des Enddatums für {$resource}/{$id}", ['error' => $e->getMessage()]);
         }
     }
 }
