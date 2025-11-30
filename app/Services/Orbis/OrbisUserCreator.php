@@ -21,7 +21,7 @@ class OrbisUserCreator
         $log = [];
 
         // Original: Eroeffnung laden
-        $entry = Eroeffnung::getEroeffnung($id);
+		$entry = Eroeffnung::find($id);
 
         if (!$entry) {
             $log[] = "Kein gueltiger Antrag gefunden";

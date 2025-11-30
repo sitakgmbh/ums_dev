@@ -20,7 +20,7 @@ class OrbisUserUpdater
         $log = [];
 
         // Antrag laden
-        $entry = Mutation::getMutation($id);
+        $entry = Mutation::find($id);
 
         if (!$entry || empty($entry["benutzername"])) {
             $log[] = "Kein gueltiger Antrag gefunden";
