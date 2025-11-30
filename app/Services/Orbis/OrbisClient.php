@@ -3,7 +3,7 @@
 namespace App\Services\Orbis;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use App\Utils\Logging\Logger;
 
 class OrbisClient
 {
@@ -40,31 +40,66 @@ class OrbisClient
     {
         $fullUrl = $url;
 
-        $response = Http::withHeaders([
-            'Authorization' => $this->authHeader,
-            'Accept' => 'application/json',
-        ])
-        ->withOptions(['verify' => false])
-        ->send($method, $fullUrl, ['json' => $body]);
+        //
+        // REQUEST LOG
+        //
+        Logger::debug("ORBIS REQUEST: {$method} {$fullUrl}");
 
-        Log::channel('orbis')->debug("{$method} {$url}");
-
-        if ($response->failed()) {
-            Log::channel('orbis')->error("Fehler {$response->status()} bei {$method} {$url}");
-
-            if (!empty($body)) {
-                Log::channel('orbis')->debug("Request-Body:\n" . json_encode($body, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-            } else {
-                Log::channel('orbis')->debug("Request-Body: <leer>");
-            }
-
-            Log::channel('orbis')->debug("Response:\n" . $response->body());
-            Log::channel('orbis')->debug("Response-Header:\n" . json_encode($response->headers()));
+        if (!empty($body)) {
+            Logger::debug(
+                "ORBIS REQUEST BODY:\n" .
+                json_encode($body, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            );
         }
 
+        //
+        // HTTP Request
+        //
+        $response = Http::withHeaders([
+                'Authorization' => $this->authHeader,
+                'Accept'        => 'application/json',
+            ])
+            ->withOptions(['verify' => false])
+            ->send($method, $fullUrl, ['json' => $body]);
+
+        //
+        // ERROR LOGGING
+        //
+        if ($response->failed()) {
+
+            Logger::error("ORBIS FEHLER {$response->status()} bei {$method} {$fullUrl}");
+
+            // Body
+            if (!empty($body)) {
+                Logger::debug(
+                    "ORBIS REQUEST-BODY:\n" .
+                    json_encode($body, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                );
+            } else {
+                Logger::debug("ORBIS REQUEST-BODY: <leer>");
+            }
+
+            // Response body
+            $raw = $response->body();
+            if ($raw && trim($raw) !== '') {
+                Logger::debug("ORBIS RESPONSE:\n" . $raw);
+            } else {
+                Logger::debug("ORBIS RESPONSE: <leer oder null>");
+            }
+
+            // Headers
+            Logger::debug(
+                "ORBIS RESPONSE-HEADER:\n" .
+                json_encode($response->headers(), JSON_PRETTY_PRINT)
+            );
+        }
+
+        //
+        // Return mit Headern
+        //
         if ($returnHeaders) {
             return [
-                'body' => $response->json(),
+                'body'    => $response->json(),
                 'headers' => $response->headers(),
             ];
         }
