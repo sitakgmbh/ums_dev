@@ -6,16 +6,20 @@ use App\Models\Mutation;
 
 class OrbisUserUpdater
 {
-    public function __construct(
-        private OrbisService $service,
-        private OrbisClient $client
-    ) {}
+    protected OrbisClient $client;
+    protected OrbisHelper $helper;
+
+    public function __construct(OrbisClient $client, OrbisHelper $helper)
+    {
+        $this->client  = $client;
+        $this->helper  = $helper;
+    }
 
     public function update(int $id): array
     {
         $log = [];
 
-        // Original: Antrag laden
+        // Antrag laden
         $entry = Mutation::getMutation($id);
 
         if (!$entry || empty($entry["benutzername"])) {
@@ -25,18 +29,18 @@ class OrbisUserUpdater
 
         $username = strtoupper($entry["benutzername"]);
 
-        // Original: Input lesen
+        // Input validieren
         $input = request()->all();
-        OrbisService::validateInput($input);
+        $this->helper->validateInput($input);
 
         $today = date("Y-m-d");
-        $orgUnits = $input["orgunits"] ?? [];
+        $orgUnits  = $input["orgunits"]  ?? [];
         $orgGroups = $input["orggroups"] ?? [];
-        $roles = $input["roles"] ?? [];
+        $roles     = $input["roles"]     ?? [];
         $employeeFunctionId = $input["employeeFunction"] ?? null;
 
         // Benutzer suchen
-        $user = $this->service->getUserByUsername($username);
+        $user = $this->helper->getUserByUsername($username);
 
         if (!$user || !isset($user["id"])) {
             $log[] = "Benutzer '{$username}' nicht gefunden";
@@ -46,7 +50,7 @@ class OrbisUserUpdater
         $userId = $user["id"];
 
         // Mitarbeiter laden
-        $employee = $this->service->getEmployeeByUserId($userId, $today);
+        $employee = $this->helper->getEmployeeByUserId($userId, $today);
 
         if (!$employee || !isset($employee["id"])) {
             $log[] = "Kein zugeordneter Mitarbeiter gefunden";
@@ -55,21 +59,20 @@ class OrbisUserUpdater
 
         $employeeId = $employee["id"];
 
-        // Falls keine zweite Abteilung: alle bestehenden Zuweisungen deaktivieren
+        // Falls keine zweite Abteilung → alles deaktivieren
         if (empty($entry["zweite_abteilung"])) {
             $log[] = "Existierende Zuweisungen werden vollstaendig ersetzt";
 
-            $this->service->disableAllEmployeeOrganizationalUnits($employeeId);
-            $this->service->disableAllEmployeeOrganizationalUnitGroups($employeeId);
-            $this->service->disableAllUserRoles($userId);
+            $this->helper->disableAllEmployeeOrganizationalUnits($employeeId);
+            $this->helper->disableAllEmployeeOrganizationalUnitGroups($employeeId);
+            $this->helper->disableAllUserRoles($userId);
         } else {
             $log[] = "Zweite Abteilung vorhanden – Ergaenzung statt Ersatz";
         }
 
-        /** --------------------------------------------
-         *  Organisationseinheiten zuweisen
-         * -------------------------------------------- */
+        /** Organisationseinheiten  */
         foreach ($orgUnits as $unit) {
+
             $assignment = [
                 "employee" => ["id" => $employeeId],
                 "organizationalunit" => ["id" => $unit["id"]],
@@ -85,77 +88,55 @@ class OrbisUserUpdater
                 $assignment["rank"] = ["id" => (int)$unit["rank"]];
             }
 
-            $this->client->send(
-                $this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitassignments",
-                "POST",
-                $assignment
-            );
+            $this->client->post("/resources/external/employeeorganizationalunitassignments", $assignment);
         }
 
         $log[] = "Organisationseinheiten verarbeitet";
 
-        /** --------------------------------------------
-         *  OE-Gruppen zuweisen
-         * -------------------------------------------- */
+        /** OE-Gruppen */
         foreach ($orgGroups as $groupId) {
-            $this->client->send(
-                $this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitgroupassignments",
-                "POST",
-                [
-                    "employee" => ["id" => $employeeId],
-                    "organizationalunitgroup" => ["id" => $groupId],
-                    "validityperiod" => [
-                        "from" => [
-                            "date" => $today,
-                            "handling" => "inclusive"
-                        ]
+            $this->client->post("/resources/external/employeeorganizationalunitgroupassignments", [
+                "employee" => ["id" => $employeeId],
+                "organizationalunitgroup" => ["id" => $groupId],
+                "validityperiod" => [
+                    "from" => [
+                        "date" => $today,
+                        "handling" => "inclusive"
                     ]
                 ]
-            );
+            ]);
         }
 
         $log[] = "Organisationseinheitengruppen verarbeitet";
 
-        /** --------------------------------------------
-         *  Rollen zuweisen
-         * -------------------------------------------- */
+        /** Rollen */
         foreach ($roles as $roleId) {
-            $this->client->send(
-                $this->client->getBaseUrl() . "/resources/external/userroleassignments",
-                "POST",
-                [
-                    "user" => ["id" => $userId],
-                    "role" => ["id" => $roleId],
-                    "validityperiod" => [
-                        "from" => [
-                            "date" => $today,
-                            "handling" => "inclusive"
-                        ]
+            $this->client->post("/resources/external/userroleassignments", [
+                "user" => ["id" => $userId],
+                "role" => ["id" => $roleId],
+                "validityperiod" => [
+                    "from" => [
+                        "date" => $today,
+                        "handling" => "inclusive"
                     ]
                 ]
-            );
+            ]);
         }
 
         $log[] = "Benutzerrollen verarbeitet";
 
-        /** --------------------------------------------
-         *  Mitarbeiterfunktion aktualisieren
-         * -------------------------------------------- */
+        /** Mitarbeiterfunktion */
         if ($employeeFunctionId) {
-            $this->client->send(
-                $this->client->getBaseUrl() . "/resources/external/employeeemployeefunctionassignments",
-                "POST",
-                [
-                    "employee" => ["id" => $employeeId],
-                    "employeefunction" => ["id" => (int)$employeeFunctionId],
-                    "validityperiod" => [
-                        "from" => [
-                            "date" => $today,
-                            "handling" => "inclusive"
-                        ]
+            $this->client->post("/resources/external/employeeemployeefunctionassignments", [
+                "employee" => ["id" => $employeeId],
+                "employeefunction" => ["id" => (int)$employeeFunctionId],
+                "validityperiod" => [
+                    "from" => [
+                        "date" => $today,
+                        "handling" => "inclusive"
                     ]
                 ]
-            );
+            ]);
 
             $log[] = "Mitarbeiterfunktion aktualisiert";
         }
