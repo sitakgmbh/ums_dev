@@ -68,62 +68,110 @@ class Kis extends BaseModal
             $this->username = strtoupper($this->entry->berechtigung ?? '');
         }
 
+        $this->permissionMode = $this->shouldUseMergeMode() ? 'merge' : 'replace';
+
         if ($this->entry->is_lei) {
             $this->employeeFunction = 34;
         }
 
-        $this->title = "KIS Benutzerverwaltung";
-        $this->size = "xl";
-        $this->position = "centered";
-        $this->backdrop = true;
-
         return true;
     }
 
-public function searchUser(OrbisHelper $helper): void
-{
-    $this->errorMessage = '';
-    $this->successMessage = '';
-    $this->userFound = false;
-    $this->isSearching = true;
-
-    try {
-        $this->validate(['username' => 'required|string|min:2']);
-
-        $details = $helper->getUserDetails($this->username);
-
-        $this->userDetails     = $details['user'];
-        $this->employeeDetails = $details['employee'];
-        $this->userFound       = true;
-
-        $this->preselectItems();
-
-    } catch (\Exception $e) {
-        $this->errorMessage = $e->getMessage();
-    } finally {
-        $this->isSearching = false;
+    protected function shouldUseMergeMode(): bool
+    {
+        return !empty($this->entry->abteilung2_id);
     }
-}
 
+    public function searchUser(OrbisHelper $helper): void
+    {
+        $this->errorMessage = '';
+        $this->successMessage = '';
+        $this->userFound = false;
+        $this->isSearching = true;
+
+        try {
+            $this->validate(['username' => 'required|string|min:2']);
+
+            $details = $helper->getUserDetails($this->username);
+
+            $this->userDetails     = $details['user'];
+            $this->employeeDetails = $details['employee'];
+            $this->userFound       = true;
+            $this->preselectItems();
+
+        } catch (\Exception $e) {
+            $this->errorMessage = $e->getMessage();
+        } finally {
+            $this->isSearching = false;
+        }
+    }
+
+    protected function preselectItems(): void
+    {
+        $this->selectedOrgUnits = collect($this->employeeDetails['organizationalunits'] ?? [])
+            ->pluck('id')->toArray();
+
+        $this->selectedOrgGroups = collect($this->employeeDetails['organizationalunitgroups'] ?? [])
+            ->pluck('id')->toArray();
+
+        $users = $this->employeeDetails['users'] ?? [];
+
+        if (!empty($users)) {
+            $first = $users[0];
+            $this->selectedUserId = $first['id'];
+
+            $this->selectedRoles  = collect($first['roles'] ?? [])
+                ->pluck('id')->toArray();
+        }
+    }
+
+    public function updatedSelectedUserId($userId): void
+    {
+        $users = $this->employeeDetails['users'] ?? [];
+        $selectedUser = collect($users)->firstWhere('id', $userId);
+
+        if ($selectedUser) {
+            $this->selectedRoles = collect($selectedUser['roles'] ?? [])
+                ->pluck('id')->toArray();
+        }
+    }
 
     public function submitUser(OrbisUserCreator $creator): void
+    {
+        $this->processSubmit($creator);
+    }
+
+    public function confirmSubmitWithoutFunction(OrbisUserCreator $creator): void
+    {
+        $this->processSubmit($creator);
+    }
+
+    protected function processSubmit(OrbisUserCreator $creator): void
     {
         $this->errorMessage = '';
         $this->successMessage = '';
 
         try {
+            $this->validate([
+                'employeeFunction' => 'nullable|integer',
+                'permissionMode'   => 'required|in:merge,replace',
+            ]);
+
+            $orgUnits = collect($this->selectedOrgUnits)->map(function ($id) {
+                $unit = collect($this->employeeDetails['organizationalunits'] ?? [])
+                    ->firstWhere('id', $id);
+
+                $r = ['id' => $id];
+                if (isset($unit['rank']['id'])) {
+                    $r['rank'] = $unit['rank']['id'];
+                }
+
+                return $r;
+            })->toArray();
+
             $input = [
                 'username'          => $this->username,
-                'referenceUser'     => null,
-                'orgunits'          => collect($this->selectedOrgUnits)
-                    ->map(fn($id) => collect($this->employeeDetails['organizationalunits'] ?? [])
-                        ->firstWhere('id', $id)
-                    )
-                    ->map(fn($u) => [
-                        'id'   => $u['id'],
-                        'rank' => $u['rank']['id'] ?? null
-                    ])
-                    ->toArray(),
+                'orgunits'          => $orgUnits,
                 'orggroups'         => $this->selectedOrgGroups,
                 'roles'             => $this->selectedRoles,
                 'employeeStateId'   => $this->employeeDetails['state']['id'] ?? null,
@@ -136,10 +184,20 @@ public function searchUser(OrbisHelper $helper): void
             if ($result['success']) {
                 $this->successMessage = implode('<br>', $result['log']);
                 $this->entry->update(['status_kis' => 2]);
+                $this->dispatch('kis-user-updated', log: $result['log']);
             }
 
         } catch (\Exception $e) {
-            $this->errorMessage = "Fehler: ".$e->getMessage();
+            $this->errorMessage = 'Fehler: ' . $e->getMessage();
+        }
+    }
+
+    public function markAsComplete(): void
+    {
+        if ($this->entry) {
+            $this->entry->update(['status_kis' => 2]);
+            $this->successMessage = "Status erfolgreich auf 'Erledigt' gesetzt.";
+            $this->dispatch('kis-updated');
         }
     }
 
