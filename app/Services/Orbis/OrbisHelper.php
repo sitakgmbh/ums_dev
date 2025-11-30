@@ -346,9 +346,10 @@ public function getUserDetails(string $username): array
 
 public function validateInput(array $input): void
 {
-    if (!isset($input['roles']) || !is_array($input['roles']) || count($input['roles']) === 0) {
-        throw new \InvalidArgumentException("Es muss mindestens eine Rolle ausgewaehlt werden.");
-    }
+	$input['roles'] = $input['roles'] ?? [];
+	if (!is_array($input['roles'])) {
+		$input['roles'] = [];
+	}
 
     $hasOrgUnits  = isset($input['orgunits'])  && is_array($input['orgunits'])  && count($input['orgunits'])  > 0;
     $hasOrgGroups = isset($input['orggroups']) && is_array($input['orggroups']) && count($input['orggroups']) > 0;
