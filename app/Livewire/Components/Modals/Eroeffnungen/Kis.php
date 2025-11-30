@@ -74,6 +74,14 @@ class Kis extends BaseModal
             $this->employeeFunction = 34;
         }
 
+        
+        $this->title = "KIS Benutzerverwaltung";
+        $this->size = "xl";
+        $this->position = "centered";
+        $this->backdrop = true;
+        $this->headerBg = "bg-primary";
+        $this->headerText = "text-white";
+
         return true;
     }
 
