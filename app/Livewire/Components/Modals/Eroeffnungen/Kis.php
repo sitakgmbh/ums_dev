@@ -80,6 +80,32 @@ class Kis extends BaseModal
         return true;
     }
 
+public function searchUser(OrbisHelper $helper): void
+{
+    $this->errorMessage = '';
+    $this->successMessage = '';
+    $this->userFound = false;
+    $this->isSearching = true;
+
+    try {
+        $this->validate(['username' => 'required|string|min:2']);
+
+        $details = $helper->getUserDetails($this->username);
+
+        $this->userDetails     = $details['user'];
+        $this->employeeDetails = $details['employee'];
+        $this->userFound       = true;
+
+        $this->preselectItems();
+
+    } catch (\Exception $e) {
+        $this->errorMessage = $e->getMessage();
+    } finally {
+        $this->isSearching = false;
+    }
+}
+
+
     public function submitUser(OrbisUserCreator $creator): void
     {
         $this->errorMessage = '';
