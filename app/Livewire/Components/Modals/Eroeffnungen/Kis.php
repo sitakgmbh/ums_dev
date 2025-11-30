@@ -42,18 +42,15 @@ class Kis extends BaseModal
         }
 
         $this->entry = Eroeffnung::with('vorlageBenutzer')->find($payload['entryId']);
+        if (!$this->entry) return false;
 
-        if (!$this->entry) {
-            return false;
-        }
-
+        // Erfolg NICHT loeschen!
         $this->reset([
             'username',
             'userDetails',
             'employeeDetails',
             'userFound',
             'errorMessage',
-            'successMessage',
             'selectedOrgUnits',
             'selectedOrgGroups',
             'selectedRoles',
@@ -62,11 +59,11 @@ class Kis extends BaseModal
 
         $this->modalType = $payload['type'] ?? 'eroeffnung';
 
-        if ($this->entry->vorlageBenutzer && $this->entry->vorlageBenutzer->username) {
-            $this->username = strtoupper($this->entry->vorlageBenutzer->username);
-        } else {
-            $this->username = strtoupper($this->entry->berechtigung ?? '');
-        }
+        $this->username = strtoupper(
+            $this->entry->vorlageBenutzer->username
+            ?? $this->entry->berechtigung
+            ?? ''
+        );
 
         $this->permissionMode = $this->shouldUseMergeMode() ? 'merge' : 'replace';
 
@@ -74,8 +71,7 @@ class Kis extends BaseModal
             $this->employeeFunction = 34;
         }
 
-        
-        $this->title = "KIS Benutzerverwaltung";
+		$this->title = "KIS Benutzerverwaltung";
         $this->size = "xl";
         $this->position = "centered";
         $this->backdrop = true;
@@ -162,9 +158,10 @@ class Kis extends BaseModal
         try {
             $this->validate([
                 'employeeFunction' => 'nullable|integer',
-                'permissionMode'   => 'required|in:merge,replace',
+                'permissionMode'   => 'required|in:merge,replace'
             ]);
 
+            // Orgunits
             $orgUnits = collect($this->selectedOrgUnits)->map(function ($id) {
                 $unit = collect($this->employeeDetails['organizationalunits'] ?? [])
                     ->firstWhere('id', $id);
@@ -187,6 +184,7 @@ class Kis extends BaseModal
                 'permissionMode'    => $this->permissionMode,
             ];
 
+            // *** WICHTIG: KEIN app() mehr! ***
             $result = $creator->create($this->entry->id, $input);
 
             if ($result['success']) {
@@ -196,7 +194,7 @@ class Kis extends BaseModal
             }
 
         } catch (\Exception $e) {
-            $this->errorMessage = 'Fehler: ' . $e->getMessage();
+            $this->errorMessage = 'Fehler: '.$e->getMessage();
         }
     }
 
