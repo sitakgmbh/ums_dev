@@ -18,7 +18,7 @@ class OrbisUserCreator
         $this->helper = $helper;
     }
 
-    public function create(int $id): array
+    public function create(int $id, array $input): array
     {
         $log = [];
 
@@ -26,24 +26,18 @@ class OrbisUserCreator
         $entry = Eroeffnung::find($id);
 
         if (!$entry) {
-            $log[] = "Kein gueltiger Antrag gefunden";
+            $log[] = "Kein gueltiger Antrag gefunden.";
             return ["success" => false, "log" => $log];
         }
 
-        // Input lesen
-		$input = request()->all();
-		Logger::debug("ORBIS INPUT (CREATE): " . json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-		// Livewire → Orbis Mapping
-		$input['orgunits']  = $input['selectedOrgUnits']  ?? [];
-		$input['orggroups'] = $input['selectedOrgGroups'] ?? [];
-		$input['roles']     = $input['selectedRoles']     ?? [];
+        Logger::debug("ORBIS INPUT (CREATE): " . json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
-		// Validierung
-		$this->helper->validateInput($input);
+        // Livewire → Orbis Mapping (orgunits Struktur bleibt erhalten!)
+        $input['orgunits']  = $input['orgunits']  ?? [];
+        $input['orggroups'] = $input['selectedOrgGroups'] ?? [];
+        $input['roles']     = $input['selectedRoles']     ?? [];
 
-        
-
-        // Validierung
+        // Validierung (macht nur count-checks)
         $this->helper->validateInput($input);
 
         // Username bestimmen

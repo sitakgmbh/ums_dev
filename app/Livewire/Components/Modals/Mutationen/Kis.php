@@ -197,7 +197,7 @@ class Kis extends BaseModal
                 'permissionMode'   => $this->permissionMode,
             ];
 
-            $result = $updater->update($this->entry->id, $input);
+            $result = app(OrbisUserUpdater::class)->update($this->entry->id, $input);
 
             if ($result['success']) {
                 $this->successMessage = implode('<br>', $result['log']);

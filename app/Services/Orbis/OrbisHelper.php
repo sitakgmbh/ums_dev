@@ -344,16 +344,18 @@ public function getUserDetails(string $username): array
         }
     }
 
+
 public function validateInput(array $input): void
 {
-    // --- Snapshot-Muell und nested Arrays entfernen ---
-    $input['orgunits']  = $this->cleanList($input['orgunits']  ?? []);
-    $input['orggroups'] = $this->cleanList($input['orggroups'] ?? []);
-    $input['roles']     = $this->cleanList($input['roles']     ?? []);
+    // Struktur fuer orgunits NICHT anfassen
+    $orgunits = is_array($input['orgunits'] ?? []) ? $input['orgunits'] : [];
 
-    // --- Alte Logik, unveraendert ---
-    $hasOrgUnits  = count($input['orgunits']) > 0;
-    $hasOrgGroups = count($input['orggroups']) > 0;
+    // Flache Listen fuer groups & roles
+    $orggroups = $this->cleanList($input['orggroups'] ?? []);
+    $roles     = $this->cleanList($input['roles'] ?? []);
+
+    $hasOrgUnits  = count($orgunits) > 0;
+    $hasOrgGroups = count($orggroups) > 0;
 
     if (!$hasOrgUnits && !$hasOrgGroups) {
         throw new \InvalidArgumentException(
@@ -361,6 +363,7 @@ public function validateInput(array $input): void
         );
     }
 }
+
 
 private function cleanList($list): array
 {
