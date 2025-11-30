@@ -1,295 +1,432 @@
 <?php
+
 namespace App\Services\Orbis;
 
-use Carbon\Carbon;
-use App\Utils\Logging\Logger;
+use Illuminate\Support\Facades\Log;
 
 class OrbisHelper
 {
-    public function __construct(protected OrbisApiClient $client)
+    public function __construct(
+        private OrbisClient $client
+    ) {}
+
+    public function employeeExists(string $shortname): bool
     {
+        $url = $this->client->getBaseUrl() . "/resources/external/employees?shortname=" . urlencode($shortname) . "&maxresults=1";
+        $result = $this->client->send($url, "GET");
+
+        return isset($result["employee"]) && count($result["employee"]) > 0;
     }
-    
+
+    public function userExists(string $username): bool
+    {
+        $url = $this->client->getBaseUrl() . "/resources/external/users?name=" . urlencode($username) . "&maxresults=1";
+        $result = $this->client->send($url, "GET");
+
+        return isset($result["user"]) && count($result["user"]) > 0;
+    }
+
+public function getUserDetails(string $username): array
+{
+    $username = strtoupper($username);
+    $today = date("Y-m-d");
+    $user = $this->getUserByUsername($username);
+
+    if (!$user || !isset($user["id"])) {
+        throw new \RuntimeException("Benutzer nicht gefunden.", 404);
+    }
+
+    $userId = $user["id"];
+    $employee = $this->getEmployeeByUserId($userId, $today);
+
+    if (!$employee || !isset($employee["id"])) {
+        throw new \RuntimeException("Kein Mitarbeiter gefunden.");
+    }
+
+    $employeeData = $this->getEmployeeDetails($employee, $today);
+    $orgUnits = $this->getEmployeeOrganizationalUnits($employeeData["id"], $today);
+    $orgGroups = $this->getEmployeeOrganizationalUnitGroups($employeeData["id"], $today);
+    $users = $this->getUsersByEmployeeId($employeeData["id"], $today);
+    $facility = $employeeData["facilities"][0] ?? null;
+
+    return [
+        "user" => $user,
+        "employee" => [
+            "id" => $employeeData["id"],
+            "salutation" => $employeeData["salutation"],
+            "title" => $employeeData["title"] ?? null,
+            "surname" => $employeeData["surname"],
+            "firstname" => $employeeData["firstname"],
+            "sex" => $employeeData["sex"],
+            "facility" => $facility,
+            "state" => $employeeData["state"],
+            "signinglevel" => $employeeData["signinglevel"],
+            "validfrom" => $employeeData["validfrom"],
+            "validthru" => $employeeData["validthru"],
+            "organizationalunits" => $orgUnits,
+            "organizationalunitgroups" => $orgGroups,
+            "users" => $users
+        ]
+    ];
+}
+
+
     public function getUserByUsername(string $username): ?array
     {
-        $endpoint = "resources/external/users?name=" . urlencode($username);
-        $users = $this->client->send($endpoint)['user'] ?? [];
-        $today = Carbon::now()->toDateString();
-        
-        foreach ($users as $user) 
-		{
-            $from = $user['validityperiod']['from']['date'] ?? null;
-            $thru = $user['validityperiod']['thru']['date'] ?? null;
-			
-            if ((!$from || $from <= $today) && (!$thru || $thru >= $today)) 
-			{
+        $url = $this->client->getBaseUrl() . "/resources/external/users?name=" . urlencode($username);
+        $users = $this->client->send($url)["user"] ?? [];
+        $today = date("Y-m-d");
+
+        foreach ($users as $user) {
+            $from = $user["validityperiod"]["from"]["date"] ?? null;
+            $thru = $user["validityperiod"]["thru"]["date"] ?? null;
+
+            if ((!$from || $from <= $today) && (!$thru || $thru >= $today)) {
                 return $user;
             }
         }
+
         return null;
     }
-    
-    public function getEmployeeByUserId(int $userId): ?array
+
+    public function getEmployeeByUserId($userId, string $today)
     {
-        $today = Carbon::now()->toDateString();
-        $endpoint = "resources/external/users/{$userId}/employees?referencedate={$today}&includecatalogtranslations=true";
-        return $this->client->send($endpoint)['employee'][0] ?? null;
+        $url = $this->client->getBaseUrl() . "/resources/external/users/{$userId}/employees?referencedate={$today}&includecatalogtranslations=true";
+        return $this->client->send($url)["employee"][0] ?? null;
     }
-    
-    public function getEmployeeDetails(array $employee): array
+
+    public function getEmployeeDetails(array $employee, string $today): array
     {
-        $today = Carbon::now()->toDateString();
-        $id = $employee['id'];
-        $human = $employee['humanbeing'] ?? [];
-        
-        $salutation = $this->getCatalogTranslation("SALUTATIONS", $human['salutation']['catalogcoding']['code'] ?? "");
-        $sex = $this->getCatalogTranslation("SEX", $human['sex']['catalogcoding']['code'] ?? "");
-        $title = $this->getCatalogTranslation("TITLES", $human['title']['catalogcoding']['code'] ?? "");
-        $state = $this->getCatalogTranslation("STATEOFEMPLOYEE", $employee['state']['catalogcoding']['code'] ?? "");
-        
+        $id = $employee["id"];
+        $human = $employee["humanbeing"] ?? [];
+
         return [
-            'id' => $id,
-            'firstname' => $human['firstname'] ?? null,
-            'surname' => $human['surname'] ?? null,
-            'sex' => $sex,
-            'salutation' => $salutation,
-            'title' => $title,
-            'state' => $state,
-            'signinglevel' => $employee['signinglevel'] ?? null,
-            'validfrom' => $employee['validityperiod']['from']['date'] ?? null,
-            'validthru' => $employee['validityperiod']['thru']['date'] ?? null,
-            'facilities' => $this->getEmployeeFacilities($id, $today),
-            'organizationalunits' => $this->getEmployeeOrganizationalUnits($id, $today),
-            'organizationalunitgroups' => $this->getEmployeeOrganizationalUnitGroups($id, $today),
-            'users' => $this->getEmployeeUsers($id, $today),
+            "id" => $id,
+            "firstname" => $human["firstname"] ?? null,
+            "surname" => $human["surname"] ?? null,
+            "sex" => $this->getCatalogTranslation("SEX", $human["sex"]["catalogcoding"]["code"] ?? ""),
+            "salutation" => $this->getCatalogTranslation("SALUTATIONS", $human["salutation"]["catalogcoding"]["code"] ?? ""),
+            "title" => $this->getCatalogTranslation("TITLES", $human["title"]["catalogcoding"]["code"] ?? ""),
+            "state" => $this->getCatalogTranslation("STATEOFEMPLOYEE", $employee["state"]["catalogcoding"]["code"] ?? ""),
+            "signinglevel" => $employee["signinglevel"] ?? null,
+            "validfrom" => $employee["validityperiod"]["from"]["date"] ?? null,
+            "validthru" => $employee["validityperiod"]["thru"]["date"] ?? null,
+            "facilities" => $this->getEmployeeFacilities($id, $today)
         ];
     }
-    
+
     public function getEmployeeFacilities(int $employeeId, string $today): array
     {
-        $endpoint = "resources/external/employees/{$employeeId}/facilityassignments?referencedate={$today}";
-        
-        try 
-		{
-            $response = $this->client->send($endpoint);
-            $result = [];
-            
-            foreach ($response['employeefacilityassignment'] ?? [] as $entry) 
-			{
-                $fid = $entry['facility']['id'] ?? null;
-				
-                if ($fid) 
-				{
-                    $detail = $this->client->send("resources/external/facilities/{$fid}");
-                    $result[] = [
-                        'id' => $fid,
-                        'name' => $detail['name'] ?? null,
-                        'shortname' => $detail['shortname'] ?? null,
-                    ];
-                }
+        $result = [];
+        $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/facilityassignments?referencedate={$today}";
+        $response = $this->client->send($url);
+
+        foreach ($response["employeefacilityassignment"] ?? [] as $entry) {
+            $fid = $entry["facility"]["id"] ?? null;
+
+            if ($fid) {
+                $details = $this->client->send($this->client->getBaseUrl() . "/resources/external/facilities/{$fid}");
+                $result[] = [
+                    "id" => $fid,
+                    "name" => $details["name"] ?? null,
+                    "shortname" => $details["shortname"] ?? null
+                ];
             }
-            
-            return $result;
-        } 
-		catch (\Exception $e) 
-		{
-            return [];
         }
+
+        return $result;
     }
-    
+
     public function getEmployeeOrganizationalUnits(int $employeeId, string $today): array
     {
-        $endpoint = "resources/external/employees/{$employeeId}/organizationalunitassignments?referencedate={$today}";
-        
-        try 
-		{
-            $response = $this->client->send($endpoint);
-            $result = [];
-            
-            foreach ($response['employeeorganizationalunitassignment'] ?? [] as $assignment) 
-			{
-                $unitId = $assignment['organizationalunit']['id'] ?? null;
-                
-                if ($unitId) 
-				{
-                    $detail = $this->client->send("resources/external/organizationalunits/{$unitId}");
-                    
-                    $result[] = [
-                        'id' => $unitId,
-                        'name' => $detail['name'] ?? null,
-                        'shortname' => $detail['shortname'] ?? null,
-                        'type' => $detail['type']['catalogcoding']['code'] ?? null,
-                        'rank' => $this->getRank($assignment['rank'] ?? null),
-                    ];
-                }
+        $result = [];
+        $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/organizationalunitassignments?referencedate={$today}";
+        $response = $this->client->send($url);
+
+        foreach ($response["employeeorganizationalunitassignment"] ?? [] as $a) {
+            $unitId = $a["organizationalunit"]["id"] ?? null;
+
+            if ($unitId) {
+                $detail = $this->client->send(
+                    $this->client->getBaseUrl() . "/resources/external/organizationalunits/{$unitId}"
+                );
+
+                $result[] = [
+                    "id" => $unitId,
+                    "name" => $detail["name"] ?? null,
+                    "shortname" => $detail["shortname"] ?? null,
+                    "type" => $detail["type"]["catalogcoding"]["code"] ?? null,
+                    "rank" => $this->getRank($a["rank"] ?? null)
+                ];
             }
-            
-            return $result;
-        } 
-		catch (\Exception $e) 
-		{
-            return [];
         }
+
+        return $result;
     }
-    
+
     public function getEmployeeOrganizationalUnitGroups(int $employeeId, string $today): array
     {
-        $endpoint = "resources/external/employees/{$employeeId}/organizationalunitgroupassignments?referencedate={$today}";
-        
-        try 
-		{
-            $response = $this->client->send($endpoint);
-            $result = [];
-            
-            foreach ($response['employeeorganizationalunitgroupassignment'] ?? [] as $assignment) 
-			{
-                $groupId = $assignment['organizationalunitgroup']['id'] ?? null;
-                
-                if (!$groupId) continue;
-                
-                $detail = $this->client->send("resources/external/organizationalunitgroups/{$groupId}");
-                
-                $name = $detail['name'] ?? null;
-                $shortname = $detail['shortname'] ?? null;
-                $type = $detail['organizationalunitgrouptypeassignments']['organizationalunitgrouptypeassignment'][0]['type']['catalogcoding']['code'] ?? null;
-                
-                if ($name && $shortname && $type) 
-				{
-                    $result[] = [
-                        'id' => $groupId,
-                        'name' => $name,
-                        'shortname' => $shortname,
-                        'type' => $type,
-                    ];
-                }
-            }
-            
-            return $result;
-        } 
-		catch (\Exception $e) 
-		{
-            return [];
-        }
-    }
-    
-    public function getEmployeeUsers(int $employeeId, string $today): array
-    {
-        $endpoint = "resources/external/employees/{$employeeId}/users?referencedate={$today}";
-        
-        try 
-		{
-            $response = $this->client->send($endpoint);
-            $result = [];
-            
-            foreach ($response['user'] ?? [] as $user) 
-			{
-                $userId = $user['id'];
+        $result = [];
+        $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/organizationalunitgroupassignments?referencedate={$today}";
+        $response = $this->client->send($url);
+
+        foreach ($response["employeeorganizationalunitgroupassignment"] ?? [] as $a) {
+            $id = $a["organizationalunitgroup"]["id"] ?? null;
+            if (!$id) continue;
+
+            $detail = $this->client->send(
+                $this->client->getBaseUrl() . "/resources/external/organizationalunitgroups/{$id}"
+            );
+
+            $name = $detail["name"] ?? null;
+            $shortname = $detail["shortname"] ?? null;
+            $type = $detail["organizationalunitgrouptypeassignments"]["organizationalunitgrouptypeassignment"][0]["type"]["catalogcoding"]["code"] ?? null;
+
+            if ($name && $shortname && $type) {
                 $result[] = [
-                    'id' => $userId,
-                    'username' => $user['name'] ?? null,
-                    'description' => $user['description'] ?? null,
-                    'validfrom' => $user['validityperiod']['from']['date'] ?? null,
-                    'validthru' => $user['validityperiod']['thru']['date'] ?? null,
-                    'locked' => $user['locked'] ?? null,
-                    'mustchangepassword' => $user['mustchangepassword'] ?? null,
-                    'passwordrefreshinterval' => $user['passwordrefreshinterval'] ?? null,
-                    'roles' => $this->getUserRoles($userId, $today),
+                    "id" => $id,
+                    "name" => $name,
+                    "shortname" => $shortname,
+                    "type" => $type
                 ];
             }
-            
-            return $result;
-        } 
-		catch (\Exception $e) 
-		{
-            return [];
         }
+
+        return $result;
     }
-    
+
+    public function getUsersByEmployeeId(int $employeeId, string $today): array
+    {
+        $result = [];
+        $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/users?referencedate={$today}";
+        $users = $this->client->send($url)["user"] ?? [];
+
+        foreach ($users as $user) {
+            $result[] = [
+                "id" => $user["id"] ?? null,
+                "username" => $user["name"] ?? null,
+                "description" => $user["description"] ?? null,
+                "validfrom" => $user["validityperiod"]["from"]["date"] ?? null,
+                "validthru" => $user["validityperiod"]["thru"]["date"] ?? null,
+                "locked" => $user["locked"] ?? null,
+                "mustchangepassword" => $user["mustchangepassword"] ?? null,
+                "passwordrefreshinterval" => $user["passwordrefreshinterval"] ?? null,
+                "roles" => $this->getUserRoles($user["id"], $today)
+            ];
+        }
+
+        return $result;
+    }
+
     public function getUserRoles(int $userId, string $today): array
     {
-        $endpoint = "resources/external/users/{$userId}/roleassignments?referencedate={$today}";
-        
-        try 
-		{
-            $response = $this->client->send($endpoint);
-            $result = [];
-            
-            foreach ($response['userroleassignment'] ?? [] as $assignment) 
-			{
-                $roleId = $assignment['role']['id'] ?? null;
-                
-                if (!$roleId) continue;
-                
-                $details = $this->client->send("resources/external/roles/{$roleId}");
-                
-                $result[] = [
-                    'id' => $roleId,
-                    'name' => $details['name'] ?? 'Unbekannt',
-                ];
-            }
-            
-            return $result;
-        } 
-		catch (\Exception $e) 
-		{
-            return [];
+        $url = $this->client->getBaseUrl() . "/resources/external/users/{$userId}/roleassignments?referencedate={$today}";
+        $result = [];
+
+        foreach ($this->client->send($url)["userroleassignment"] ?? [] as $a) {
+            $rid = $a["role"]["id"] ?? null;
+            if (!$rid) continue;
+
+            $details = $this->client->send(
+                $this->client->getBaseUrl() . "/resources/external/roles/{$rid}"
+            );
+
+            $result[] = [
+                "id" => $rid,
+                "name" => $details["name"] ?? "Unbekannt"
+            ];
         }
+
+        return $result;
     }
-    
+
     public function getRank(?array $rank): ?array
     {
-        if (!isset($rank['id'])) 
-		{
+        if (!isset($rank["id"])) {
             return null;
         }
-        
-        try 
-		{
-            $details = $this->client->send("resources/external/catalogs/{$rank['id']}");
-            
-            return [
-                'id' => $rank['id'],
-                'code' => $details['catalogcoding']['code'] ?? null,
-            ];
-        } 
-		catch (\Exception $e) 
-		{
-            return null;
-        }
+
+        $details = $this->client->send(
+            $this->client->getBaseUrl() . "/resources/external/catalogs/{$rank["id"]}"
+        );
+
+        return [
+            "id" => $rank["id"],
+            "code" => $details["catalogcoding"]["code"] ?? null
+        ];
     }
-    
+
     public function getCatalogTranslation(string $codesystem, string $code): array
     {
-        if (!$code) return [];
-        
-        $endpoint = "resources/external/catalogs?codesystem={$codesystem}&code=" . urlencode($code) . "&includecatalogtranslations=true";
-        
-        try 
-		{
-            $data = $this->client->send($endpoint);
-            
-            $result = [
-                'id' => $data['id'] ?? null,
-                'code' => $code,
-                'shortname' => null,
-                'longname' => null,
-            ];
-            
-            foreach ($data['catalogtranslations']['catalogtranslation'] ?? [] as $trans) 
-			{
-                if (in_array($trans['languageoftranslation']['id'] ?? '', ['de', 'de_CH'])) 
-				{
-                    $result['shortname'] = $trans['shortname'] ?? null;
-                    $result['longname'] = $trans['longname'] ?? null;
-                    break;
-                }
-            }
-            
-            return $result;
-        } 
-		catch (\Exception $e) 
-		{
+        if (!$code) {
             return [];
         }
+
+        $url = $this->client->getBaseUrl() . "/resources/external/catalogs?codesystem={$codesystem}&code=" . urlencode($code) . "&includecatalogtranslations=true";
+        $data = $this->client->send($url);
+
+        $result = [
+            "id" => $data["id"] ?? null,
+            "code" => $code,
+            "id_language" => null,
+            "shortname" => null,
+            "longname" => null
+        ];
+
+        foreach ($data["catalogtranslations"]["catalogtranslation"] ?? [] as $trans) {
+            if (in_array($trans["languageoftranslation"]["id"] ?? "", ["de", "de_CH"])) {
+                $result["shortname"] = $trans["shortname"] ?? null;
+                $result["longname"] = $trans["longname"] ?? null;
+                $result["id_language"] = $trans["languageoftranslation"]["id"] ?? null;
+                break;
+            }
+        }
+
+        return $result;
+    }
+
+    public function createEmployee(array $payload): ?int
+    {
+        $url = $this->client->getBaseUrl() . "/resources/external/employees";
+        $response = $this->client->send($url, "POST", $payload, true);
+
+        foreach ($response["headers"] ?? [] as $key => $values) {
+            foreach ($values as $value) {
+                if (str_contains($value, "Location:") && preg_match('#/employees/(\d+)#', $value, $m)) {
+                    return (int)$m[1];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function createUser(int $employeeId, array $payload): ?int
+    {
+        $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/users";
+        $response = $this->client->send($url, "POST", $payload, true);
+
+        foreach ($response["headers"] ?? [] as $key => $values) {
+            foreach ($values as $value) {
+                if (str_contains($value, "Location:") && preg_match('#/users/(\d+)#', $value, $m)) {
+                    return (int)$m[1];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function findAvailableUsername(string $base): array
+    {
+        $log = [];
+        $prefix = $base;
+        $counter = 0;
+
+        if (preg_match('/^(.*?)(\d+)$/', $base, $matches)) {
+            $prefix = $matches[1];
+            $counter = (int)$matches[2];
+        }
+
+        while (true) {
+            $testname = $counter === 0 ? $prefix : $prefix . $counter;
+
+            $employeeExists = $this->employeeExists($testname);
+            $userExists = $this->userExists($testname);
+
+            if (!$employeeExists && !$userExists) {
+                $log[] = "Benutzername '{$testname}' ist verfuegbar.";
+                return ["username" => $testname, "log" => $log];
+            }
+
+            $log[] = "Benutzername '{$testname}' ist bereits vergeben.";
+            $counter++;
+        }
+    }
+
+    public static function validateInput(array $input): void
+    {
+        if (!isset($input['roles']) || !is_array($input['roles']) || count($input['roles']) === 0) {
+            abort(response()->json([
+                "status" => "error",
+                "message" => "Es muss mindestens eine Rolle ausgewaehlt werden."
+            ], 400));
+        }
+
+        $hasOrgUnits = isset($input['orgunits']) && is_array($input['orgunits']) && count($input['orgunits']) > 0;
+        $hasOrgGroups = isset($input['orggroups']) && is_array($input['orggroups']) && count($input['orggroups']) > 0;
+
+        if (!$hasOrgUnits && !$hasOrgGroups) {
+            abort(response()->json([
+                "status" => "error",
+                "message" => "Bitte waehle mindestens eine Organisationseinheit oder eine Organisationseinheitgruppe aus."
+            ], 400));
+        }
+    }
+
+    public function disableAllEmployeeOrganizationalUnits(int $employeeId): void
+    {
+        $today = date("Y-m-d");
+        $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/organizationalunitassignments?referencedate={$today}";
+        $response = $this->client->send($url);
+
+        foreach ($response["employeeorganizationalunitassignment"] ?? [] as $a) {
+            if (!empty($a["id"]) && $a["id"] > 0) {
+                $this->setAssignmentEndDate("employeeorganizationalunitassignments", (int)$a["id"]);
+            }
+        }
+    }
+
+    public function disableAllEmployeeOrganizationalUnitGroups(int $employeeId): void
+    {
+        $today = date("Y-m-d");
+        $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/organizationalunitgroupassignments?referencedate={$today}";
+        $response = $this->client->send($url);
+
+        foreach ($response["employeeorganizationalunitgroupassignment"] ?? [] as $a) {
+            if (!empty($a["id"]) && $a["id"] > 0) {
+                $this->setAssignmentEndDate("employeeorganizationalunitgroupassignments", (int)$a["id"]);
+            }
+        }
+    }
+
+    public function disableAllUserRoles(int $userId): void
+    {
+        $today = date("Y-m-d");
+        $url = $this->client->getBaseUrl() . "/resources/external/users/{$userId}/roleassignments?referencedate={$today}";
+        $response = $this->client->send($url);
+
+        foreach ($response["userroleassignment"] ?? [] as $a) {
+            if (!empty($a["id"]) && $a["id"] > 0) {
+                $this->setAssignmentEndDate("userroleassignments", (int)$a["id"]);
+            }
+        }
+    }
+
+    private function setAssignmentEndDate(string $resource, int $id): void
+    {
+        $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}";
+        $yesterday = date("Y-m-d", strtotime("-1 day"));
+
+        $existing = $this->client->send($url);
+
+        if (!is_array($existing) || empty($existing["id"])) {
+            return;
+        }
+
+        $from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
+
+        $payload = $existing;
+        $payload["canceled"] = true;
+        $payload["validityperiod"] = [
+            "from" => $from,
+            "to" => ["date" => $yesterday]
+        ];
+
+        $this->client->send(
+            $this->client->getBaseUrl() . "/resources/external/{$resource}",
+            "PUT",
+            $payload
+        );
     }
 }
