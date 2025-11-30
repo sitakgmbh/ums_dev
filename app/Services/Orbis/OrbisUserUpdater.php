@@ -31,10 +31,16 @@ class OrbisUserUpdater
         }
 
         // Input
-        $input = request()->all();
-        Logger::debug("ORBIS INPUT (UPDATE): " . json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+		$input = request()->all();
 
-        $this->helper->validateInput($input);
+		// Livewire → Orbis Mapping
+		$input['orgunits']  = $input['selectedOrgUnits']  ?? [];
+		$input['orggroups'] = $input['selectedOrgGroups'] ?? [];
+		$input['roles']     = $input['selectedRoles']     ?? [];
+
+		// Validierung
+		$this->helper->validateInput($input);
+
 
         $username = strtoupper($entry->benutzername);
         $today = date("Y-m-d");

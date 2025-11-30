@@ -31,7 +31,16 @@ class OrbisUserCreator
         }
 
         // Input lesen
-        $input = request()->all();
+		$input = request()->all();
+
+		// Livewire → Orbis Mapping
+		$input['orgunits']  = $input['selectedOrgUnits']  ?? [];
+		$input['orggroups'] = $input['selectedOrgGroups'] ?? [];
+		$input['roles']     = $input['selectedRoles']     ?? [];
+
+		// Validierung
+		$this->helper->validateInput($input);
+
         Logger::debug("ORBIS INPUT (CREATE): " . json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         // Validierung
