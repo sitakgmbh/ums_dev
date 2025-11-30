@@ -344,25 +344,22 @@ public function getUserDetails(string $username): array
         }
     }
 
-    public static function validateInput(array $input): void
-    {
-        if (!isset($input['roles']) || !is_array($input['roles']) || count($input['roles']) === 0) {
-            abort(response()->json([
-                "status" => "error",
-                "message" => "Es muss mindestens eine Rolle ausgewaehlt werden."
-            ], 400));
-        }
-
-        $hasOrgUnits = isset($input['orgunits']) && is_array($input['orgunits']) && count($input['orgunits']) > 0;
-        $hasOrgGroups = isset($input['orggroups']) && is_array($input['orggroups']) && count($input['orggroups']) > 0;
-
-        if (!$hasOrgUnits && !$hasOrgGroups) {
-            abort(response()->json([
-                "status" => "error",
-                "message" => "Bitte waehle mindestens eine Organisationseinheit oder eine Organisationseinheitgruppe aus."
-            ], 400));
-        }
+public function validateInput(array $input): void
+{
+    if (!isset($input['roles']) || !is_array($input['roles']) || count($input['roles']) === 0) {
+        throw new \InvalidArgumentException("Es muss mindestens eine Rolle ausgewaehlt werden.");
     }
+
+    $hasOrgUnits  = isset($input['orgunits'])  && is_array($input['orgunits'])  && count($input['orgunits'])  > 0;
+    $hasOrgGroups = isset($input['orggroups']) && is_array($input['orggroups']) && count($input['orggroups']) > 0;
+
+    if (!$hasOrgUnits && !$hasOrgGroups) {
+        throw new \InvalidArgumentException(
+            "Bitte waehle mindestens eine Organisationseinheit oder eine Organisationseinheitgruppe aus."
+        );
+    }
+}
+
 
     public function disableAllEmployeeOrganizationalUnits(int $employeeId): void
     {
