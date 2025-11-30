@@ -399,7 +399,17 @@ class OrbisUserService
 
             $from = $existing['validityperiod']['from'] ?? ['date' => '2000-01-01'];
 
-            $payload = $existing;
+			$payload = [
+				'id' => $existing['id'],
+				'user' => ['id' => $existing['user']['id']],
+				'role' => ['id' => $existing['role']['id']],
+				'canceled' => true,
+				'validityperiod' => [
+					'from' => $existing['validityperiod']['from'],
+					'to' => ['date' => $yesterday, 'handling' => 'inclusive']
+				]
+			];
+
             $payload['canceled'] = true;
             $payload['validityperiod'] = [
                 'from' => $from,
