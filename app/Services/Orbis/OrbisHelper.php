@@ -346,13 +346,14 @@ public function getUserDetails(string $username): array
 
 public function validateInput(array $input): void
 {
-	$input['roles'] = $input['roles'] ?? [];
-	if (!is_array($input['roles'])) {
-		$input['roles'] = [];
-	}
+    // --- Snapshot-Muell und nested Arrays entfernen ---
+    $input['orgunits']  = $this->cleanList($input['orgunits']  ?? []);
+    $input['orggroups'] = $this->cleanList($input['orggroups'] ?? []);
+    $input['roles']     = $this->cleanList($input['roles']     ?? []);
 
-    $hasOrgUnits  = isset($input['orgunits'])  && is_array($input['orgunits'])  && count($input['orgunits'])  > 0;
-    $hasOrgGroups = isset($input['orggroups']) && is_array($input['orggroups']) && count($input['orggroups']) > 0;
+    // --- Alte Logik, unveraendert ---
+    $hasOrgUnits  = count($input['orgunits']) > 0;
+    $hasOrgGroups = count($input['orggroups']) > 0;
 
     if (!$hasOrgUnits && !$hasOrgGroups) {
         throw new \InvalidArgumentException(
@@ -360,6 +361,40 @@ public function validateInput(array $input): void
         );
     }
 }
+
+private function cleanList($list): array
+{
+    if (!is_array($list)) {
+        return [];
+    }
+
+    $clean = [];
+
+    foreach ($list as $item) {
+
+        // Livewire Snapshot Marker entfernen
+        if (is_array($item) && isset($item['s']) && $item['s'] === 'arr') {
+            continue;
+        }
+
+        // Nested Arrays flatten
+        if (is_array($item)) {
+            foreach ($item as $id) {
+                if (is_numeric($id)) {
+                    $clean[] = (int)$id;
+                }
+            }
+        }
+
+        // Einzelwerte
+        elseif (is_numeric($item)) {
+            $clean[] = (int)$item;
+        }
+    }
+
+    return array_values(array_unique($clean));
+}
+
 
 
     public function disableAllEmployeeOrganizationalUnits(int $employeeId): void
