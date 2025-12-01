@@ -120,7 +120,7 @@ class Kis extends BaseModal
         $this->selectedOrgGroups = collect($this->employeeDetails['organizationalunitgroups'] ?? [])
             ->pluck('id')->toArray();
 
-		$users = $this->userDetails['users'] ?? [];
+		$users = $this->employeeDetails['users'] ?? [];
 
         if (!empty($users)) {
             $first = $users[0];
@@ -132,7 +132,7 @@ class Kis extends BaseModal
 
     public function updatedSelectedUserId($userId): void
     {
-        $users = $this->userDetails['users'] ?? [];
+        $users = $this->employeeDetails['users'] ?? [];
         $selectedUser = collect($users)->firstWhere('id', $userId);
 
         if ($selectedUser) {
