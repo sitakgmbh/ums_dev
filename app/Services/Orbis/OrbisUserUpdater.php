@@ -23,9 +23,9 @@ class OrbisUserUpdater
 		Logger::debug("ORBIS UPDATE INPUT: " . json_encode($input, JSON_PRETTY_PRINT));
 
         $log = [];
-
+Logger::debug("STEP 1 reached");
         $entry = Mutation::find($id);
-
+Logger::debug("STEP 2 reached");
         if (!$entry || empty($entry->benutzername)) {
             $log[] = "Kein gueltiger Antrag gefunden";
             return ["success" => false, "log" => $log];
@@ -41,7 +41,7 @@ class OrbisUserUpdater
         $lookupRol   = $input['roles_lookup']     ?? [];
 
         $this->helper->validateInput($input);
-
+Logger::debug("STEP 3 reached");
         $username = strtoupper($entry->benutzername);
         $today = date("Y-m-d");
 
@@ -52,7 +52,15 @@ class OrbisUserUpdater
         }
 
         // User suchen
+		Logger::debug("STEP USER LOOKUP: suche nach '{$username}'");
+
         $user = $this->helper->getUserByUsername($username);
+
+if (!$user) {
+    Logger::debug("STEP USER LOOKUP: nichts gefunden fuer {$username}");
+}
+
+
         if (!$user || !isset($user["id"])) {
             $log[] = "Benutzer '{$username}' nicht gefunden";
             return ["success" => false, "log" => $log];

@@ -207,11 +207,13 @@ public function confirmSubmitWithoutFunction(): void
 
             $result = $updater->update($this->entry->id, $input);
 
-            if ($result['success']) {
-                $this->successMessage = implode('<br>', $result['log']);
-                // $this->entry->update(['status_kis' => 2]);
-                $this->dispatch('kis-user-updated', log: $result['log']);
-            }
+			if ($result['success']) {
+				$this->successMessage = implode('<br>', $result['log']);
+				// $this->entry->update(['status_kis' => 2]);
+				$this->dispatch('kis-user-updated', log: $result['log']);
+			} else {
+				$this->errorMessage = implode('<br>', $result['log']);
+			}
 
         } catch (\Exception $e) {
             $this->errorMessage = 'Fehler: ' . $e->getMessage();
