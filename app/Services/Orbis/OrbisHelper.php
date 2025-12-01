@@ -488,15 +488,14 @@ private function setAssignmentEndDate(string $resource, int $id): void
         return;
     }
 
-    // ORBIS expects same structure
     $from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
 
     $payload = $existing;
 
     $payload["canceled"] = true;
     $payload["validityperiod"] = [
-        "from": $from,
-        "thru": ["date" => $yesterday]
+        "from" => $from,
+        "thru" => ["date" => $yesterday]
     ];
 
     $this->client->send(
@@ -505,6 +504,7 @@ private function setAssignmentEndDate(string $resource, int $id): void
         $payload
     );
 }
+
 
 
 }
