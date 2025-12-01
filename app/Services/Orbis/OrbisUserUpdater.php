@@ -198,10 +198,11 @@ class OrbisUserUpdater
 		// ===============================
 		// Mitarbeiterfunktion
 		// ===============================
-		if ($employeeFunctionId) {
 
-			// erst alte Funktionen deaktivieren (wie bei OE/Gruppe/Rollen)
-			$this->helper->disableAllEmployeeFunctions($employeeId);
+		// immer zuerst alte Funktionen deaktivieren
+		$this->helper->disableAllEmployeeFunctions($employeeId);
+
+		if ($employeeFunctionId) {
 
 			// neue Funktion setzen
 			$this->client->send(
@@ -217,7 +218,13 @@ class OrbisUserUpdater
 			);
 
 			$log[] = "Mitarbeiterfunktion aktualisiert";
+
+		} else {
+
+			// keine neue → nur alte loeschen
+			$log[] = "Mitarbeiterfunktion entfernt";
 		}
+
 
 
 		// ===============================
