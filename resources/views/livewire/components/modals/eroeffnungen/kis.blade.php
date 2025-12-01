@@ -214,7 +214,7 @@
                             <input 
                                 class="form-check-input" 
                                 type="radio" 
-                                wire:model.live="selectedUserId"
+                                wire:model="selectedUserId"
                                 value="{{ $user['id'] }}" 
                                 id="selectUser{{ $user['id'] }}"
                             >

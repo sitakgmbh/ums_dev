@@ -212,11 +212,12 @@
                     <div class="{{ $cardClass }}">
                         <div class="form-check mb-2">
                             <input 
-                                class="form-check-input" 
-                                type="radio" 
-                                wire:model.live="selectedUserId"
-                                value="{{ $user['id'] }}" 
-                                id="selectUser{{ $user['id'] }}"
+								class="form-check-input" 
+								type="radio" 
+								wire:model="selectedUserId"
+								value="{{ $user['id'] }}" 
+								id="selectUser{{ $user['id'] }}"
+
                             >
                             <label class="form-check-label fw-bold" for="selectUser{{ $user['id'] }}">
                                 {{ $user['username'] }}
