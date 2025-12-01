@@ -420,9 +420,11 @@ public function disableAllEmployeeOrganizationalUnits(int $employeeId): void
     $response = $this->client->send($url);
 
     foreach ($response["employeeorganizationalunitassignment"] ?? [] as $a) {
-        if (!empty($a["id"])) {
-            $this->cancelAssignment("employeeorganizationalunitassignments", (int)$a["id"]);
+        if (empty($a["id"])) {
+            continue;
         }
+
+        $this->setAssignmentEndDate("employeeorganizationalunitassignments", (int)$a["id"]);
     }
 }
 
@@ -435,11 +437,14 @@ public function disableAllEmployeeOrganizationalUnitGroups(int $employeeId): voi
     $response = $this->client->send($url);
 
     foreach ($response["employeeorganizationalunitgroupassignment"] ?? [] as $a) {
-        if (!empty($a["id"])) {
-            $this->cancelAssignment("employeeorganizationalunitgroupassignments", (int)$a["id"]);
+        if (empty($a["id"])) {
+            continue;
         }
+
+        $this->setAssignmentEndDate("employeeorganizationalunitgroupassignments", (int)$a["id"]);
     }
 }
+
 
 public function disableAllUserRoles(int $userId): void
 {
@@ -451,11 +456,10 @@ public function disableAllUserRoles(int $userId): void
 
     foreach ($response["userroleassignment"] ?? [] as $a) {
         if (!empty($a["id"])) {
-			$this->deleteAssignment("userroleassignments", (int)$a["id"]);
+            $this->deleteAssignment("userroleassignments", (int)$a["id"]);
         }
     }
 }
-
 
 
 public function disableAllEmployeeFunctions(int $employeeId): void
@@ -466,18 +470,41 @@ public function disableAllEmployeeFunctions(int $employeeId): void
 
     $response = $this->client->send($url);
 
-    foreach (...) {
-        $this->deleteAssignment("employeeemployeefunctionassignments", (int)$a["id"]);
+    foreach ($response["employeeemployeefunctionassignment"] ?? [] as $a) {
+        if (!empty($a["id"])) {
+            $this->deleteAssignment("employeeemployeefunctionassignments", (int)$a["id"]);
+        }
     }
 }
 
-private function cancelAssignment(string $resource, int $id): void
+private function setAssignmentEndDate(string $resource, int $id): void
 {
-    $url = $this->client->getBaseUrl()
-        . "/resources/external/{$resource}/{$id}/cancel";
+    $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}";
+    $yesterday = date("Y-m-d", strtotime("-1 day"));
 
-    $this->client->send($url, "POST");
+    $existing = $this->client->send($url);
+
+    if (!is_array($existing) || empty($existing["id"])) {
+        return;
+    }
+
+    $from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
+
+    $payload = $existing;
+    $payload["canceled"] = true;
+
+    $payload["validityperiod"] = [
+        "from" => $from,
+        "thru" => ["date" => $yesterday]
+    ];
+
+    $this->client->send(
+        $this->client->getBaseUrl() . "/resources/external/{$resource}",
+        "PUT",
+        $payload
+    );
 }
+
 
 private function deleteAssignment(string $resource, int $id): void
 {
