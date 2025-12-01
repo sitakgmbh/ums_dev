@@ -31,7 +31,7 @@ class OrbisUserCreator
 
         if (!$entry->benutzername) 
 		{
-            $log[] = "Fehler: Benutzernamen fehlt in Antrag.";
+            $log[] = "Benutzername fehlt in Antrag.";
             return ["success" => false, "log" => $log];
         }
 

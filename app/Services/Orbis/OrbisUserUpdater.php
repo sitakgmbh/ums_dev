@@ -24,12 +24,12 @@ class OrbisUserUpdater
 		$entry = Mutation::with(['adUser', 'vorlageBenutzer'])->find($id);
 		
 		if (!$entry) {
-			$log[] = "Kein gueltiger Antrag gefunden.";
+			$log[] = "Kein gültiger Antrag gefunden.";
 			return ["success" => false, "log" => $log];
 		}
 
 		if (!$entry->adUser) {
-			$log[] = "Kein zugehoeriger AD-Benutzer vorhanden (ad_user_id fehlt).";
+			$log[] = "AD-Benutzer nicht gefunden.";
 			return ["success" => false, "log" => $log];
 		}
 
@@ -58,7 +58,7 @@ class OrbisUserUpdater
         $user = $this->helper->getUserByUsername($username);
 
         if (!$user || !isset($user["id"])) {
-            $log[] = "Benutzer '{$username}' nicht gefunden";
+            $log[] = "Benutzer '{$username}' nicht gefunden.";
             return ["success" => false, "log" => $log];
         }
         $userId = $user["id"];
@@ -75,13 +75,13 @@ class OrbisUserUpdater
 
         // Merge / Replace
         if (empty($entry->abteilung2_id)) {
-            $log[] = "Replace-Mode: bestehende Zuweisungen entfernt";
+            $log[] = "Bestehende Zuweisungen entfernt";
 
             $this->helper->disableAllEmployeeOrganizationalUnits($employeeId);
             $this->helper->disableAllEmployeeOrganizationalUnitGroups($employeeId);
             $this->helper->disableAllUserRoles($userId);
         } else {
-            $log[] = "Merge-Mode: Zuweisungen werden ergaenzt";
+            $log[] = "Zuweisungen werden ergänzt";
         }
 
         // ===============================
@@ -122,7 +122,7 @@ class OrbisUserUpdater
         if (!empty($oeLogs)) {
             $log[] = "OE verarbeitet (" . implode(", ", $oeLogs) . ")";
         } else {
-            $log[] = "Keine OE uebernommen";
+            $log[] = "Keine OE übernommen";
         }
 
         // ===============================
@@ -153,11 +153,11 @@ class OrbisUserUpdater
         if (!empty($grpLogs)) {
             $log[] = "OE-Gruppen verarbeitet (" . implode(", ", $grpLogs) . ")";
         } else {
-            $log[] = "Keine OE-Gruppen uebernommen";
+            $log[] = "Keine OE-Gruppen übernommen";
         }
 
         if (empty($orgUnits) && empty($orgGroups)) {
-            $log[] = "ACHTUNG: Keine OE und keine OE-Gruppe – bitte manuell in ORBIS setzen!";
+            $log[] = "ACHTUNG: Keine OE und keine OE-Gruppe zugewiesen – bitte manuell hinterlegen!";
         }
 
         // ===============================
@@ -190,7 +190,7 @@ class OrbisUserUpdater
             $log[] = "Rollen verarbeitet (" . implode(", ", $roleLogs) . ")";
 
         } else {
-            $log[] = "ACHTUNG: Keine Rollen uebernommen – bitte manuell hinterlegen!";
+            $log[] = "ACHTUNG: Keine Rollen übernommen – bitte manuell hinterlegen!";
         }
 
         // ===============================
@@ -212,8 +212,6 @@ class OrbisUserUpdater
 
             $log[] = "Mitarbeiterfunktion aktualisiert";
 
-        } else {
-            $log[] = "ACHTUNG: Keine Mitarbeiterfunktion uebernommen – bitte manuell setzen!";
         }
 
         return ["success" => true, "log" => $log];
