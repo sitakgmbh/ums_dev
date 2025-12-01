@@ -35,7 +35,9 @@ class OrbisUserUpdater
 
 		$username = strtoupper($entry->adUser->username);
 
-
+		$employeeFunctionId = $input['employeeFunction'] ?? null;
+		$signingLevelId     = $input['signinglevel'] ?? null;
+	
         $orgUnits    = $input['orgunits']  ?? [];
         $orgGroups   = $input['orggroups'] ?? [];
         $roles       = $input['roles']     ?? [];
