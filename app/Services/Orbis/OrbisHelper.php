@@ -451,7 +451,7 @@ public function disableAllUserRoles(int $userId): void
 
     foreach ($response["userroleassignment"] ?? [] as $a) {
         if (!empty($a["id"])) {
-            $this->cancelAssignment("userroleassignments", (int)$a["id"]);
+			$this->deleteAssignment("userroleassignments", (int)$a["id"]);
         }
     }
 }
@@ -466,10 +466,8 @@ public function disableAllEmployeeFunctions(int $employeeId): void
 
     $response = $this->client->send($url);
 
-    foreach ($response["employeeemployeefunctionassignment"] ?? [] as $a) {
-        if (!empty($a["id"])) {
-            $this->cancelAssignment("employeeemployeefunctionassignments", (int)$a["id"]);
-        }
+    foreach (...) {
+        $this->deleteAssignment("employeeemployeefunctionassignments", (int)$a["id"]);
     }
 }
 
@@ -480,5 +478,14 @@ private function cancelAssignment(string $resource, int $id): void
 
     $this->client->send($url, "POST");
 }
+
+private function deleteAssignment(string $resource, int $id): void
+{
+    $url = $this->client->getBaseUrl()
+        . "/resources/external/{$resource}/{$id}";
+
+    $this->client->send($url, "DELETE");
+}
+
 
 }
