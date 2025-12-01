@@ -87,9 +87,14 @@ class OrbisUserUpdater
 		$oeLogs = [];
 		foreach ($orgUnits as $unit) {
 
+			// Unit fixen (kann nur eine ID sein)
+			if (is_numeric($unit)) {
+				$unit = ['id' => (int)$unit];
+			}
+
+			// Name aus Lookup
 			$item = collect($lookupOe)->firstWhere('id', $unit['id']);
 			$unitName = $item['name'] ?? null;
-
 			$oeLogs[] = $unitName ?: $unit['id'];
 
 			$assignment = [
