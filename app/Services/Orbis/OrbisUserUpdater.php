@@ -165,7 +165,9 @@ class OrbisUserUpdater
         // ===============================
         // Rollen
         // ===============================
-        if (!empty($roles)) {
+		$this->helper->disableAllUserRoles($userId);
+			
+		if (!empty($roles)) {
 
             $roleLogs = [];
 
