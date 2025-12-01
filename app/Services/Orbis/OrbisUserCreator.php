@@ -22,15 +22,19 @@ class OrbisUserCreator
     {
         $log = [];
 
-        // Antrag laden
-        $entry = Eroeffnung::find($id);
+        // Antrag sauber laden (fix fuer Crash)
+        $entry = Eroeffnung::with(['anrede', 'titel'])->find($id);
 
         if (!$entry) {
             $log[] = "Kein gueltiger Antrag gefunden.";
             return ["success" => false, "log" => $log];
         }
 
-        // Logging
+        if (!$entry->benutzername) {
+            $log[] = "Fehler: Antrag enthaelt keinen Benutzername.";
+            return ["success" => false, "log" => $log];
+        }
+
         Logger::debug("ORBIS INPUT (CREATE): " . json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         // Mapping korrigiert – nichts mehr ueberschreiben
