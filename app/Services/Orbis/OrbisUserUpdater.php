@@ -20,18 +20,22 @@ class OrbisUserUpdater
 
     public function update(int $id, array $input): array
     {
-		Logger::debug("ORBIS UPDATE INPUT: " . json_encode($input, JSON_PRETTY_PRINT));
+		$log = [];
+		$entry = Mutation::with(['adUser', 'vorlageBenutzer'])->find($id);
+		
+		if (!$entry) {
+			$log[] = "Kein gueltiger Antrag gefunden.";
+			return ["success" => false, "log" => $log];
+		}
 
-        $log = [];
-Logger::debug("STEP 1 reached");
-        $entry = Mutation::find($id);
-Logger::debug("STEP 2 reached");
-        if (!$entry || empty($entry->benutzername)) {
-            $log[] = "Kein gueltiger Antrag gefunden";
-            return ["success" => false, "log" => $log];
-        }
+		if (!$entry->adUser) {
+			$log[] = "Kein zugehoeriger AD-Benutzer vorhanden (ad_user_id fehlt).";
+			return ["success" => false, "log" => $log];
+		}
 
-        // Mapping (wie bei Eroeffnung)
+		$username = strtoupper($entry->adUser->username);
+
+
         $orgUnits    = $input['orgunits']  ?? [];
         $orgGroups   = $input['orggroups'] ?? [];
         $roles       = $input['roles']     ?? [];
@@ -41,8 +45,8 @@ Logger::debug("STEP 2 reached");
         $lookupRol   = $input['roles_lookup']     ?? [];
 
         $this->helper->validateInput($input);
-Logger::debug("STEP 3 reached");
-        $username = strtoupper($entry->benutzername);
+
+        $username = strtoupper($entry->aduser->username);
         $today = date("Y-m-d");
 
         $employeeFunctionId = $input['employeeFunction'] ?? null;
@@ -51,15 +55,7 @@ Logger::debug("STEP 3 reached");
             $roles = [];
         }
 
-        // User suchen
-		Logger::debug("STEP USER LOOKUP: suche nach '{$username}'");
-
         $user = $this->helper->getUserByUsername($username);
-
-if (!$user) {
-    Logger::debug("STEP USER LOOKUP: nichts gefunden fuer {$username}");
-}
-
 
         if (!$user || !isset($user["id"])) {
             $log[] = "Benutzer '{$username}' nicht gefunden";
@@ -69,10 +65,6 @@ if (!$user) {
 
         // Mitarbeiter suchen
         $employee = $this->helper->getEmployeeByUserId($userId, $today);
-
-		if (!$employee) {
-			Logger::error("Kein Mitarbeiter gefunden fuer User: {$username}");
-		}
 
 
         if (!$employee || !isset($employee["id"])) {
