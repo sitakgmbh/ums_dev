@@ -187,7 +187,7 @@ class Kis extends BaseModal
 
 			if ($result['success']) {
 				$this->successMessage = implode('<br>', $result['log']);
-				$this->entry->update(['status_kis' => 2]);
+				// $this->entry->update(['status_kis' => 2]);
 				$this->dispatch('kis-user-updated', log: $result['log']);
 			} else {
 				$this->errorMessage = implode('<br>', $result['log']);

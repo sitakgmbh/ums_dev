@@ -21,31 +21,27 @@ class OrbisUserCreator
     public function create(int $id, array $input): array
     {
         $log = [];
-
-        // Antrag sauber laden (fix fuer Crash)
         $entry = Eroeffnung::with(['anrede', 'titel'])->find($id);
 
-        if (!$entry) {
-            $log[] = "Kein gueltiger Antrag gefunden.";
+        if (!$entry) 
+		{
+            $log[] = "Kein gültiger Antrag gefunden.";
             return ["success" => false, "log" => $log];
         }
 
-        if (!$entry->benutzername) {
-            $log[] = "Fehler: Antrag enthaelt keinen Benutzername.";
+        if (!$entry->benutzername) 
+		{
+            $log[] = "Fehler: Antrag enthält keinen Benutzername.";
             return ["success" => false, "log" => $log];
         }
 
         Logger::debug("ORBIS INPUT (CREATE): " . json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
-        // Mapping korrigiert – nichts mehr ueberschreiben
         $input['orgunits']  = $input['orgunits']  ?? [];
         $input['orggroups'] = $input['orggroups'] ?? [];
         $input['roles']     = $input['roles']     ?? [];
 
-        // Validierung
         $this->helper->validateInput($input);
-
-        // Username bestimmen
         $baseUsername = strtoupper($entry->benutzername);
         $search = $this->helper->findAvailableUsername($baseUsername);
 
@@ -58,7 +54,8 @@ class OrbisUserCreator
         $orgGroups = $input["orggroups"] ?? [];
         $roles     = $input["roles"]     ?? [];
 
-        if (!is_array($roles)) {
+        if (!is_array($roles)) 
+		{
             $roles = [];
         }
 
@@ -102,7 +99,8 @@ class OrbisUserCreator
 
         $employeeId = $this->helper->createEmployee($employeePayload);
 
-        if (!$employeeId) {
+        if (!$employeeId) 
+		{
             $log[] = "Fehler beim Erstellen des Mitarbeiters.";
             return ["success" => false, "log" => $log];
         }
@@ -121,10 +119,11 @@ class OrbisUserCreator
             ]
         );
 
-        $log[] = "Facility zugewiesen";
+        $log[] = "Mitarbeiter Facility zugewiesen";
 
         // Mitarbeiterfunktion
-        if (!empty($input["employeeFunction"])) {
+        if (!empty($input["employeeFunction"])) 
+		{
             $this->client->send(
                 $this->client->getBaseUrl() . "/resources/external/employeeemployeefunctionassignments",
                 "POST",
@@ -136,7 +135,9 @@ class OrbisUserCreator
             );
 
             $log[] = "Mitarbeiterfunktion gesetzt";
-        } else {
+        } 
+		else 
+		{
             $log[] = "Keine Mitarbeiterfunktion angegeben";
         }
 
@@ -155,7 +156,8 @@ class OrbisUserCreator
 
         $userId = $this->helper->createUser($employeeId, $userPayload);
 
-        if (!$userId) {
+        if (!$userId) 
+		{
             $log[] = "Fehler beim Erstellen des Benutzers";
             return ["success" => false, "log" => $log];
         }
@@ -174,7 +176,7 @@ class OrbisUserCreator
             ]
         );
 
-        $log[] = "Facility fuer Benutzer zugewiesen";
+        $log[] = "Benutzer Facility zugewiesen";
 
         // Organisationseinheiten
         foreach ($orgUnits as $unit) {
@@ -226,9 +228,9 @@ class OrbisUserCreator
                 );
             }
 
-            $log[] = "Rollen zugewiesen (" . implode(", ", $roles) . ")";
+            $log[] = "Rollen zugewiesen";
         } else {
-            $log[] = "Keine Rollen ausgewaehlt — Benutzer ohne Rollen erstellt";
+            $log[] = "Keine Rollen ausgewählt — Benutzer ohne Rollen erstellt";
         }
 
         return ["success" => true, "log" => $log];
