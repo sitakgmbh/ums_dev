@@ -170,7 +170,7 @@ class Kis extends BaseModal
             ]);
 
             // Referenzuser
-            $users = $this->userDetails['users'] ?? [];
+            $users = $this->employeeDetails['users'] ?? [];
             $selectedUser   = collect($users)->firstWhere('id', $this->selectedUserId);
             $referenceUser  = $selectedUser['username'] ?? null;
 
