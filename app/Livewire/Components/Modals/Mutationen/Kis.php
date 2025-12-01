@@ -132,24 +132,26 @@ class Kis extends BaseModal
         }
     }
 
-    public function submitUser(OrbisUserUpdater $updater): void
-    {
-        $this->errorMessage = '';
-        $this->successMessage = '';
+public function submitUser(): void
+{
+    $this->errorMessage   = '';
+    $this->successMessage = '';
 
-        if (!$this->employeeFunction) {
-            $this->dispatch('confirm-no-function');
-            return;
-        }
-
-        $this->processSubmit($updater);
+    if (!$this->employeeFunction) {
+        $this->dispatch('confirm-no-function');
+        return;
     }
 
-	public function confirmSubmitWithoutFunction(): void
-	{
-		$updater = app(OrbisUserUpdater::class);
-		$this->processSubmit($updater);
-	}
+    $updater = app(OrbisUserUpdater::class);
+    $this->processSubmit($updater);
+}
+
+public function confirmSubmitWithoutFunction(): void
+{
+    $updater = app(OrbisUserUpdater::class);
+    $this->processSubmit($updater);
+}
+
 
 
 
