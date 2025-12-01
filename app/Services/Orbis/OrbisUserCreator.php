@@ -93,7 +93,7 @@ class OrbisUserCreator
         $employeePayload = [
             "shortname" => $username,
             "humanbeing" => $humanbeing,
-            "language" => ["id" => "de_CH"],
+            // "language" => ["id" => "de_CH"],
             "state" => ["id" => $input['employeeStateId'] ?? null],
             "validityperiod" => [
                 "from" => ["date" => $today, "handling" => "inclusive"]
