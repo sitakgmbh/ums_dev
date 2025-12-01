@@ -50,6 +50,7 @@ class Kis extends BaseModal
             'employeeDetails',
             'userFound',
             'errorMessage',
+			'successMessage',
             'selectedOrgUnits',
             'selectedOrgGroups',
             'selectedRoles',

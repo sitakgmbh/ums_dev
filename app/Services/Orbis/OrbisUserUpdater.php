@@ -18,7 +18,7 @@ class OrbisUserUpdater
         $this->helper = $helper;
     }
 
-    public function create(int $id, array $input): array
+    public function update(int $id): array
     {
         $log = [];
 
