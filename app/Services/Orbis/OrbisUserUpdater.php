@@ -18,143 +18,183 @@ class OrbisUserUpdater
         $this->helper = $helper;
     }
 
-    public function update(int $id): array
-    {
-        $log = [];
+	public function update(int $id): array
+	{
+		$log = [];
 
-        // Antrag laden
-        $entry = Mutation::find($id);
+		$entry = Mutation::find($id);
 
-        if (!$entry || empty($entry->benutzername)) {
-            $log[] = "Kein gueltiger Antrag gefunden";
-            return ["success" => false, "log" => $log];
-        }
+		if (!$entry || empty($entry->benutzername)) {
+			$log[] = "Kein gueltiger Antrag gefunden";
+			return ["success" => false, "log" => $log];
+		}
 
-        // Input
 		$input = request()->all();
 
-		// Livewire → Orbis Mapping
+		// Mapping
 		$input['orgunits']  = $input['selectedOrgUnits']  ?? [];
 		$input['orggroups'] = $input['selectedOrgGroups'] ?? [];
 		$input['roles']     = $input['selectedRoles']     ?? [];
 
-		// Validierung
+		// Lookups aus Livewire (Namen!)
+		$lookupOe  = $input['orgunits_lookup']  ?? [];
+		$lookupGrp = $input['orggroups_lookup'] ?? [];
+		$lookupRol = $input['roles_lookup']     ?? [];
+
+		// Validation
 		$this->helper->validateInput($input);
 
+		$username = strtoupper($entry->benutzername);
+		$today = date("Y-m-d");
 
-        $username = strtoupper($entry->benutzername);
-        $today = date("Y-m-d");
+		$orgUnits            = $input["orgunits"]  ?? [];
+		$orgGroups           = $input["orggroups"] ?? [];
+		$roles               = $input["roles"]     ?? [];
+		$employeeFunctionId  = $input["employeeFunction"] ?? null;
 
-        $orgUnits  = $input["orgunits"]  ?? [];
-        $orgGroups = $input["orggroups"] ?? [];
-        $roles     = $input["roles"]     ?? [];
-        $employeeFunctionId = $input["employeeFunction"] ?? null;
+		if (!is_array($roles)) {
+			$roles = [];
+		}
 
-        if (!is_array($roles)) {
-            $roles = [];
-        }
+		// User suchen
+		$user = $this->helper->getUserByUsername($username);
+		if (!$user || !isset($user["id"])) {
+			$log[] = "Benutzer '{$username}' nicht gefunden";
+			return ["success" => false, "log" => $log];
+		}
+		$userId = $user["id"];
 
-        // Benutzer laden
-        $user = $this->helper->getUserByUsername($username);
+		// Mitarbeiter suchen
+		$employee = $this->helper->getEmployeeByUserId($userId, $today);
+		if (!$employee || !isset($employee["id"])) {
+			$log[] = "Kein Mitarbeiter gefunden";
+			return ["success" => false, "log" => $log];
+		}
+		$employeeId = $employee["id"];
 
-        if (!$user || !isset($user["id"])) {
-            $log[] = "Benutzer '{$username}' nicht gefunden";
-            return ["success" => false, "log" => $log];
-        }
+		// Merge / Replace Mode
+		if (empty($entry->abteilung2_id)) {
+			$log[] = "Replace-Mode: bestehende Zuweisungen entfernt";
 
-        $userId = $user["id"];
+			$this->helper->disableAllEmployeeOrganizationalUnits($employeeId);
+			$this->helper->disableAllEmployeeOrganizationalUnitGroups($employeeId);
+			$this->helper->disableAllUserRoles($userId);
+		} else {
+			$log[] = "Merge-Mode: Zuweisungen werden ergaenzt";
+		}
 
-        // Mitarbeiter
-        $employee = $this->helper->getEmployeeByUserId($userId, $today);
+		// ORGUNITS
+		$oeLogs = [];
+		foreach ($orgUnits as $unit) {
 
-        if (!$employee || !isset($employee["id"])) {
-            $log[] = "Kein Mitarbeiter gefunden";
-            return ["success" => false, "log" => $log];
-        }
+			$item = collect($lookupOe)->firstWhere('id', $unit['id']);
+			$unitName = $item['name'] ?? null;
 
-        $employeeId = $employee["id"];
+			$oeLogs[] = $unitName ?: $unit['id'];
 
-        // Replace Mode
-        if (empty($entry->abteilung2_id)) {
-            $log[] = "Replace-Mode: alle bestehenden Zuweisungen deaktiviert";
+			$assignment = [
+				"employee" => ["id" => $employeeId],
+				"organizationalunit" => ["id" => $unit["id"]],
+				"validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
+			];
 
-            $this->helper->disableAllEmployeeOrganizationalUnits($employeeId);
-            $this->helper->disableAllEmployeeOrganizationalUnitGroups($employeeId);
-            $this->helper->disableAllUserRoles($userId);
-        } else {
-            $log[] = "Merge-Mode: Zuweisungen werden ergaenzt";
-        }
+			if (!empty($unit["rank"])) {
+				$assignment["rank"] = ["id" => (int)$unit["rank"]];
+			}
 
-        // OrgUnits
-        foreach ($orgUnits as $unit) {
-            $assignment = [
-                "employee" => ["id" => $employeeId],
-                "organizationalunit" => ["id" => $unit["id"]],
-                "validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
-            ];
+			$this->client->send(
+				$this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitassignments",
+				"POST",
+				$assignment
+			);
+		}
 
-            if (!empty($unit["rank"])) {
-                $assignment["rank"] = ["id" => (int)$unit["rank"]];
-            }
+		if (!empty($oeLogs)) {
+			$log[] = "OE verarbeitet (" . implode(", ", $oeLogs) . ")";
+		} else {
+			$log[] = "Keine OE uebernommen";
+		}
 
-            $this->client->send(
-                $this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitassignments",
-                "POST",
-                $assignment
-            );
-        }
 
-        $log[] = "Organisationseinheiten verarbeitet";
+		// OE-GROUPS
+		$grpLogs = [];
+		foreach ($orgGroups as $idGroup) {
 
-        // OrgGroups
-        foreach ($orgGroups as $groupId) {
-            $this->client->send(
-                $this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitgroupassignments",
-                "POST",
-                [
-                    "employee" => ["id" => $employeeId],
-                    "organizationalunitgroup" => ["id" => $groupId],
-                    "validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
-                ]
-            );
-        }
+			$item = collect($lookupGrp)->firstWhere('id', $idGroup);
+			$name = $item['name'] ?? null;
 
-        $log[] = "Organisationseinheitengruppen verarbeitet";
+			$grpLogs[] = $name ?: $idGroup;
 
-        // Rollen (optional!)
-        if (!empty($roles)) {
-            foreach ($roles as $roleId) {
-                $this->client->send(
-                    $this->client->getBaseUrl() . "/resources/external/userroleassignments",
-                    "POST",
-                    [
-                        "user" => ["id" => $userId],
-                        "role" => ["id" => $roleId],
-                        "validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
-                    ]
-                );
-            }
+			$this->client->send(
+				$this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitgroupassignments",
+				"POST",
+				[
+					"employee" => ["id" => $employeeId],
+					"organizationalunitgroup" => ["id" => $idGroup],
+					"validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
+				]
+			);
+		}
 
-            $log[] = "Benutzerrollen verarbeitet (" . implode(", ", $roles) . ")";
-        } else {
-            $log[] = "Keine Rollen uebermittelt — Rollen nicht angepasst";
-        }
+		if (!empty($grpLogs)) {
+			$log[] = "OE-Gruppen verarbeitet (" . implode(", ", $grpLogs) . ")";
+		} else {
+			$log[] = "Keine OE-Gruppen uebernommen";
+		}
 
-        // Mitarbeiterfunktion
-        if ($employeeFunctionId) {
-            $this->client->send(
-                $this->client->getBaseUrl() . "/resources/external/employeeemployeefunctionassignments",
-                "POST",
-                [
-                    "employee" => ["id" => $employeeId],
-                    "employeefunction" => ["id" => (int)$employeeFunctionId],
-                    "validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
-                ]
-            );
 
-            $log[] = "Mitarbeiterfunktion aktualisiert";
-        }
+		// Warnung, falls weder OE noch Gruppe
+		if (empty($orgUnits) && empty($orgGroups)) {
+			$log[] = "ACHTUNG: Keine OE und keine OE-Gruppe – bitte manuell in ORBIS setzen!";
+		}
 
-        return ["success" => true, "log" => $log];
-    }
+
+		// Rollen
+		if (!empty($roles)) {
+
+			$roleLogs = [];
+
+			foreach ($roles as $roleId) {
+
+				$item = collect($lookupRol)->firstWhere('id', $roleId);
+				$roleName = $item['name'] ?? null;
+
+				$roleLogs[] = $roleName ?: $roleId;
+
+				$this->client->send(
+					$this->client->getBaseUrl() . "/resources/external/userroleassignments",
+					"POST",
+					[
+						"user" => ["id" => $userId],
+						"role" => ["id" => $roleId],
+						"validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
+					]
+				);
+			}
+
+			$log[] = "Rollen verarbeitet (" . implode(", ", $roleLogs) . ")";
+
+		} else {
+			$log[] = "ACHTUNG: Keine Rollen uebernommen – bitte manuell hinterlegen!";
+		}
+
+
+		// Mitarbeiterfunktion
+		if ($employeeFunctionId) {
+			$this->client->send(
+				$this->client->getBaseUrl() . "/resources/external/employeeemployeefunctionassignments",
+				"POST",
+				[
+					"employee" => ["id" => $employeeId],
+					"employeefunction" => ["id" => (int)$employeeFunctionId],
+					"validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
+				]
+			);
+
+			$log[] = "Mitarbeiterfunktion aktualisiert";
+		}
+
+		return ["success" => true, "log" => $log];
+	}
+
 }

@@ -26,50 +26,49 @@ class OrbisHelper
         return isset($result["user"]) && count($result["user"]) > 0;
     }
 
-public function getUserDetails(string $username): array
-{
-    $username = strtoupper($username);
-    $today = date("Y-m-d");
-    $user = $this->getUserByUsername($username);
+	public function getUserDetails(string $username): array
+	{
+		$username = strtoupper($username);
+		$today = date("Y-m-d");
+		$user = $this->getUserByUsername($username);
 
-    if (!$user || !isset($user["id"])) {
-        throw new \RuntimeException("Benutzer nicht gefunden.", 404);
-    }
+		if (!$user || !isset($user["id"])) {
+			throw new \RuntimeException("Benutzer nicht gefunden.", 404);
+		}
 
-    $userId = $user["id"];
-    $employee = $this->getEmployeeByUserId($userId, $today);
+		$userId = $user["id"];
+		$employee = $this->getEmployeeByUserId($userId, $today);
 
-    if (!$employee || !isset($employee["id"])) {
-        throw new \RuntimeException("Kein Mitarbeiter gefunden.");
-    }
+		if (!$employee || !isset($employee["id"])) {
+			throw new \RuntimeException("Mitarbeiter nicht gefunden.");
+		}
 
-    $employeeData = $this->getEmployeeDetails($employee, $today);
-    $orgUnits = $this->getEmployeeOrganizationalUnits($employeeData["id"], $today);
-    $orgGroups = $this->getEmployeeOrganizationalUnitGroups($employeeData["id"], $today);
-    $users = $this->getUsersByEmployeeId($employeeData["id"], $today);
-    $facility = $employeeData["facilities"][0] ?? null;
+		$employeeData = $this->getEmployeeDetails($employee, $today);
+		$orgUnits = $this->getEmployeeOrganizationalUnits($employeeData["id"], $today);
+		$orgGroups = $this->getEmployeeOrganizationalUnitGroups($employeeData["id"], $today);
+		$users = $this->getUsersByEmployeeId($employeeData["id"], $today);
+		$facility = $employeeData["facilities"][0] ?? null;
 
-    return [
-        "user" => $user,
-        "employee" => [
-            "id" => $employeeData["id"],
-            "salutation" => $employeeData["salutation"],
-            "title" => $employeeData["title"] ?? null,
-            "surname" => $employeeData["surname"],
-            "firstname" => $employeeData["firstname"],
-            "sex" => $employeeData["sex"],
-            "facility" => $facility,
-            "state" => $employeeData["state"],
-            "signinglevel" => $employeeData["signinglevel"],
-            "validfrom" => $employeeData["validfrom"],
-            "validthru" => $employeeData["validthru"],
-            "organizationalunits" => $orgUnits,
-            "organizationalunitgroups" => $orgGroups,
-            "users" => $users
-        ]
-    ];
-}
-
+		return [
+			"user" => $user,
+			"employee" => [
+				"id" => $employeeData["id"],
+				"salutation" => $employeeData["salutation"],
+				"title" => $employeeData["title"] ?? null,
+				"surname" => $employeeData["surname"],
+				"firstname" => $employeeData["firstname"],
+				"sex" => $employeeData["sex"],
+				"facility" => $facility,
+				"state" => $employeeData["state"],
+				"signinglevel" => $employeeData["signinglevel"],
+				"validfrom" => $employeeData["validfrom"],
+				"validthru" => $employeeData["validthru"],
+				"organizationalunits" => $orgUnits,
+				"organizationalunitgroups" => $orgGroups,
+				"users" => $users
+			]
+		];
+	}
 
     public function getUserByUsername(string $username): ?array
     {
@@ -285,58 +284,57 @@ public function getUserDetails(string $username): array
         return $result;
     }
 
-public function createEmployee(array $payload): ?int
-{
-    $result = $this->client->send(
-        $this->client->getBaseUrl() . "/resources/external/employees",
-        "POST",
-        $payload,
-        returnHeaders: true
-    );
+	public function createEmployee(array $payload): ?int
+	{
+		$result = $this->client->send(
+			$this->client->getBaseUrl() . "/resources/external/employees",
+			"POST",
+			$payload,
+			returnHeaders: true
+		);
 
-    // Kein Body vorhanden → ID aus Location extrahieren
-    $headers = $result['headers'] ?? [];
+		// ID aus Location extrahieren
+		$headers = $result['headers'] ?? [];
 
-    if (!isset($headers['Location'][0])) {
-        Logger::error("Keine Location im Header erhalten");
-        return null;
-    }
+		if (!isset($headers['Location'][0])) {
+			Logger::error("Keine Location im Header erhalten");
+			return null;
+		}
 
-    $location = $headers['Location'][0];   // z.B. /employees/45243
+		$location = $headers['Location'][0];   // z.B. /employees/45243
 
-    // ID extrahieren
-    $id = intval(basename($location));
+		// ID extrahieren
+		$id = intval(basename($location));
 
-    Logger::debug("Neue ORBIS Employee-ID: {$id}");
+		Logger::debug("Neue ORBIS Employee-ID: {$id}");
 
-    return $id > 0 ? $id : null;
-}
+		return $id > 0 ? $id : null;
+	}
 
 
-public function createUser(int $employeeId, array $payload): ?int
-{
-    $result = $this->client->send(
-        $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/users",
-        "POST",
-        $payload,
-        returnHeaders: true
-    );
+	public function createUser(int $employeeId, array $payload): ?int
+	{
+		$result = $this->client->send(
+			$this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/users",
+			"POST",
+			$payload,
+			returnHeaders: true
+		);
 
-    $headers = $result['headers'] ?? [];
+		$headers = $result['headers'] ?? [];
 
-    if (!isset($headers['Location'][0])) {
-        Logger::error("Keine Location fuer User erhalten");
-        return null;
-    }
+		if (!isset($headers['Location'][0])) {
+			Logger::error("Keine Location für User erhalten");
+			return null;
+		}
 
-    $location = $headers['Location'][0];   // .../users/36412
-    $id = intval(basename($location));     // 36412
+		$location = $headers['Location'][0];   // .../users/36412
+		$id = intval(basename($location));     // 36412
 
-    Logger::debug("Neue ORBIS User-ID: {$id}");
+		Logger::debug("Neue ORBIS User-ID: {$id}");
 
-    return $id > 0 ? $id : null;
-}
-
+		return $id > 0 ? $id : null;
+	}
 
     public function findAvailableUsername(string $base): array
     {
@@ -365,58 +363,53 @@ public function createUser(int $employeeId, array $payload): ?int
         }
     }
 
+	public function validateInput(array $input): void
+	{
+		if (!isset($input['orgunits']) || !is_array($input['orgunits'])) {
+			$input['orgunits'] = [];
+		}
 
-public function validateInput(array $input): void
-{
-    if (!isset($input['orgunits']) || !is_array($input['orgunits'])) {
-        $input['orgunits'] = [];
-    }
+		if (!isset($input['orggroups']) || !is_array($input['orggroups'])) {
+			$input['orggroups'] = [];
+		}
 
-    if (!isset($input['orggroups']) || !is_array($input['orggroups'])) {
-        $input['orggroups'] = [];
-    }
+		if (!isset($input['roles']) || !is_array($input['roles'])) {
+			$input['roles'] = [];
+		}
+	}
 
-    if (!isset($input['roles']) || !is_array($input['roles'])) {
-        $input['roles'] = [];
-    }
-}
+	private function cleanList($list): array
+	{
+		if (!is_array($list)) {
+			return [];
+		}
 
+		$clean = [];
 
+		foreach ($list as $item) {
 
-private function cleanList($list): array
-{
-    if (!is_array($list)) {
-        return [];
-    }
+			// Livewire Snapshot Marker entfernen
+			if (is_array($item) && isset($item['s']) && $item['s'] === 'arr') {
+				continue;
+			}
 
-    $clean = [];
+			// Nested Arrays flatten
+			if (is_array($item)) {
+				foreach ($item as $id) {
+					if (is_numeric($id)) {
+						$clean[] = (int)$id;
+					}
+				}
+			}
 
-    foreach ($list as $item) {
+			// Einzelwerte
+			elseif (is_numeric($item)) {
+				$clean[] = (int)$item;
+			}
+		}
 
-        // Livewire Snapshot Marker entfernen
-        if (is_array($item) && isset($item['s']) && $item['s'] === 'arr') {
-            continue;
-        }
-
-        // Nested Arrays flatten
-        if (is_array($item)) {
-            foreach ($item as $id) {
-                if (is_numeric($id)) {
-                    $clean[] = (int)$id;
-                }
-            }
-        }
-
-        // Einzelwerte
-        elseif (is_numeric($item)) {
-            $clean[] = (int)$item;
-        }
-    }
-
-    return array_values(array_unique($clean));
-}
-
-
+		return array_values(array_unique($clean));
+	}
 
     public function disableAllEmployeeOrganizationalUnits(int $employeeId): void
     {
