@@ -85,29 +85,28 @@ class Kis extends BaseModal
         return !empty($this->entry->abteilung2_id);
     }
 
-    public function searchUser(OrbisHelper $helper): void
-    {
-        $this->errorMessage = '';
-        $this->successMessage = '';
-        $this->userFound = false;
-        $this->isSearching = true;
+	public function searchUser(OrbisHelper $helper): void
+	{
+		$this->errorMessage = '';
+		$this->isSearching = true;
 
-        try {
-            $this->validate(['username' => 'required|string|min:2']);
+		try {
+			$this->validate(['username' => 'required|string|min:2']);
 
-            $details = $helper->getUserDetails($this->username);
+			$details = $helper->getUserDetails($this->username);
 
-            $this->userDetails     = $details['user'];
-            $this->employeeDetails = $details['employee'];
-            $this->userFound       = true;
-            $this->preselectItems();
+			$this->userDetails     = $details['user'];
+			$this->employeeDetails = $details['employee'];
+			$this->userFound       = true;
+			$this->preselectItems();
 
-        } catch (\Exception $e) {
-            $this->errorMessage = $e->getMessage();
-        } finally {
-            $this->isSearching = false;
-        }
-    }
+		} catch (\Exception $e) {
+			$this->errorMessage = $e->getMessage();
+		} finally {
+			$this->isSearching = false;
+		}
+	}
+
 
     protected function preselectItems(): void
     {
@@ -152,7 +151,6 @@ class Kis extends BaseModal
     protected function processSubmit(OrbisUserCreator $creator): void
     {
         $this->errorMessage = '';
-        $this->successMessage = '';
 
         try {
             $this->validate([
