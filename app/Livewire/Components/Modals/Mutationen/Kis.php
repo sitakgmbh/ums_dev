@@ -103,6 +103,7 @@ class Kis extends BaseModal
             $this->userDetails     = $details['user'];
             $this->employeeDetails = $details['employee'];
             $this->userFound       = true;
+			$this->employeeFunction = $this->employeeDetails['employeefunction']['id'] ?? null;
             $this->preselectItems();
 
         } catch (\Exception $e) {
