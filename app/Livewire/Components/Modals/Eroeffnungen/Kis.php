@@ -190,6 +190,8 @@ class Kis extends BaseModal
 				'orggroups_lookup'  => $this->employeeDetails['organizationalunitgroups'] ?? [],
 				'roles_lookup'      => $selectedUser['roles'] ?? [],
 
+				'signinglevel'      => $this->employeeDetails['signinglevel']['id'] ?? null,
+
 				'employeeStateId'   => $this->employeeDetails['state']['id'] ?? null,
 				'employeeFunction'  => $this->employeeFunction,
 				'permissionMode'    => $this->permissionMode,

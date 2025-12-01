@@ -92,6 +92,7 @@ class OrbisUserCreator
             "humanbeing" => $humanbeing,
             // "language" => ["id" => "de_CH"],
             "state" => ["id" => $input['employeeStateId'] ?? null],
+			"signinglevel" => $input['signinglevel'] ? ["id" => $input['signinglevel']] : null,
             "validityperiod" => [
                 "from" => ["date" => $today, "handling" => "inclusive"]
             ]
