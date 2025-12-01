@@ -479,30 +479,32 @@ class OrbisHelper
 
 
 
-    private function setAssignmentEndDate(string $resource, int $id): void
-    {
-        $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}";
-        $yesterday = date("Y-m-d", strtotime("-1 day"));
+private function setAssignmentEndDate(string $resource, int $id): void
+{
+    $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}";
+    $yesterday = date("Y-m-d", strtotime("-1 day"));
+    $existing = $this->client->send($url);
 
-        $existing = $this->client->send($url);
-
-        if (!is_array($existing) || empty($existing["id"])) {
-            return;
-        }
-
-        $from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
-
-        $payload = $existing;
-        $payload["canceled"] = true;
-        $payload["validityperiod"] = [
-            "from" => $from,
-            "to" => ["date" => $yesterday]
-        ];
-
-        $this->client->send(
-            $this->client->getBaseUrl() . "/resources/external/{$resource}",
-            "PUT",
-            $payload
-        );
+    if (!is_array($existing) || empty($existing["id"])) {
+        return;
     }
+
+    // ORBIS expects same structure
+    $from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
+
+    $payload = $existing;
+
+    $payload["canceled"] = true;
+    $payload["validityperiod"] = [
+        "from": $from,
+        "thru": ["date" => $yesterday]
+    ];
+
+    $this->client->send(
+        $this->client->getBaseUrl() . "/resources/external/{$resource}",
+        "PUT",
+        $payload
+    );
+}
+
 }
