@@ -419,16 +419,23 @@ public function disableAllEmployeeOrganizationalUnits(int $employeeId): void
 
     $response = $this->client->send($url);
 
-    foreach ($response["employeeorganizationalunitassignment"] ?? [] as $a) {
+    foreach ($response["employeeorganizationalunitassignment"] ?? [] as $entry) {
 
-        $id = $a["id"] ?? null;
-        if (!$id) {
+        if (empty($entry["id"])) {
             continue;
         }
 
-        $this->setAssignmentEndDate("employeeorganizationalunitassignments", (int)$id);
+        // Bestehendes Assignment schliessen
+        $payload = $this->closeAssignment($entry);
+
+        $this->putAssignment(
+            "employeeorganizationalunitassignments",
+            (int)$entry["id"],
+            $payload
+        );
     }
 }
+
 
 
 public function disableAllEmployeeOrganizationalUnitGroups(int $employeeId): void
@@ -439,14 +446,22 @@ public function disableAllEmployeeOrganizationalUnitGroups(int $employeeId): voi
 
     $response = $this->client->send($url);
 
-    foreach ($response["employeeorganizationalunitgroupassignment"] ?? [] as $a) {
-        if (empty($a["id"])) {
+    foreach ($response["employeeorganizationalunitgroupassignment"] ?? [] as $entry) {
+
+        if (empty($entry["id"])) {
             continue;
         }
 
-        $this->setAssignmentEndDate("employeeorganizationalunitgroupassignments", (int)$a["id"]);
+        $payload = $this->closeAssignment($entry);
+
+        $this->putAssignment(
+            "employeeorganizationalunitgroupassignments",
+            (int)$entry["id"],
+            $payload
+        );
     }
 }
+
 
 
 public function disableAllUserRoles(int $userId): void
@@ -515,6 +530,68 @@ private function deleteAssignment(string $resource, int $id): void
         . "/resources/external/{$resource}/{$id}";
 
     $this->client->send($url, "DELETE");
+}
+
+private function closeAssignment(array $existing): array
+{
+    $yesterday = date("Y-m-d", strtotime("-1 day"));
+
+    // ORBIS verlangt kompletten Datenbaum, nicht nur validityperiod
+    $payload = $existing;
+
+    $from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
+
+    $payload["validityperiod"] = [
+        "from" => $from,
+        "thru" => ["date" => $yesterday]
+    ];
+
+    return $payload;
+}
+
+private function putAssignment(string $resource, int $id, array $payload): void
+{
+    $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}";
+    $this->client->send($url, "PUT", $payload);
+}
+
+public function createOrganizationalUnitAssignment(int $employeeId, int $unitId, int $rankId): void
+{
+    $today = date("Y-m-d");
+
+    $payload = [
+        "employee" => ["id" => $employeeId],
+        "organizationalunit" => ["id" => $unitId],
+        "rank" => ["id" => $rankId],
+        "validityperiod" => [
+            "from" => ["date" => $today, "handling" => "inclusive"]
+        ]
+    ];
+
+    $this->client->send(
+        $this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitassignments",
+        "POST",
+        $payload
+    );
+}
+
+public function createOrganizationalUnitGroupAssignment(int $employeeId, int $groupId): void
+{
+    $today = date("Y-m-d");
+
+    $payload = [
+        "employee" => ["id" => $employeeId],
+        "organizationalunitgroup" => ["id" => $groupId],
+        "validityperiod" => [
+            "from" => ["date" => $today, "handling" => "inclusive"]
+        ]
+    ];
+
+    $this->client->send(
+        $this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitgroupassignments",
+        "POST",
+        $payload
+    );
 }
 
 
