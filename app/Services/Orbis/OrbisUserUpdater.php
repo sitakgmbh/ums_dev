@@ -20,6 +20,8 @@ class OrbisUserUpdater
 
     public function update(int $id, array $input): array
     {
+		Logger::debug("ORBIS UPDATE INPUT: " . json_encode($input, JSON_PRETTY_PRINT));
+
         $log = [];
 
         $entry = Mutation::find($id);
@@ -59,6 +61,12 @@ class OrbisUserUpdater
 
         // Mitarbeiter suchen
         $employee = $this->helper->getEmployeeByUserId($userId, $today);
+
+		if (!$employee) {
+			Logger::error("Kein Mitarbeiter gefunden fuer User: {$username}");
+		}
+
+
         if (!$employee || !isset($employee["id"])) {
             $log[] = "Kein Mitarbeiter gefunden";
             return ["success" => false, "log" => $log];
