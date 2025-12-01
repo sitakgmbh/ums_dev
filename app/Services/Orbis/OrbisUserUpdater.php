@@ -214,6 +214,27 @@ class OrbisUserUpdater
 
         }
 
+		// ===============================
+		// Signierstufe (Signinglevel)
+		// ===============================
+		if ($signingLevelId) {
+
+			$this->client->send(
+				$this->client->getBaseUrl() . "/resources/external/employeeemployeesigninglevelassignments",
+				"POST",
+				[
+					"employee" => ["id" => $employeeId],
+					"signinglevel" => ["id" => (int)$signingLevelId],
+					"validityperiod" => [
+						"from" => ["date" => $today, "handling" => "inclusive"]
+					]
+				]
+			);
+
+			$log[] = "Signierstatus aktualisiert";
+		}
+
+
         return ["success" => true, "log" => $log];
     }
 

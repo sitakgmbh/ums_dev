@@ -196,6 +196,8 @@ public function confirmSubmitWithoutFunction(): void
                 'orggroups'         => $this->selectedOrgGroups,
                 'roles'             => $this->selectedRoles,
 
+			    'signinglevel'      => $this->employeeDetails['signinglevel']['id'] ?? null,
+
                 'orgunits_lookup'   => $this->employeeDetails['organizationalunits'] ?? [],
                 'orggroups_lookup'  => $this->employeeDetails['organizationalunitgroups'] ?? [],
                 'roles_lookup'      => $selectedUser['roles'] ?? [],
