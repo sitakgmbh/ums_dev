@@ -478,33 +478,28 @@ class OrbisHelper
 	}
 
 
-private function setAssignmentEndDate(string $resource, int $id): void
+public function disableAllEmployeeFunctions(int $employeeId): void
 {
-    $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}";
-    $yesterday = date("Y-m-d", strtotime("-1 day"));
-    $existing = $this->client->send($url);
+    $today = date("Y-m-d");
+    $url = $this->client->getBaseUrl()
+        . "/resources/external/employees/{$employeeId}/employeefunctionassignments?referencedate={$today}";
 
-    if (!is_array($existing) || empty($existing["id"])) {
-        return;
+    $response = $this->client->send($url);
+
+    foreach ($response["employeeemployeefunctionassignment"] ?? [] as $a) {
+        if (!empty($a["id"])) {
+            $this->cancelAssignment("employeeemployeefunctionassignments", (int)$a["id"]);
+        }
     }
-
-    $from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
-
-    $payload = $existing;
-
-    $payload["canceled"] = true;
-    $payload["validityperiod"] = [
-        "from" => $from,
-        "thru" => ["date" => $yesterday]
-    ];
-
-    $this->client->send(
-        $this->client->getBaseUrl() . "/resources/external/{$resource}",
-        "PUT",
-        $payload
-    );
 }
 
+
+private function cancelAssignment(string $resource, int $id): void
+{
+    $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}/cancel";
+
+    $this->client->send($url, "POST");
+}
 
 
 }
