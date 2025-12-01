@@ -151,6 +151,7 @@ class Kis extends BaseModal
     protected function processSubmit(OrbisUserCreator $creator): void
     {
         $this->errorMessage = '';
+		$this->successMessage = '';
 
         try {
             $this->validate([
