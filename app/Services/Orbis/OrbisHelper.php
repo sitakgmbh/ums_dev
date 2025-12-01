@@ -420,13 +420,16 @@ public function disableAllEmployeeOrganizationalUnits(int $employeeId): void
     $response = $this->client->send($url);
 
     foreach ($response["employeeorganizationalunitassignment"] ?? [] as $a) {
-        if (empty($a["id"])) {
+
+        $id = $a["id"] ?? null;
+        if (!$id) {
             continue;
         }
 
-        $this->setAssignmentEndDate("employeeorganizationalunitassignments", (int)$a["id"]);
+        $this->setAssignmentEndDate("employeeorganizationalunitassignments", (int)$id);
     }
 }
+
 
 public function disableAllEmployeeOrganizationalUnitGroups(int $employeeId): void
 {
