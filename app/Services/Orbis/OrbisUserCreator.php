@@ -178,60 +178,115 @@ class OrbisUserCreator
 
         $log[] = "Benutzer Facility zugewiesen";
 
-        // Organisationseinheiten
-        foreach ($orgUnits as $unit) {
-            $assignment = [
-                "employee" => ["id" => $employeeId],
-                "organizationalunit" => ["id" => $unit["id"]],
-                "validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
-            ];
+		// Organisationseinheiten
+		$oeLogs = [];
 
-            if (!empty($unit["rank"])) {
-                $assignment["rank"] = ["id" => (int)$unit["rank"]];
-            }
+		if (!empty($orgUnits)) {
 
-            $this->client->send(
-                $this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitassignments",
-                "POST",
-                $assignment
-            );
-        }
+			foreach ($orgUnits as $unit) {
 
-        $log[] = "Organisationseinheiten zugewiesen";
+				$unitName = collect($this->employeeDetails['organizationalunits'] ?? [])
+					->firstWhere('id', $unit['id'])['name'] ?? '';
 
-        // Gruppen
-        foreach ($orgGroups as $idGroup) {
-            $this->client->send(
-                $this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitgroupassignments",
-                "POST",
-                [
-                    "employee" => ["id" => $employeeId],
-                    "organizationalunitgroup" => ["id" => $idGroup],
-                    "validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
-                ]
-            );
-        }
+				$assignment = [
+					"employee" => ["id" => $employeeId],
+					"organizationalunit" => ["id" => $unit["id"]],
+					"validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
+				];
 
-        $log[] = "OE-Gruppen zugewiesen";
+				if (!empty($unit["rank"])) {
+					$assignment["rank"] = ["id" => (int)$unit["rank"]];
+				}
+
+				$this->client->send(
+					$this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitassignments",
+					"POST",
+					$assignment
+				);
+
+				$oeLogs[] = "{$unit['id']}" . ($unitName ? " ({$unitName})" : "");
+			}
+
+			$log[] = "OE zugewiesen (" . implode(", ", $oeLogs) . ")";
+
+		} else {
+			$log[] = "Keine OE uebernommen.";
+		}
+
+
+
+		// OE-Gruppen
+		$groupLogs = [];
+
+		if (!empty($orgGroups)) {
+
+			foreach ($orgGroups as $idGroup) {
+
+				$groupName = collect($this->employeeDetails['organizationalunitgroups'] ?? [])
+					->firstWhere('id', $idGroup)['name'] ?? '';
+
+				$this->client->send(
+					$this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitgroupassignments",
+					"POST",
+					[
+						"employee" => ["id" => $employeeId],
+						"organizationalunitgroup" => ["id" => $idGroup],
+						"validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
+					]
+				);
+
+				$groupLogs[] = "{$idGroup}" . ($groupName ? " ({$groupName})" : "");
+			}
+
+			$log[] = "OE-Gruppen zugewiesen (" . implode(", ", $groupLogs) . ")";
+
+		} else {
+			$log[] = "Keine OE-Gruppen uebernommen.";
+		}
+
+
+		$hasOe = !empty($orgUnits);
+		$hasGroup = !empty($orgGroups);
+
+		if (!$hasOe && !$hasGroup) {
+			$log[] = "WICHTIG: Keine OE und keine OE-Gruppe zugewiesen – bitte manuell in ORBIS setzen.";
+		}
 
         // OPTIONAL: Rollen
-        if (!empty($roles)) {
-            foreach ($roles as $roleId) {
-                $this->client->send(
-                    $this->client->getBaseUrl() . "/resources/external/userroleassignments",
-                    "POST",
-                    [
-                        "user" => ["id" => $userId],
-                        "role" => ["id" => $roleId],
-                        "validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
-                    ]
-                );
-            }
+		if (!empty($roles)) {
 
-            $log[] = "Rollen zugewiesen";
-        } else {
-            $log[] = "Keine Rollen ausgewählt — Benutzer ohne Rollen erstellt";
-        }
+			$roleLogs = [];
+
+			$allRoles = [];
+			foreach (($this->employeeDetails['users'] ?? []) as $u) {
+				foreach ($u['roles'] ?? [] as $r) {
+					$allRoles[$r['id']] = $r['name'] ?? '';
+				}
+			}
+
+			foreach ($roles as $roleId) {
+
+				$roleName = $allRoles[$roleId] ?? '';
+
+				$this->client->send(
+					$this->client->getBaseUrl() . "/resources/external/userroleassignments",
+					"POST",
+					[
+						"user" => ["id" => $userId],
+						"role" => ["id" => $roleId],
+						"validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
+					]
+				);
+
+				$roleLogs[] = "{$roleId}" . ($roleName ? " ({$roleName})" : "");
+			}
+
+			$log[] = "Rollen zugewiesen (" . implode(", ", $roleLogs) . ")";
+
+		} else {
+			$log[] = "ACHTUNG: Keine Rolle uebernommen – Rolle muss manuell gesetzt werden.";
+		}
+
 
         return ["success" => true, "log" => $log];
     }

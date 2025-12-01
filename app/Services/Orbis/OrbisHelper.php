@@ -368,22 +368,19 @@ public function createUser(int $employeeId, array $payload): ?int
 
 public function validateInput(array $input): void
 {
-    // Struktur fuer orgunits NICHT anfassen
-    $orgunits = is_array($input['orgunits'] ?? []) ? $input['orgunits'] : [];
+    if (!isset($input['orgunits']) || !is_array($input['orgunits'])) {
+        $input['orgunits'] = [];
+    }
 
-    // Flache Listen fuer groups & roles
-    $orggroups = $this->cleanList($input['orggroups'] ?? []);
-    $roles     = $this->cleanList($input['roles'] ?? []);
+    if (!isset($input['orggroups']) || !is_array($input['orggroups'])) {
+        $input['orggroups'] = [];
+    }
 
-    $hasOrgUnits  = count($orgunits) > 0;
-    $hasOrgGroups = count($orggroups) > 0;
-
-    if (!$hasOrgUnits && !$hasOrgGroups) {
-        throw new \InvalidArgumentException(
-            "Bitte waehle mindestens eine Organisationseinheit oder eine Organisationseinheitgruppe aus."
-        );
+    if (!isset($input['roles']) || !is_array($input['roles'])) {
+        $input['roles'] = [];
     }
 }
+
 
 
 private function cleanList($list): array

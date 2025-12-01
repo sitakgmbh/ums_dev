@@ -160,28 +160,40 @@ class Kis extends BaseModal
                 'permissionMode'   => 'required|in:merge,replace'
             ]);
 
-            // Orgunits
-            $orgUnits = collect($this->selectedOrgUnits)->map(function ($id) {
-                $unit = collect($this->employeeDetails['organizationalunits'] ?? [])
-                    ->firstWhere('id', $id);
+			// Orgunits → id + rank
+			$orgUnits = collect($this->selectedOrgUnits)->map(function ($id) {
+				$unit = collect($this->employeeDetails['organizationalunits'] ?? [])
+					->firstWhere('id', $id);
 
-                $r = ['id' => $id];
-                if (isset($unit['rank']['id'])) {
-                    $r['rank'] = $unit['rank']['id'];
-                }
+				$r = ['id' => $id];
+				if (isset($unit['rank']['id'])) {
+					$r['rank'] = $unit['rank']['id'];
+				}
 
-                return $r;
-            })->toArray();
+				return $r;
+			})->toArray();
 
-            $input = [
-                'username'          => $this->username,
-                'orgunits'          => $orgUnits,
-                'orggroups'         => $this->selectedOrgGroups,
-                'roles'             => $this->selectedRoles,
-                'employeeStateId'   => $this->employeeDetails['state']['id'] ?? null,
-                'employeeFunction'  => $this->employeeFunction,
-                'permissionMode'    => $this->permissionMode,
-            ];
+			// User finden fuers Rollen-Lookup
+			$selectedUser = collect($this->employeeDetails['users'] ?? [])
+				->firstWhere('id', $this->selectedUserId);
+
+			$input = [
+				'username'          => $this->username,
+
+				// IDs
+				'orgunits'          => $orgUnits,
+				'orggroups'         => $this->selectedOrgGroups,
+				'roles'             => $this->selectedRoles,
+
+				// Lookups fuers Loggen (Namen)
+				'orgunits_lookup'   => $this->employeeDetails['organizationalunits'] ?? [],
+				'orggroups_lookup'  => $this->employeeDetails['organizationalunitgroups'] ?? [],
+				'roles_lookup'      => $selectedUser['roles'] ?? [],
+
+				'employeeStateId'   => $this->employeeDetails['state']['id'] ?? null,
+				'employeeFunction'  => $this->employeeFunction,
+				'permissionMode'    => $this->permissionMode,
+			];
 
 			$result = $creator->create($this->entry->id, $input);
 
