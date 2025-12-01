@@ -2,7 +2,7 @@
 
 namespace App\Services\Orbis;
 
-use Illuminate\Support\Facades\Log;
+use App\Utils\Logging\Logger;
 
 class OrbisHelper
 {
