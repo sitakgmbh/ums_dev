@@ -313,21 +313,30 @@ public function createEmployee(array $payload): ?int
 }
 
 
-    public function createUser(int $employeeId, array $payload): ?int
-    {
-        $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/users";
-        $response = $this->client->send($url, "POST", $payload, true);
+public function createUser(int $employeeId, array $payload): ?int
+{
+    $result = $this->client->send(
+        $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/users",
+        "POST",
+        $payload,
+        returnHeaders: true
+    );
 
-        foreach ($response["headers"] ?? [] as $key => $values) {
-            foreach ($values as $value) {
-                if (str_contains($value, "Location:") && preg_match('#/users/(\d+)#', $value, $m)) {
-                    return (int)$m[1];
-                }
-            }
-        }
+    $headers = $result['headers'] ?? [];
 
+    if (!isset($headers['Location'][0])) {
+        Logger::error("Keine Location fuer User erhalten");
         return null;
     }
+
+    $location = $headers['Location'][0];   // .../users/36412
+    $id = intval(basename($location));     // 36412
+
+    Logger::debug("Neue ORBIS User-ID: {$id}");
+
+    return $id > 0 ? $id : null;
+}
+
 
     public function findAvailableUsername(string $base): array
     {
