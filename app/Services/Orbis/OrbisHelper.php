@@ -285,21 +285,33 @@ public function getUserDetails(string $username): array
         return $result;
     }
 
-    public function createEmployee(array $payload): ?int
-    {
-        $url = $this->client->getBaseUrl() . "/resources/external/employees";
-        $response = $this->client->send($url, "POST", $payload, true);
+public function createEmployee(array $payload): ?int
+{
+    $result = $this->client->send(
+        $this->client->getBaseUrl() . "/resources/external/employees",
+        "POST",
+        $payload,
+        returnHeaders: true
+    );
 
-        foreach ($response["headers"] ?? [] as $key => $values) {
-            foreach ($values as $value) {
-                if (str_contains($value, "Location:") && preg_match('#/employees/(\d+)#', $value, $m)) {
-                    return (int)$m[1];
-                }
-            }
-        }
+    // Kein Body vorhanden → ID aus Location extrahieren
+    $headers = $result['headers'] ?? [];
 
+    if (!isset($headers['Location'][0])) {
+        Logger::error("Keine Location im Header erhalten");
         return null;
     }
+
+    $location = $headers['Location'][0];   // z.B. /employees/45243
+
+    // ID extrahieren
+    $id = intval(basename($location));
+
+    Logger::debug("Neue ORBIS Employee-ID: {$id}");
+
+    return $id > 0 ? $id : null;
+}
+
 
     public function createUser(int $employeeId, array $payload): ?int
     {
