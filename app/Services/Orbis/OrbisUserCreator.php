@@ -54,6 +54,11 @@ class OrbisUserCreator
         $orgGroups = $input["orggroups"] ?? [];
         $roles     = $input["roles"]     ?? [];
 
+		// Lookup-Daten aus Livewire übergeben
+		$lookupOe  = $input['orgunits_lookup']  ?? [];
+		$lookupGrp = $input['orggroups_lookup'] ?? [];
+		$lookupRol = $input['roles_lookup']     ?? [];
+
         if (!is_array($roles)) 
 		{
             $roles = [];
