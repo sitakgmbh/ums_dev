@@ -478,7 +478,6 @@ class OrbisHelper
 	}
 
 
-
 private function setAssignmentEndDate(string $resource, int $id): void
 {
     $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}";
@@ -506,5 +505,6 @@ private function setAssignmentEndDate(string $resource, int $id): void
         $payload
     );
 }
+
 
 }
