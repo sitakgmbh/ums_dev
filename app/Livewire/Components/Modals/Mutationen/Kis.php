@@ -145,10 +145,13 @@ class Kis extends BaseModal
         $this->processSubmit($updater);
     }
 
-    public function confirmSubmitWithoutFunction(OrbisUserUpdater $updater): void
-    {
-        $this->processSubmit($updater);
-    }
+	public function confirmSubmitWithoutFunction(): void
+	{
+		$updater = app(OrbisUserUpdater::class);
+		$this->processSubmit($updater);
+	}
+
+
 
     protected function processSubmit(OrbisUserUpdater $updater): void
     {
