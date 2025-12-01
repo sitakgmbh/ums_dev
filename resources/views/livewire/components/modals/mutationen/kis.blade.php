@@ -280,7 +280,7 @@
             class="btn btn-primary"
             wire:click="submitUser"
             wire:loading.attr="disabled"
-			disabled
+			@disabled(!$selectedUserId)
         >
             <span wire:loading.remove wire:target="submitUser">
                 {{ $modalType === 'mutation' ? 'Aktualisieren' : 'Erstellen' }}
