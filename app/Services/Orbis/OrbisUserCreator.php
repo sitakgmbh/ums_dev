@@ -191,25 +191,33 @@ class OrbisUserCreator
 
 			foreach ($orgUnits as $unit) {
 
+				// Unit fixen (kann nur eine ID sein)
+				if (is_numeric($unit)) {
+					$unit = ['id' => (int)$unit];
+				}
+
+				// Name aus Lookup
 				$item = collect($lookupOe)->firstWhere('id', $unit['id']);
-
 				$unitName = $item['name'] ?? null;
+				$oeLogs[] = $unitName ?: $unit['id'];
 
-				// Fallback falls kein Name existiert
-				$label = $unitName ?: $unit['id'];
+				$assignment = [
+					"employee" => ["id" => $employeeId],
+					"organizationalunit" => ["id" => $unit["id"]],
+					"validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
+				];
 
-				$oeLogs[] = $label;
+				if (!empty($unit["rank"])) {
+					$assignment["rank"] = ["id" => (int)$unit["rank"]];
+				}
 
 				$this->client->send(
 					$this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitassignments",
 					"POST",
-					[
-						"employee" => ["id" => $employeeId],
-						"organizationalunit" => ["id" => $unit["id"]],
-						"validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
-					]
+					$assignment
 				);
 			}
+
 
 			$log[] = "OE zugewiesen (" . implode(", ", $oeLogs) . ")";
 
