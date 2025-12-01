@@ -467,17 +467,42 @@ public function disableAllEmployeeOrganizationalUnitGroups(int $employeeId): voi
 public function disableAllUserRoles(int $userId): void
 {
     $today = date("Y-m-d");
+    $yesterday = date("Y-m-d", strtotime("-1 day"));
+
     $url = $this->client->getBaseUrl()
         . "/resources/external/users/{$userId}/roleassignments?referencedate={$today}";
 
     $response = $this->client->send($url);
 
-    foreach ($response["userroleassignment"] ?? [] as $a) {
-        if (!empty($a["id"])) {
-            $this->deleteAssignment("userroleassignments", (int)$a["id"]);
-        }
+    foreach ($response["userroleassignment"] ?? [] as $entry) {
+
+        $id = $entry["id"] ?? null;
+        if (!$id) continue;
+
+        // vorhandene Daten holen
+        $existing = $this->client->send(
+            $this->client->getBaseUrl() . "/resources/external/userroleassignments/{$id}"
+        );
+
+        // deaktiviertes Assignment erzeugen
+        $payload = $existing;
+        $from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
+
+        $payload["validityperiod"] = [
+            "from" => $from,
+            "thru" => ["date" => $yesterday]
+        ];
+        $payload["canceled"] = true;
+
+        // PUT zum Aktualisieren
+        $this->client->send(
+            $this->client->getBaseUrl() . "/resources/external/userroleassignments/{$id}",
+            "PUT",
+            $payload
+        );
     }
 }
+
 
 
 public function disableAllEmployeeFunctions(int $employeeId): void
