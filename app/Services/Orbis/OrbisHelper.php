@@ -411,59 +411,50 @@ class OrbisHelper
 		return array_values(array_unique($clean));
 	}
 
-	public function disableAllEmployeeOrganizationalUnits(int $employeeId): void
-	{
-		$today = date("Y-m-d");
-		$url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/organizationalunitassignments?referencedate={$today}";
-		$response = $this->client->send($url);
+public function disableAllEmployeeOrganizationalUnits(int $employeeId): void
+{
+    $today = date("Y-m-d");
+    $url = $this->client->getBaseUrl()
+        . "/resources/external/employees/{$employeeId}/organizationalunitassignments?referencedate={$today}";
 
-		foreach ($response["employeeorganizationalunitassignment"] ?? [] as $a) {
+    $response = $this->client->send($url);
 
-			$id = $a["id"] ?? null;
-			if (!is_numeric($id) || intval($id) <= 0) {
-				continue;
-			}
+    foreach ($response["employeeorganizationalunitassignment"] ?? [] as $a) {
+        if (!empty($a["id"])) {
+            $this->cancelAssignment("employeeorganizationalunitassignments", (int)$a["id"]);
+        }
+    }
+}
 
-			$this->setAssignmentEndDate("employeeorganizationalunitassignments", intval($id));
-		}
-	}
+public function disableAllEmployeeOrganizationalUnitGroups(int $employeeId): void
+{
+    $today = date("Y-m-d");
+    $url = $this->client->getBaseUrl()
+        . "/resources/external/employees/{$employeeId}/organizationalunitgroupassignments?referencedate={$today}";
 
+    $response = $this->client->send($url);
 
-	public function disableAllEmployeeOrganizationalUnitGroups(int $employeeId): void
-	{
-		$today = date("Y-m-d");
-		$url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/organizationalunitgroupassignments?referencedate={$today}";
-		$response = $this->client->send($url);
+    foreach ($response["employeeorganizationalunitgroupassignment"] ?? [] as $a) {
+        if (!empty($a["id"])) {
+            $this->cancelAssignment("employeeorganizationalunitgroupassignments", (int)$a["id"]);
+        }
+    }
+}
 
-		foreach ($response["employeeorganizationalunitgroupassignment"] ?? [] as $a) {
+public function disableAllUserRoles(int $userId): void
+{
+    $today = date("Y-m-d");
+    $url = $this->client->getBaseUrl()
+        . "/resources/external/users/{$userId}/roleassignments?referencedate={$today}";
 
-			$id = $a["id"] ?? null;
-			if (!is_numeric($id) || intval($id) <= 0) {
-				continue;
-			}
+    $response = $this->client->send($url);
 
-			$this->setAssignmentEndDate("employeeorganizationalunitgroupassignments", intval($id));
-		}
-	}
-
-
-	public function disableAllUserRoles(int $userId): void
-	{
-		$today = date("Y-m-d");
-		$url = $this->client->getBaseUrl() . "/resources/external/users/{$userId}/roleassignments?referencedate={$today}";
-		$response = $this->client->send($url);
-
-		foreach ($response["userroleassignment"] ?? [] as $a) {
-
-			$id = $a["id"] ?? null;
-			if (!is_numeric($id) || intval($id) <= 0) {
-				continue;
-			}
-
-			$this->setAssignmentEndDate("userroleassignments", intval($id));
-		}
-	}
-
+    foreach ($response["userroleassignment"] ?? [] as $a) {
+        if (!empty($a["id"])) {
+            $this->cancelAssignment("userroleassignments", (int)$a["id"]);
+        }
+    }
+}
 
 
 
@@ -482,13 +473,12 @@ public function disableAllEmployeeFunctions(int $employeeId): void
     }
 }
 
-
 private function cancelAssignment(string $resource, int $id): void
 {
-    $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}/cancel";
+    $url = $this->client->getBaseUrl()
+        . "/resources/external/{$resource}/{$id}/cancel";
 
     $this->client->send($url, "POST");
 }
-
 
 }
