@@ -464,6 +464,19 @@ class OrbisHelper
 		}
 	}
 
+	public function disableAllEmployeeFunctions(int $employeeId): void
+	{
+		$today = date("Y-m-d");
+		$url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/employeefunctionassignments?referencedate={$today}";
+		$response = $this->client->send($url);
+
+		foreach ($response["employeeemployeefunctionassignment"] ?? [] as $a) {
+			if (!empty($a["id"]) && $a["id"] > 0) {
+				$this->setAssignmentEndDate("employeeemployeefunctionassignments", (int)$a["id"]);
+			}
+		}
+	}
+
 
 
     private function setAssignmentEndDate(string $resource, int $id): void

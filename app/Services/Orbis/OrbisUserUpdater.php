@@ -195,26 +195,30 @@ class OrbisUserUpdater
             $log[] = "ACHTUNG: Keine Rollen übernommen – bitte manuell hinterlegen!";
         }
 
-        // ===============================
-        // Mitarbeiterfunktion (Fix)
-        // ===============================
-        if ($employeeFunctionId) {
+		// ===============================
+		// Mitarbeiterfunktion
+		// ===============================
+		if ($employeeFunctionId) {
 
-            $this->client->send(
-                $this->client->getBaseUrl() . "/resources/external/employeeemployeefunctionassignments",
-                "POST",
-                [
-                    "employee" => ["id" => $employeeId],
-                    "employeefunction" => ["id" => (int)$employeeFunctionId],
-                    "validityperiod" => [
-                        "from" => ["date" => $today, "handling" => "inclusive"]
-                    ]
-                ]
-            );
+			// erst alte Funktionen deaktivieren (wie bei OE/Gruppe/Rollen)
+			$this->helper->disableAllEmployeeFunctions($employeeId);
 
-            $log[] = "Mitarbeiterfunktion aktualisiert";
+			// neue Funktion setzen
+			$this->client->send(
+				$this->client->getBaseUrl() . "/resources/external/employeeemployeefunctionassignments",
+				"POST",
+				[
+					"employee" => ["id" => $employeeId],
+					"employeefunction" => ["id" => (int)$employeeFunctionId],
+					"validityperiod" => [
+						"from" => ["date" => $today, "handling" => "inclusive"]
+					]
+				]
+			);
 
-        }
+			$log[] = "Mitarbeiterfunktion aktualisiert";
+		}
+
 
 		// ===============================
 		// Signierstufe (Signinglevel)
