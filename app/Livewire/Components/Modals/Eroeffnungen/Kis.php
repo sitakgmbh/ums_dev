@@ -44,7 +44,6 @@ class Kis extends BaseModal
         $this->entry = Eroeffnung::with('vorlageBenutzer')->find($payload['entryId']);
         if (!$this->entry) return false;
 
-        // Erfolg NICHT loeschen!
         $this->reset([
             'username',
             'userDetails',
@@ -184,7 +183,6 @@ class Kis extends BaseModal
                 'permissionMode'    => $this->permissionMode,
             ];
 
-            // *** WICHTIG: KEIN app() mehr! ***
             $result = $creator->create($this->entry->id, $input);
 
             if ($result['success']) {
