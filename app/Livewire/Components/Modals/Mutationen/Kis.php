@@ -91,6 +91,11 @@ class Kis extends BaseModal
 
             $this->preselectItems();
 
+			// FIX: Wenn kein User ausgewaehlt, setze ersten automatisch
+			if (!$this->selectedUserId && !empty($this->employeeDetails['users'])) {
+				$this->selectedUserId = $this->employeeDetails['users'][0]['id'];
+			}
+
         } catch (\Exception $e) {
             $this->errorMessage = $e->getMessage();
         } finally {
