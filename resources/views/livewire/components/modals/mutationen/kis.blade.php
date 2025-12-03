@@ -92,7 +92,7 @@
                         >
                     </div>
 					@if($funktionAbweichend)
-						<div class="alert alert-warning mt-2 mb-0">Vom Antrag abweichende Funktion, bitte manuell korrigieren.</div>
+						<div class="alert alert-warning mt-2 mb-0">Wert weicht von Funktion in Antrag ab, bitte manuell korrigieren.</div>
 					@endif
                 </div>
 
