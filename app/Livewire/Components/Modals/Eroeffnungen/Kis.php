@@ -35,6 +35,10 @@ class Kis extends BaseModal
     public string $errorMessage = '';
     public string $successMessage = '';
 
+	public string $funktionAktuell = '';
+	public string $funktionErwartet = '';
+	public bool $funktionAbweichend = false;
+
     protected function openWith(array $payload): bool
     {
         if (!isset($payload['entryId'])) {
@@ -71,6 +75,15 @@ class Kis extends BaseModal
             $this->employeeFunction = 34;
         }
 
+		// Erwartete Funktion aus dem Antrag
+		$this->funktionErwartet = $this->entry->funktion->name ?? '';
+
+		// Initialer aktueller Wert: erst mal gleich wie erwartet
+		$this->funktionAktuell = $this->funktionErwartet;
+
+		// Noch keine Abweichung
+		$this->funktionAbweichend = false;
+
 		$this->title = "KIS Benutzerverwaltung";
         $this->size = "xl";
         $this->position = "centered";
@@ -100,6 +113,13 @@ class Kis extends BaseModal
 			$this->employeeDetails = $details['employee'];
 			$this->userFound       = true;
 			$this->preselectItems();
+
+			$funktionOrbis = $this->employeeDetails['state']['longname'] ?? '';
+			$this->funktionAktuell = $funktionOrbis;
+
+			$this->funktionAbweichend =
+				trim($funktionOrbis) !== trim($this->funktionErwartet);
+
 
 		} catch (\Exception $e) {
 			$this->errorMessage = $e->getMessage();
