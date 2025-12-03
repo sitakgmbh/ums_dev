@@ -78,7 +78,7 @@ class OrbisHelper
 
         foreach ($users as $user) {
             $from = $user["validityperiod"]["from"]["date"] ?? null;
-            $thru = $user["validityperiod"]["thru"]["date"] ?? null;
+            $thru = $user["validityperiod"]["to"]["date"] ?? null;
 
             if ((!$from || $from <= $today) && (!$thru || $thru >= $today)) {
                 return $user;
@@ -109,7 +109,7 @@ class OrbisHelper
             "state" => $this->getCatalogTranslation("STATEOFEMPLOYEE", $employee["state"]["catalogcoding"]["code"] ?? ""),
             "signinglevel" => $employee["signinglevel"] ?? null,
             "validfrom" => $employee["validityperiod"]["from"]["date"] ?? null,
-            "validthru" => $employee["validityperiod"]["thru"]["date"] ?? null,
+            "validthru" => $employee["validityperiod"]["to"]["date"] ?? null,
             "facilities" => $this->getEmployeeFacilities($id, $today)
         ];
     }
@@ -206,7 +206,7 @@ class OrbisHelper
                 "username" => $user["name"] ?? null,
                 "description" => $user["description"] ?? null,
                 "validfrom" => $user["validityperiod"]["from"]["date"] ?? null,
-                "validthru" => $user["validityperiod"]["thru"]["date"] ?? null,
+                "validthru" => $user["validityperiod"]["to"]["date"] ?? null,
                 "locked" => $user["locked"] ?? null,
                 "mustchangepassword" => $user["mustchangepassword"] ?? null,
                 "passwordrefreshinterval" => $user["passwordrefreshinterval"] ?? null,
@@ -417,24 +417,25 @@ public function disableAllEmployeeOrganizationalUnits(int $employeeId): void
     $url = $this->client->getBaseUrl()
         . "/resources/external/employees/{$employeeId}/organizationalunitassignments?referencedate={$today}";
 
-    $response = $this->client->send($url);
+    $list = $this->client->send($url);
 
-    foreach ($response["employeeorganizationalunitassignment"] ?? [] as $entry) {
+    foreach ($list["employeeorganizationalunitassignment"] ?? [] as $entry) {
 
-        if (empty($entry["id"])) {
-            continue;
-        }
+        if (empty($entry["id"])) continue;
 
-        // Bestehendes Assignment schliessen
-        $payload = $this->closeAssignment($entry);
-
-        $this->putAssignment(
-            "employeeorganizationalunitassignments",
-            (int)$entry["id"],
-            $payload
+        // Volldatensatz holen
+        $detail = $this->client->send(
+            $this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitassignments/{$entry["id"]}"
         );
+
+        // Schließen vorbereiten
+        $payload = $this->closeAssignment($detail);
+
+        // PUT ohne id in URL
+        $this->putAssignment("employeeorganizationalunitassignments", (int)$entry["id"], $payload);
     }
 }
+
 
 
 
@@ -444,21 +445,19 @@ public function disableAllEmployeeOrganizationalUnitGroups(int $employeeId): voi
     $url = $this->client->getBaseUrl()
         . "/resources/external/employees/{$employeeId}/organizationalunitgroupassignments?referencedate={$today}";
 
-    $response = $this->client->send($url);
+    $list = $this->client->send($url);
 
-    foreach ($response["employeeorganizationalunitgroupassignment"] ?? [] as $entry) {
+    foreach ($list["employeeorganizationalunitgroupassignment"] ?? [] as $entry) {
 
-        if (empty($entry["id"])) {
-            continue;
-        }
+        if (empty($entry["id"])) continue;
 
-        $payload = $this->closeAssignment($entry);
-
-        $this->putAssignment(
-            "employeeorganizationalunitgroupassignments",
-            (int)$entry["id"],
-            $payload
+        $detail = $this->client->send(
+            $this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitgroupassignments/{$entry["id"]}"
         );
+
+        $payload = $this->closeAssignment($detail);
+
+        $this->putAssignment("employeeorganizationalunitgroupassignments", (int)$entry["id"], $payload);
     }
 }
 
@@ -490,7 +489,7 @@ public function disableAllUserRoles(int $userId): void
 
         $payload["validityperiod"] = [
             "from" => $from,
-            "thru" => ["date" => $yesterday]
+            "to" => ["date" => $yesterday]
         ];
         $payload["canceled"] = true;
 
@@ -520,6 +519,7 @@ public function disableAllEmployeeFunctions(int $employeeId): void
     }
 }
 
+
 private function setAssignmentEndDate(string $resource, int $id): void
 {
     $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}";
@@ -538,7 +538,7 @@ private function setAssignmentEndDate(string $resource, int $id): void
 
     $payload["validityperiod"] = [
         "from" => $from,
-        "thru" => ["date" => $yesterday]
+        "to" => ["date" => $yesterday]
     ];
 
     $this->client->send(
@@ -561,24 +561,37 @@ private function closeAssignment(array $existing): array
 {
     $yesterday = date("Y-m-d", strtotime("-1 day"));
 
-    // ORBIS verlangt kompletten Datenbaum, nicht nur validityperiod
-    $payload = $existing;
+    // Entferne alle "link"-Felder
+    $this->removeLinks($existing);
 
     $from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
 
-    $payload["validityperiod"] = [
+    // Wichtig: "to", nicht "thru"
+    $existing["validityperiod"] = [
         "from" => $from,
-        "thru" => ["date" => $yesterday]
+        "to"   => ["date" => $yesterday]
     ];
 
-    return $payload;
+    $existing["canceled"] = true;
+
+    return $existing;
 }
+
 
 private function putAssignment(string $resource, int $id, array $payload): void
 {
-    $url = $this->client->getBaseUrl() . "/resources/external/{$resource}/{$id}";
+    $url = $this->client->getBaseUrl() . "/resources/external/{$resource}";
+
+    // ORBIS erwartet PUT ohne ID in der URL
+    // ID nur im Body!
+    $payload["id"] = $id;
+
+    // Links entfernen
+    $this->removeLinks($payload);
+
     $this->client->send($url, "PUT", $payload);
 }
+
 
 public function createOrganizationalUnitAssignment(int $employeeId, int $unitId, int $rankId): void
 {
@@ -617,6 +630,21 @@ public function createOrganizationalUnitGroupAssignment(int $employeeId, int $gr
         "POST",
         $payload
     );
+}
+
+
+private function removeLinks(array &$payload): void
+{
+    foreach ($payload as $key => &$value) {
+        if ($key === 'link') {
+            unset($payload[$key]);
+            continue;
+        }
+
+        if (is_array($value)) {
+            $this->removeLinks($value);
+        }
+    }
 }
 
 
