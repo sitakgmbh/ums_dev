@@ -468,6 +468,7 @@ public function disableAllUserRoles(int $userId): void
     $today = date("Y-m-d");
     $yesterday = date("Y-m-d", strtotime("-1 day"));
 
+    // Rollenzuweisungen fuer diesen Benutzer
     $url = $this->client->getBaseUrl()
         . "/resources/external/users/{$userId}/roleassignments?referencedate={$today}";
 
@@ -478,26 +479,34 @@ public function disableAllUserRoles(int $userId): void
         $id = $entry["id"] ?? null;
         if (!$id) continue;
 
-        // vorhandene Daten holen
+        // Volldaten holen
         $existing = $this->client->send(
             $this->client->getBaseUrl() . "/resources/external/userroleassignments/{$id}"
         );
 
-        // deaktiviertes Assignment erzeugen
-        $payload = $existing;
-        $from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
+        // Links entfernen
+        $this->removeLinks($existing);
 
-        $payload["validityperiod"] = [
+        // From + Handling extrahieren
+        $from = $existing["validityperiod"]["from"] 
+            ?? ["date" => "2000-01-01", "handling" => "inclusive"];
+
+        // Schliessen
+        $existing["validityperiod"] = [
             "from" => $from,
-            "to" => ["date" => $yesterday]
+            "to" => [
+                "date" => $yesterday,
+                "handling" => "inclusive"
+            ]
         ];
-        $payload["canceled"] = true;
 
-        // PUT zum Aktualisieren
+        $existing["canceled"] = true;
+
+        // PUT (ohne ID in der URL)
         $this->client->send(
-            $this->client->getBaseUrl() . "/resources/external/userroleassignments/{$id}",
+            $this->client->getBaseUrl() . "/resources/external/userroleassignments",
             "PUT",
-            $payload
+            $existing
         );
     }
 }
