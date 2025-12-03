@@ -91,8 +91,8 @@
                             readonly
                         >
                     </div>
-					@if(!$funktionAbweichend)
-						<div class="alert alert-warning mt-2 mb-0">Die Funktion weicht von der im Antrag hinterlegten Funktion ab. Bitte manuell korrigieren.</div>
+					@if($funktionAbweichend)
+						<div class="alert alert-warning mt-2 mb-0">Vom Antrag abweichende Funktion, bitte manuell korrigieren.</div>
 					@endif
                 </div>
 
