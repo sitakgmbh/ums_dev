@@ -115,6 +115,8 @@ public function getUserDetails(string $username): array
         return $this->client->send($url)["employee"][0] ?? null;
     }
 
+
+
     public function getEmployeeDetails(array $employee, string $today): array
     {
         $id = $employee["id"];
@@ -134,6 +136,19 @@ public function getUserDetails(string $username): array
             "facilities" => $this->getEmployeeFacilities($id, $today)
         ];
     }
+
+
+public function getEmployeeFunctionAssignments(int $employeeId): array
+{
+    $url = $this->client->getBaseUrl()
+        . "/resources/external/employeeemployeefunctionassignments"
+        . "?employeeid={$employeeId}";
+
+    $response = $this->client->send($url, "GET");
+
+    return $response["employeeemployeefunctionassignments"] ?? [];
+}
+
 
     public function getEmployeeFacilities(int $employeeId, string $today): array
     {
