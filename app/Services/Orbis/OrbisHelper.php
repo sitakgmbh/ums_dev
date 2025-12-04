@@ -58,9 +58,6 @@ public function getUserDetails(string $username): array
     // FACILITY
     $facility = $employeeData["facilities"][0] ?? null;
 
-    $functionAssignments = $this->getEmployeeFunctionAssignments($employeeId);
-
-    // Ersten Eintrag verwenden (OR­BIS erlaubt sowieso nur 1 aktive Funktion)
 	$functionAssignment = $this->getEmployeeFunctionAssignment($employeeData["id"], $today);
 
 	return [
