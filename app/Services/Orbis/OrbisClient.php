@@ -58,15 +58,10 @@ class OrbisClient
 			->withOptions(['verify' => false])
 			->send($method, $fullUrl, ['json' => $body]);
 
-		Logger::debug("ORBIS RESPONSE STATUS: " . $response->status());
-
 		$rawBody = $response->body();
-		Logger::debug("ORBIS RESPONSE RAW:\n" . ($rawBody ?: "<leer>"));
+		Logger::debug("ORBIS RESPONSE (Status {$response->status()}): {$rawBody})");
 
-		Logger::debug(
-			"ORBIS RESPONSE HEADERS:\n" .
-			json_encode($response->headers(), JSON_PRETTY_PRINT)
-		);
+		// Logger::debug("ORBIS RESPONSE HEADERS:\n" . json_encode($response->headers(), JSON_PRETTY_PRINT));
 
 		$json = null;
 		
