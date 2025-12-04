@@ -393,7 +393,7 @@ class OrbisHelper
             $userExists = $this->userExists($testname);
 
             if (!$employeeExists && !$userExists) {
-                $log[] = "Benutzername '{$testname}' ist verfuegbar.";
+                $log[] = "Benutzername '{$testname}' ist verfübar.";
                 return ["username" => $testname, "log" => $log];
             }
 

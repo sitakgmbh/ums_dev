@@ -34,6 +34,7 @@ class Kis extends BaseModal
 
     public string $errorMessage = '';
     public string $successMessage = '';
+	public bool $disableSubmit = false;
 
 	public string $funktionAktuell = '';
 	public string $funktionErwartet = '';
@@ -239,8 +240,10 @@ class Kis extends BaseModal
 
 			if ($result['success']) {
 				$this->successMessage = implode('<br>', $result['log']);
+				$this->disableSubmit = true;
 				// $this->entry->update(['status_kis' => 2]);
-				$this->dispatch('kis-user-updated', log: $result['log']);
+				// $this->dispatch('kis-updated', log: $result['log']);
+				// $this->dispatch('kis-updated');
 			} else {
 				$this->errorMessage = implode('<br>', $result['log']);
 			}
