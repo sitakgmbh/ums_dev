@@ -7,6 +7,7 @@ use App\Models\Mutation;
 use App\Services\Orbis\OrbisUserUpdater;
 use App\Services\Orbis\OrbisHelper;
 use Livewire\Attributes\Validate;
+use App\Utils\Logging\Logger;
 
 class Kis extends BaseModal
 {
