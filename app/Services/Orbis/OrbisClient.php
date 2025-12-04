@@ -72,7 +72,7 @@ class OrbisClient
 		
 		try 
 		{
-			$json = $response->json(); // immer als array oder null
+			$json = $response->json();
 		} 
 		catch (\Throwable $e) 
 		{
@@ -81,7 +81,6 @@ class OrbisClient
 			return null;
 		}
 
-		// Falls json() unerwartet kein array liefert (z.B. null/false/string)
 		if (!is_array($json)) 
 		{
 			Logger::error("ORBIS JSON ist kein Array (Typ: " . gettype($json) . ")");

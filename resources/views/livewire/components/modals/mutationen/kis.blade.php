@@ -268,7 +268,7 @@
 
 	<button
 		type="button"
-		class="btn btn-success me-2"
+		class="btn btn-success me-1"
 		wire:click="markAsComplete"
 		wire:loading.attr="disabled"
 	>

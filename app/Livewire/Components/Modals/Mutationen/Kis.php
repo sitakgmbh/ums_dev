@@ -266,8 +266,8 @@ public function confirmSubmitWithoutFunction(): void
     {
         if ($this->entry) {
             $this->entry->update(['status_kis' => 2]);
-            $this->successMessage = "Status erfolgreich auf 'Erledigt' gesetzt.";
             $this->dispatch('kis-updated');
+			$this->closeModal();
         }
     }
 
