@@ -240,7 +240,7 @@ class Kis extends BaseModal
 
 			if ($result['success']) {
 				$this->successMessage = implode('<br>', $result['log']);
-				$this->disableSubmit = true;
+				// $this->disableSubmit = true;
 				// $this->entry->update(['status_kis' => 2]);
 				// $this->dispatch('kis-updated', log: $result['log']);
 				// $this->dispatch('kis-updated');
