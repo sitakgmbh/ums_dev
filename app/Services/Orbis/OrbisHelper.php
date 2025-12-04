@@ -26,49 +26,70 @@ class OrbisHelper
         return isset($result["user"]) && count($result["user"]) > 0;
     }
 
-	public function getUserDetails(string $username): array
-	{
-		$username = strtoupper($username);
-		$today = date("Y-m-d");
-		$user = $this->getUserByUsername($username);
+public function getUserDetails(string $username): array
+{
+    $username = strtoupper($username);
+    $today = date("Y-m-d");
 
-		if (!$user || !isset($user["id"])) {
-			throw new \RuntimeException("Benutzer nicht gefunden.", 404);
-		}
+    // USER LADEN
+    $user = $this->getUserByUsername($username);
+    if (!$user || !isset($user["id"])) {
+        throw new \RuntimeException("Benutzer nicht gefunden.", 404);
+    }
 
-		$userId = $user["id"];
-		$employee = $this->getEmployeeByUserId($userId, $today);
+    $userId = $user["id"];
 
-		if (!$employee || !isset($employee["id"])) {
-			throw new \RuntimeException("Mitarbeiter nicht gefunden.");
-		}
+    // EMPLOYEE LADEN
+    $employee = $this->getEmployeeByUserId($userId, $today);
+    if (!$employee || !isset($employee["id"])) {
+        throw new \RuntimeException("Mitarbeiter nicht gefunden.");
+    }
 
-		$employeeData = $this->getEmployeeDetails($employee, $today);
-		$orgUnits = $this->getEmployeeOrganizationalUnits($employeeData["id"], $today);
-		$orgGroups = $this->getEmployeeOrganizationalUnitGroups($employeeData["id"], $today);
-		$users = $this->getUsersByEmployeeId($employeeData["id"], $today);
-		$facility = $employeeData["facilities"][0] ?? null;
+    $employeeId = $employee["id"];
 
-		return [
-			"user" => $user,
-			"employee" => [
-				"id" => $employeeData["id"],
-				"salutation" => $employeeData["salutation"],
-				"title" => $employeeData["title"] ?? null,
-				"surname" => $employeeData["surname"],
-				"firstname" => $employeeData["firstname"],
-				"sex" => $employeeData["sex"],
-				"facility" => $facility,
-				"state" => $employeeData["state"],
-				"signinglevel" => $employeeData["signinglevel"],
-				"validfrom" => $employeeData["validfrom"],
-				"validthru" => $employeeData["validthru"],
-				"organizationalunits" => $orgUnits,
-				"organizationalunitgroups" => $orgGroups,
-				"users" => $users
-			]
-		];
-	}
+    // EMPLOYEE DETAILS
+    $employeeData = $this->getEmployeeDetails($employee, $today);
+
+    // OE / Gruppen / Benutzer
+    $orgUnits  = $this->getEmployeeOrganizationalUnits($employeeId, $today);
+    $orgGroups = $this->getEmployeeOrganizationalUnitGroups($employeeId, $today);
+    $users     = $this->getUsersByEmployeeId($employeeId, $today);
+
+    // FACILITY
+    $facility = $employeeData["facilities"][0] ?? null;
+
+    $functionAssignments = $this->getEmployeeFunctionAssignments($employeeId);
+
+    // Ersten Eintrag verwenden (OR­BIS erlaubt sowieso nur 1 aktive Funktion)
+    $functionId   = $functionAssignments[0]["employeefunction"]["id"] ?? null;
+    $functionName = $functionAssignments[0]["employeefunction"]["name"] ?? null;
+
+    return [
+        "user" => $user,
+        "employee" => [
+            "id" => $employeeData["id"],
+            "salutation" => $employeeData["salutation"],
+            "title" => $employeeData["title"] ?? null,
+            "surname" => $employeeData["surname"],
+            "firstname" => $employeeData["firstname"],
+            "sex" => $employeeData["sex"],
+            "facility" => $facility,
+            "state" => $employeeData["state"],
+            "signinglevel" => $employeeData["signinglevel"],
+            "validfrom" => $employeeData["validfrom"],
+            "validthru" => $employeeData["validthru"],
+            "organizationalunits" => $orgUnits,
+            "organizationalunitgroups" => $orgGroups,
+            "users" => $users,
+
+            // Neu hinzufuegen:
+            "employeefunctionassignments" => $functionAssignments,
+            "employeefunction_id" => $functionId,
+            "employeefunction_name" => $functionName,
+        ]
+    ];
+}
+
 
     public function getUserByUsername(string $username): ?array
     {

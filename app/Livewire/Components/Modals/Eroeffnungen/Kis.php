@@ -118,16 +118,16 @@ class Kis extends BaseModal
 			// =======================================
 			// Mitarbeiterfunktion automatisch setzen
 			// =======================================
-			$f = $this->employeeDetails['employeefunction']['id'] ?? null;
+			$assignments = $this->employeeDetails['employeefunctionassignments'] ?? [];
 
-			if ($f === 34) {
-				$this->employeeFunction = 34;
-			}
-			elseif ($f === 74) {
-				$this->employeeFunction = 74;
-			}
-			else {
-				$this->employeeFunction = null;
+			$first = $assignments[0]['employeefunction']['id'] ?? null;
+
+			if ($first === 34) {
+				$this->employeeFunction = 34; // Leistungserbringer
+			} elseif ($first === 74) {
+				$this->employeeFunction = 74; // Pflege
+			} else {
+				$this->employeeFunction = null; // Keine Funktion
 			}
 
 			// ORGUNIT / OEGROUP / ROLES übernehmen
