@@ -84,46 +84,63 @@ class Kis extends BaseModal
         return true;
     }
 
-    public function searchUser(OrbisHelper $helper): void
-    {
-        $this->errorMessage = '';
-        $this->successMessage = '';
-        $this->userFound = false;
-        $this->isSearching = true;
+	public function searchUser(OrbisHelper $helper): void
+	{
+		$this->errorMessage = '';
+		$this->successMessage = '';
+		$this->userFound = false;
+		$this->isSearching = true;
 
-        try {
-            $this->validate(['username' => 'required|string|min:2']);
+		try {
+			$this->validate(['username' => 'required|string|min:2']);
 
-            $details = $helper->getUserDetails($this->username);
+			$details = $helper->getUserDetails($this->username);
 
-            $this->userDetails     = $details['user'];
-            $this->employeeDetails = $details['employee'];
-            $this->userFound       = true;
+			$this->userDetails     = $details['user'];
+			$this->employeeDetails = $details['employee'];
+			$this->userFound       = true;
 
-            $this->employeeFunction =
-                $this->employeeDetails['employeefunction']['id'] ?? null;
+			// ================================
+			// Mitarbeiterfunktion AUTOVORSELECTION
+			// ================================
+			$f = $this->employeeDetails['employeefunction']['id'] ?? null;
 
-            $this->preselectItems();
+			if ($f === 34) {
+				$this->employeeFunction = 34; // Leistungserbringer
+			}
+			elseif ($f === 74) {
+				$this->employeeFunction = 74; // Pflege
+			}
+			else {
+				$this->employeeFunction = null; // Keine Funktion
+			}
 
-			// FIX: Wenn kein User ausgewaehlt, setze ersten automatisch
+			// ================================
+			// OrgUnits + OrgGroups + Rollen einlesen
+			// ================================
+			$this->preselectItems();
+
+			// Automatisch ersten User setzen (falls keiner manuell gewaehlt)
 			if (!$this->selectedUserId && !empty($this->employeeDetails['users'])) {
 				$this->selectedUserId = $this->employeeDetails['users'][0]['id'];
 			}
 
-
+			// ================================
+			// Funktionsabweichung pruefen
+			// ================================
 			$funktionOrbis = $this->employeeDetails['state']['longname'] ?? '';
 			$this->funktionAktuell = $funktionOrbis;
 
 			$this->funktionAbweichend =
 				trim($funktionOrbis) !== trim($this->funktionErwartet);
 
+		} catch (\Exception $e) {
+			$this->errorMessage = $e->getMessage();
+		} finally {
+			$this->isSearching = false;
+		}
+	}
 
-        } catch (\Exception $e) {
-            $this->errorMessage = $e->getMessage();
-        } finally {
-            $this->isSearching = false;
-        }
-    }
 
     protected function preselectItems(): void
     {

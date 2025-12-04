@@ -180,7 +180,7 @@
 
                         @if($modalType === 'mutation')
                             <div class="col-md-6">
-                                <label class="form-label">Berechtigungen</label>
+                                <label class="form-label">OE und Rollen</label>
                                 <select 
                                     class="form-select @error('permissionMode') is-invalid @enderror" 
                                     wire:model="permissionMode"

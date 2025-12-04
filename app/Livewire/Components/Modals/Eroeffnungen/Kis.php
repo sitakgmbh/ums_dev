@@ -102,6 +102,8 @@ class Kis extends BaseModal
 	public function searchUser(OrbisHelper $helper): void
 	{
 		$this->errorMessage = '';
+		$this->successMessage = '';
+		$this->userFound = false;
 		$this->isSearching = true;
 
 		try {
@@ -112,14 +114,33 @@ class Kis extends BaseModal
 			$this->userDetails     = $details['user'];
 			$this->employeeDetails = $details['employee'];
 			$this->userFound       = true;
+
+			// =======================================
+			// Mitarbeiterfunktion automatisch setzen
+			// =======================================
+			$f = $this->employeeDetails['employeefunction']['id'] ?? null;
+
+			if ($f === 34) {
+				$this->employeeFunction = 34;
+			}
+			elseif ($f === 74) {
+				$this->employeeFunction = 74;
+			}
+			else {
+				$this->employeeFunction = null;
+			}
+
+			// ORGUNIT / OEGROUP / ROLES übernehmen
 			$this->preselectItems();
 
+			// =======================================
+			// Funktionsabweichung feststellen
+			// =======================================
 			$funktionOrbis = $this->employeeDetails['state']['longname'] ?? '';
 			$this->funktionAktuell = $funktionOrbis;
 
 			$this->funktionAbweichend =
 				trim($funktionOrbis) !== trim($this->funktionErwartet);
-
 
 		} catch (\Exception $e) {
 			$this->errorMessage = $e->getMessage();

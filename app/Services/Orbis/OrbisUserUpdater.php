@@ -76,15 +76,15 @@ class OrbisUserUpdater
         $employeeId = $employee["id"];
 
         // Merge / Replace
-        if (empty($entry->abteilung2_id)) {
-            $log[] = "Bestehende Zuweisungen entfernt";
+		if ($input['permissionMode'] === 'replace') {
 
-            $this->helper->disableAllEmployeeOrganizationalUnits($employeeId);
-            $this->helper->disableAllEmployeeOrganizationalUnitGroups($employeeId);
-            $this->helper->disableAllUserRoles($userId);
-        } else {
-            $log[] = "Zuweisungen werden ergänzt";
-        }
+			$log[] = "Setze bestehende Zuweisungen von OEs, OE-Gruppen und Rollen auf ungültig";
+
+			$this->helper->disableAllEmployeeOrganizationalUnits($employeeId);
+			$this->helper->disableAllEmployeeOrganizationalUnitGroups($employeeId);
+			$this->helper->disableAllUserRoles($userId);
+
+		}
 
         // ===============================
         // ORGUNITS
@@ -164,9 +164,7 @@ class OrbisUserUpdater
 
         // ===============================
         // Rollen
-        // ===============================
-		$this->helper->disableAllUserRoles($userId);
-			
+        // ===============================			
 		if (!empty($roles)) {
 
             $roleLogs = [];
