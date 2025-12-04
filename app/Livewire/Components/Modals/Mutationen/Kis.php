@@ -99,6 +99,8 @@ class Kis extends BaseModal
 			$this->userDetails     = $details['user'];
 			$this->employeeDetails = $details['employee'];
 			$this->userFound       = true;
+			
+			Logger::debug("EMPLOYEE DETAILS: " . json_encode($this->employeeDetails, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
 			// ================================
 			// Mitarbeiterfunktion AUTOVORSELECTION

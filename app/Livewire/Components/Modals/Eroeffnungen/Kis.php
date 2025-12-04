@@ -110,7 +110,7 @@ class Kis extends BaseModal
 			$this->validate(['username' => 'required|string|min:2']);
 
 			$details = $helper->getUserDetails($this->username);
-
+			
 			$this->userDetails     = $details['user'];
 			$this->employeeDetails = $details['employee'];
 			$this->userFound       = true;
