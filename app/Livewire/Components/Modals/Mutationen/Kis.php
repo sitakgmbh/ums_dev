@@ -106,17 +106,14 @@ class Kis extends BaseModal
 			// ================================
 			// Mitarbeiterfunktion AUTOVORSELECTION
 			// ================================
-			$assignments = $this->employeeDetails['employeefunctionassignments'] ?? [];
+			$funktionId = $this->employeeDetails['employeefunction']['id'] ?? null;
 
-			$first = $assignments[0]['employeefunction']['id'] ?? null;
-
-			if ($first === 34) {
-				$this->employeeFunction = 34; // Leistungserbringer
-			} elseif ($first === 74) {
-				$this->employeeFunction = 74; // Pflege
+			if ($funktionId === 34 || $funktionId === 74) {
+				$this->employeeFunction = $funktionId;
 			} else {
-				$this->employeeFunction = null; // Keine Funktion
+				$this->employeeFunction = null; // "Keine Funktion"
 			}
+
 
 
 			// ================================

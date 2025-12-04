@@ -61,33 +61,34 @@ public function getUserDetails(string $username): array
     $functionAssignments = $this->getEmployeeFunctionAssignments($employeeId);
 
     // Ersten Eintrag verwenden (OR­BIS erlaubt sowieso nur 1 aktive Funktion)
-    $functionId   = $functionAssignments[0]["employeefunction"]["id"] ?? null;
-    $functionName = $functionAssignments[0]["employeefunction"]["name"] ?? null;
+	$functionAssignment = $this->getEmployeeFunctionAssignment($employeeData["id"], $today);
 
-    return [
-        "user" => $user,
-        "employee" => [
-            "id" => $employeeData["id"],
-            "salutation" => $employeeData["salutation"],
-            "title" => $employeeData["title"] ?? null,
-            "surname" => $employeeData["surname"],
-            "firstname" => $employeeData["firstname"],
-            "sex" => $employeeData["sex"],
-            "facility" => $facility,
-            "state" => $employeeData["state"],
-            "signinglevel" => $employeeData["signinglevel"],
-            "validfrom" => $employeeData["validfrom"],
-            "validthru" => $employeeData["validthru"],
-            "organizationalunits" => $orgUnits,
-            "organizationalunitgroups" => $orgGroups,
-            "users" => $users,
+	return [
+		"user" => $user,
+		"employee" => [
+			"id" => $employeeData["id"],
+			"salutation" => $employeeData["salutation"],
+			"title" => $employeeData["title"] ?? null,
+			"surname" => $employeeData["surname"],
+			"firstname" => $employeeData["firstname"],
+			"sex" => $employeeData["sex"],
+			"facility" => $facility,
+			"state" => $employeeData["state"],
+			"signinglevel" => $employeeData["signinglevel"],
+			"validfrom" => $employeeData["validfrom"],
+			"validthru" => $employeeData["validthru"],
+			"organizationalunits" => $orgUnits,
+			"organizationalunitgroups" => $orgGroups,
+			"users" => $users,
 
-            // Neu hinzufuegen:
-            "employeefunctionassignments" => $functionAssignments,
-            "employeefunction_id" => $functionId,
-            "employeefunction_name" => $functionName,
-        ]
-    ];
+			// NEU
+			"employeefunction" => [
+				"id" => $functionAssignment["employeefunction_id"] ?? null,
+				"assignment_id" => $functionAssignment["assignment_id"] ?? null
+			]
+		]
+	];
+
 }
 
 
@@ -138,16 +139,28 @@ public function getUserDetails(string $username): array
     }
 
 
-public function getEmployeeFunctionAssignments(int $employeeId): array
+public function getEmployeeFunctionAssignment(int $employeeId, string $today): ?array
 {
     $url = $this->client->getBaseUrl()
-        . "/resources/external/employeeemployeefunctionassignments"
-        . "?employeeid={$employeeId}";
+        . "/resources/external/employees/{$employeeId}/employeefunctionassignments?referencedate={$today}";
 
-    $response = $this->client->send($url, "GET");
+    $response = $this->client->send($url);
 
-    return $response["employeeemployeefunctionassignments"] ?? [];
+    $list = $response['employeeemployeefunctionassignment'] ?? [];
+
+    if (empty($list)) {
+        return null;
+    }
+
+    // Nur der erste gueltige Eintrag wird verwendet
+    $entry = $list[0];
+
+    return [
+        'assignment_id'       => $entry['id'] ?? null,
+        'employeefunction_id' => $entry['employeefunction']['id'] ?? null
+    ];
 }
+
 
 
     public function getEmployeeFacilities(int $employeeId, string $today): array
