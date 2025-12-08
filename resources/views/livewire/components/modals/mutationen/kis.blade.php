@@ -300,7 +300,7 @@
 @push('scripts')
 <script>
     window.addEventListener('confirm-no-function', event => {
-        if (confirm('Es wurde keine Mitarbeiterfunktion ausgewählt.\nMöchtest du den Benutzer wirklich ohne Funktion erstellen?')) {
+        if (confirm('Es wurde keine Mitarbeiterfunktion ausgewählt.\nWenn du keine Mitarbeiterfunktion auswählst, wird die bestehende Mitarbeiterfunktion entfernt.')) {
             @this.call('confirmSubmitWithoutFunction');
         }
     });
