@@ -204,14 +204,23 @@ class OrbisUserUpdater
 // ===============================
 // State aktualisieren
 // ===============================
+$stateName = $employeeStateId 
+    ? $this->helper->getCatalogNameById((int)$employeeStateId) 
+    : "entfernt";
+
 $this->helper->updateEmployeeState($employeeId, $employeeStateId);
-$log[] = "Status (Funktion) aktualisiert";
+$log[] = "Status (Funktion) aktualisiert: {$stateName}";
+
 
 // ===============================
 // Signing-Level aktualisieren
 // ===============================
+$signName = $signingLevelId
+    ? $this->helper->getCatalogNameById((int)$signingLevelId)
+    : "entfernt";
+
 $this->helper->updateEmployeeSigningLevel($employeeId, $signingLevelId);
-$log[] = "Signierlevel aktualisiert";
+$log[] = "Signierlevel aktualisiert: {$signName}";
 
 
 
