@@ -295,7 +295,7 @@ class OrbisHelper
         ];
     }
 
-public function getCatalogNameAndCodeById(int $id): ?string
+public function getCatalogNameById(int $id): ?string
 {
     $url = $this->client->getBaseUrl() . "/resources/external/catalogs/{$id}";
     $data = $this->client->send($url);
@@ -304,20 +304,8 @@ public function getCatalogNameAndCodeById(int $id): ?string
         return null;
     }
 
-    $name = $data["name"] 
-        ?? $data["catalogcoding"]["longname"] 
-        ?? $data["catalogcoding"]["shortname"] 
-        ?? null;
-
-    $code = $data["catalogcoding"]["code"] ?? null;
-
-    if ($name && $code) {
-        return "{$name} ({$code})";
-    }
-
-    return $name ?: $code ?: null;
+    return $data["name"] ?? ($data["catalogcoding"]["code"] ?? null) ?? null;
 }
-
 
 
     public function getCatalogTranslation(string $codesystem, string $code): array
