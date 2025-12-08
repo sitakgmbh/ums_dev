@@ -46,9 +46,6 @@ class OrbisUserUpdater
         $lookupGrp   = $input['orggroups_lookup'] ?? [];
         $lookupRol   = $input['roles_lookup']     ?? [];
 
-		$employeeStateId = $input['employeeStateId'] ?? null;
-		$signingLevelId  = $input['signinglevel'] ?? null;
-
         $this->helper->validateInput($input);
 
         $username = strtoupper($entry->aduser->username);
@@ -204,14 +201,23 @@ class OrbisUserUpdater
 // ===============================
 // State aktualisieren
 // ===============================
+$stateLabel = $employeeStateId
+    ? $this->helper->getCatalogNameAndCodeById((int)$employeeStateId)
+    : "entfernt";
+
 $this->helper->updateEmployeeState($employeeId, $employeeStateId);
-$log[] = "Status (Funktion) aktualisiert";
+$log[] = "Status (Funktion) aktualisiert: {$stateLabel}";
+
 
 // ===============================
 // Signing-Level aktualisieren
 // ===============================
+$signLabel = $signingLevelId
+    ? $this->helper->getCatalogNameAndCodeById((int)$signingLevelId)
+    : "entfernt";
+
 $this->helper->updateEmployeeSigningLevel($employeeId, $signingLevelId);
-$log[] = "Signierlevel aktualisiert";
+$log[] = "Signierlevel aktualisiert: {$signLabel}";
 
 
 
