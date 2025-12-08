@@ -193,6 +193,11 @@ class Kis extends BaseModal
         $this->errorMessage = '';
 		$this->successMessage = '';
 
+		if (!$this->employeeFunction) {
+			$this->dispatch('confirm-no-function');
+			return;
+		}
+
         try {
             $this->validate([
                 'employeeFunction' => 'nullable|integer',
