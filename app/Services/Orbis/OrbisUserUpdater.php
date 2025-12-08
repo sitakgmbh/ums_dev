@@ -46,6 +46,9 @@ class OrbisUserUpdater
         $lookupGrp   = $input['orggroups_lookup'] ?? [];
         $lookupRol   = $input['roles_lookup']     ?? [];
 
+		$employeeStateId = $input['employeeStateId'] ?? null;
+		$signingLevelId  = $input['signinglevel'] ?? null;
+
         $this->helper->validateInput($input);
 
         $username = strtoupper($entry->aduser->username);
@@ -194,6 +197,23 @@ class OrbisUserUpdater
         } else {
             $log[] = "ACHTUNG: Keine Rollen übernommen – bitte manuell hinterlegen!";
         }
+
+
+
+
+// ===============================
+// State aktualisieren
+// ===============================
+$this->helper->updateEmployeeState($employeeId, $employeeStateId);
+$log[] = "Status (Funktion) aktualisiert";
+
+// ===============================
+// Signing-Level aktualisieren
+// ===============================
+$this->helper->updateEmployeeSigningLevel($employeeId, $signingLevelId);
+$log[] = "Signierlevel aktualisiert";
+
+
 
 		// ===============================
 		// Mitarbeiterfunktion

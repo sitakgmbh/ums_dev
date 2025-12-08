@@ -682,4 +682,71 @@ class OrbisHelper
 			}
 		}
 	}
+
+
+
+public function updateEmployeeState(int $employeeId, ?int $stateId): void
+{
+    // Employee vollstaendig laden
+    $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}";
+    $employee = $this->client->send($url);
+
+    if (!is_array($employee) || empty($employee["id"])) {
+        Logger::error("Employee {$employeeId} nicht gefunden.");
+        return;
+    }
+
+    // Links entfernen
+    $this->removeLinks($employee);
+
+    // State setzen oder entfernen
+    if ($stateId) {
+        $employee["state"] = ["id" => (int)$stateId];
+    } else {
+        $employee["state"] = null;
+    }
+
+    // PUT ohne ID in URL
+    $this->client->send(
+        $this->client->getBaseUrl() . "/resources/external/employees",
+        "PUT",
+        $employee
+    );
+}
+
+
+public function updateEmployeeSigningLevel(int $employeeId, ?int $signingLevelId): void
+{
+    $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}";
+    $employee = $this->client->send($url);
+
+    if (!is_array($employee) || empty($employee["id"])) {
+        Logger::error("Employee {$employeeId} nicht gefunden.");
+        return;
+    }
+
+    // Links entfernen
+    $this->removeLinks($employee);
+
+    // Signierlevel setzen oder entfernen
+    if ($signingLevelId) {
+        $employee["signinglevel"] = ["id" => (int)$signingLevelId];
+    } else {
+        $employee["signinglevel"] = null;
+    }
+
+    // ORBIS PUT
+    $this->client->send(
+        $this->client->getBaseUrl() . "/resources/external/employees",
+        "PUT",
+        $employee
+    );
+}
+
+
+
+
+
+
+
 }
