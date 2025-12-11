@@ -158,7 +158,7 @@ class SapAdSyncService
 
 		if ($vornameAD !== $vornameSAP && !empty($vornameSAP)) 
 		{
-			// $adUser->setFirstAttribute("givenname", $vornameSAP);
+			$adUser->setFirstAttribute("givenname", $vornameSAP);
 
 			$this->changes[] = [
 				"attribute" => "givenname",
@@ -172,7 +172,7 @@ class SapAdSyncService
 
 		if ($nachnameAD !== $nachnameSAP && !empty($nachnameSAP)) 
 		{
-			// $adUser->setFirstAttribute("sn", $nachnameSAP);
+			$adUser->setFirstAttribute("sn", $nachnameSAP);
 
 			$this->changes[] = [
 				"attribute" => "sn",
@@ -186,7 +186,7 @@ class SapAdSyncService
 
 		if ($displayNameAD !== $newDisplayName && !empty($newDisplayName)) 
 		{
-			// $adUser->setFirstAttribute("displayname", $newDisplayName);
+			$adUser->setFirstAttribute("displayname", $newDisplayName);
 
 			$this->changes[] = [
 				"attribute" => "displayname",
@@ -209,8 +209,8 @@ class SapAdSyncService
 				$newUpn         = strtolower("{$cleanFirstName}.{$cleanLastName}@{$upnDomain}");
 
 				// Rename direkt, Attribute danach ändern
-				// $adUser->rename($newCN);
-				// $adUser->setFirstAttribute("userprincipalname", $newUpn);
+				$adUser->rename($newCN);
+				$adUser->setFirstAttribute("userprincipalname", $newUpn);
 
 				$this->changes[] = [
 					"attribute" => "cn",
@@ -240,7 +240,7 @@ class SapAdSyncService
 		{
 			try 
 			{
-				// $adUser->save();
+				$adUser->save();
 			} 
 			catch (\Exception $e) 
 			{
@@ -282,14 +282,14 @@ class SapAdSyncService
 				{
 					if (empty($sapValue)) 
 					{
-						// $adUser->setFirstAttribute($adAttr, null);
+						$adUser->setFirstAttribute($adAttr, null);
 					} 
 					else 
 					{
-						// $adUser->setFirstAttribute($adAttr, $sapValue);
+						$adUser->setFirstAttribute($adAttr, $sapValue);
 					}
 					
-					// $adUser->save();
+					$adUser->save();
 					
 					$this->changes[] = [
 						"attribute" => $adAttr,
@@ -333,8 +333,8 @@ class SapAdSyncService
         {
             try 
 			{
-				// $adUser->setFirstAttribute("manager", $newManagerDn);
-                // $adUser->save();
+				$adUser->setFirstAttribute("manager", $newManagerDn);
+                $adUser->save();
                 
                 $this->changes[] = [
                     "attribute" => "manager",
@@ -402,7 +402,7 @@ class SapAdSyncService
 				$data["nachname"] = $nachname;
 			}
 
-			// Mutation::create($data);
+			Mutation::create($data);
 
 			$this->stats["mutations_created"]++;
 
