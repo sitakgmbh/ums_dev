@@ -402,7 +402,7 @@ class SapAdSyncService
 				$data["nachname"] = $nachname;
 			}
 
-			Mutation::create($data);
+			// Mutation::create($data);
 
 			$this->stats["mutations_created"]++;
 
