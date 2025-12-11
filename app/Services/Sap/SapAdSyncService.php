@@ -115,7 +115,6 @@ class SapAdSyncService
 			$this->stats["found"]++;
 			
 			$this->syncNames($adUser, $row, $username, $personalnummer);
-			$this->syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer);
 			$this->syncSimpleAttributes($adUser, $row, $username, $personalnummer);
 			$this->syncManager($adUser, $row, $username, $personalnummer, $adUsersMap);
 
@@ -139,145 +138,126 @@ class SapAdSyncService
 		Logger::debug("SapAdSyncService: Ende");
 	}
 
-    protected function syncNames($adUser, $row, $username, $personalnummer): void
-    {
-        $vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
-        $nachnameSAP = trim($row["d_name"] ?? "");
-		
-        $vornameChanged = false;
-        $nachnameChanged = false;
-        
-        // Vorname prüfen und anpassen
-        $vornameAD = $adUser->getFirstAttribute("givenname");
-		
-        if ($vornameAD !== $vornameSAP && !empty($vornameSAP)) 
-        {
-            try 
-            {
-				$adUser->setFirstAttribute("givenname", $vornameSAP);
-                $adUser->save();
-                
-                $this->changes[] = [
-                    "attribute" => "givenname",
-                    "old" => $vornameAD,
-                    "new" => $vornameSAP,
-                ];
-                
-                $vornameChanged = true;
-            } 
-            catch (\Exception $e) 
-            {
-                Logger::db("sap", "error", "Fehler beim Aktualisieren des Vornamens des Benutzers '{$username}'", [
-                    "username" => $username,
-                    "error" => $e->getMessage(),
-                ]);
-            }
-        }
-
-        // Nachname prüfen und anpassen
-        $nachnameAD = $adUser->getFirstAttribute("sn");
-
-        if ($nachnameAD !== $nachnameSAP && !empty($nachnameSAP)) 
-        {
-            try 
-			{
-				$adUser->setFirstAttribute("sn", $nachnameSAP);
-                $adUser->save();
-                
-                $this->changes[] = [
-                    "attribute" => "sn",
-                    "old" => $nachnameAD,
-                    "new" => $nachnameSAP,
-                ];
-                
-                $nachnameChanged = true;
-            } 
-			catch (\Exception $e) 
-			{
-                Logger::db("sap", "error", "Fehler beim Aktualisieren des Nachnamens des Benutzers '{$username}'", [
-                    "username" => $username,
-                    "error" => $e->getMessage(),
-                ]);
-            }
-        }
-        
-        // Mutation erstellen wenn mindestens ein Name geändert wurde
-		if ($vornameChanged || $nachnameChanged) 
-		{
-			$this->createMutation(
-				$username, 
-				$vornameChanged ? $vornameSAP : null, 
-				$nachnameChanged ? $nachnameSAP : null
-			);
-		}
-    }
-
-	protected function syncDisplayNameAndUpn($adUser, $row, $username, $personalnummer): void
+	protected function syncNames($adUser, $row, $username, $personalnummer): void
 	{
-		$vornameSAP = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
+		$vornameSAP  = !empty($row["d_rufnm"]) ? trim($row["d_rufnm"]) : trim($row["d_vname"] ?? "");
 		$nachnameSAP = trim($row["d_name"] ?? "");
-		$displayName = trim($nachnameSAP . " " . $vornameSAP);
-		$displayNameAD = $adUser->getFirstAttribute("displayname");
-		$newCN = trim($nachnameSAP . " " . $vornameSAP . " / " . $username);
 		
-		if ($displayNameAD !== $displayName && !empty($displayName)) 
+		$vornameAD      = $adUser->getFirstAttribute("givenname");
+		$nachnameAD     = $adUser->getFirstAttribute("sn");
+		$displayNameAD  = $adUser->getFirstAttribute("displayname");
+		$nameAD         = $adUser->getFirstAttribute("cn");
+		$currentUpn     = $adUser->getFirstAttribute("userprincipalname");
+
+		$newDisplayName = trim($nachnameSAP . " " . $vornameSAP);
+		$newCN          = trim($nachnameSAP . " " . $vornameSAP . " / " . $username);
+
+		$vornameChanged = false;
+		$nachnameChanged = false;
+		$changesDetected = false;
+
+		if ($vornameAD !== $vornameSAP && !empty($vornameSAP)) 
 		{
-			try 
-			{
-				$adUser->setFirstAttribute("displayname", $displayName);
-				$adUser->save();
-				
-				$this->changes[] = [
-					"attribute" => "displayname",
-					"old" => $displayNameAD,
-					"new" => $displayName,
-				];
-			} 
-			catch (\Exception $e) 
-			{
-				Logger::db("sap", "error", "Fehler beim Aktualisieren des Anzeigenamens des Benutzers '{$username}'", [
-					"username" => $username,
-					"error" => $e->getMessage(),
-				]);
-			}
+			// $adUser->setFirstAttribute("givenname", $vornameSAP);
+
+			$this->changes[] = [
+				"attribute" => "givenname",
+				"old"       => $vornameAD,
+				"new"       => $vornameSAP,
+			];
+
+			$vornameChanged = true;
+			$changesDetected = true;
 		}
 
-		$nameAD = $adUser->getFirstAttribute("cn");
-		
+		if ($nachnameAD !== $nachnameSAP && !empty($nachnameSAP)) 
+		{
+			// $adUser->setFirstAttribute("sn", $nachnameSAP);
+
+			$this->changes[] = [
+				"attribute" => "sn",
+				"old"       => $nachnameAD,
+				"new"       => $nachnameSAP,
+			];
+
+			$nachnameChanged = true;
+			$changesDetected = true;
+		}
+
+		if ($displayNameAD !== $newDisplayName && !empty($newDisplayName)) 
+		{
+			// $adUser->setFirstAttribute("displayname", $newDisplayName);
+
+			$this->changes[] = [
+				"attribute" => "displayname",
+				"old"       => $displayNameAD,
+				"new"       => $newDisplayName,
+			];
+
+			$changesDetected = true;
+		}
+
 		if ($nameAD !== $newCN && !empty($newCN)) 
 		{
 			try 
 			{
-				$currentUpn = $adUser->getFirstAttribute("userprincipalname");
-				$upnDomain = explode("@", $currentUpn)[1];
-				
+				$parts = explode("@", $currentUpn);
+				$upnDomain = $parts[1];
+
 				$cleanFirstName = UserHelper::normalize($vornameSAP);
-				$cleanLastName = UserHelper::normalize($nachnameSAP);
-				$newUpn = strtolower("{$cleanFirstName}.{$cleanLastName}@{$upnDomain}");
-				
-				$adUser->rename($newCN);
-				$adUser->setFirstAttribute("userprincipalname", $newUpn);
-				$adUser->save();
+				$cleanLastName  = UserHelper::normalize($nachnameSAP);
+				$newUpn         = strtolower("{$cleanFirstName}.{$cleanLastName}@{$upnDomain}");
+
+				// Rename direkt, Attribute danach ändern
+				// $adUser->rename($newCN);
+				// $adUser->setFirstAttribute("userprincipalname", $newUpn);
 
 				$this->changes[] = [
 					"attribute" => "cn",
-					"old" => $nameAD,
-					"new" => $newCN,
+					"old"       => $nameAD,
+					"new"       => $newCN,
 				];
-				
+
 				$this->changes[] = [
 					"attribute" => "userprincipalname",
-					"old" => $currentUpn,
-					"new" => $newUpn,
+					"old"       => $currentUpn,
+					"new"       => $newUpn,
 				];
+
+				$changesDetected = true;
+
 			} 
 			catch (\Exception $e) 
 			{
-				Logger::db("sap", "error", "Fehler beim Umbenennen oder Aktualisieren des UPNs des Benutzers '{$username}'", [
-					"username" => $username,
-					"error" => $e->getMessage(),
-				]);
+				Logger::db("sap", "error",
+					"Fehler beim Umbenennen oder Aktualisieren des UPNs des Benutzers '{$username}'",
+					["username" => $username, "error" => $e->getMessage()]
+				);
 			}
+		}
+
+		if ($changesDetected) 
+		{
+			try 
+			{
+				// $adUser->save();
+			} 
+			catch (\Exception $e) 
+			{
+				Logger::db("sap", "error",
+					"Fehler beim Aktualisieren des AD-Benutzers '{$username}'",
+					["username" => $username, "error" => $e->getMessage()]
+				);
+			}
+		}
+
+		if ($vornameChanged || $nachnameChanged) 
+		{
+			$this->createMutation(
+				$username,
+				$vornameChanged ? $vornameSAP : null,
+				$nachnameChanged ? $nachnameSAP : null
+			);
 		}
 	}
 
@@ -302,14 +282,14 @@ class SapAdSyncService
 				{
 					if (empty($sapValue)) 
 					{
-						$adUser->setFirstAttribute($adAttr, null);
+						// $adUser->setFirstAttribute($adAttr, null);
 					} 
 					else 
 					{
-						$adUser->setFirstAttribute($adAttr, $sapValue);
+						// $adUser->setFirstAttribute($adAttr, $sapValue);
 					}
 					
-					$adUser->save();
+					// $adUser->save();
 					
 					$this->changes[] = [
 						"attribute" => $adAttr,
@@ -353,8 +333,8 @@ class SapAdSyncService
         {
             try 
 			{
-				$adUser->setFirstAttribute("manager", $newManagerDn);
-                $adUser->save();
+				// $adUser->setFirstAttribute("manager", $newManagerDn);
+                // $adUser->save();
                 
                 $this->changes[] = [
                     "attribute" => "manager",
@@ -377,47 +357,59 @@ class SapAdSyncService
 		try 
 		{
 			$adUser = AdUser::where("username", $username)->first();
-			
+
 			if (!$adUser) 
 			{
 				Logger::warning("AdUser '{$username}' nicht in Datenbank gefunden, Mutation konnte nicht erstellt werden");
 				return;
 			}
-			
+
 			$mailDomain = null;
-			
+
 			if ($adUser->email) 
 			{
 				$parts = explode("@", $adUser->email);
 				$mailDomain = isset($parts[1]) ? "@" . $parts[1] : null;
 			}
-			
-			$data = [
-				"vertragsbeginn" => today(),
-				"ad_user_id" => $adUser->id,
-				"mailendung" => $mailDomain,
-				"kommentar" => "Dieser Antrag wurde automatisch erstellt.",
-				"status_mail" => 1,
-				"status_kis" => 1,
+
+			$old = [
+				"vorname_old"                => $adUser->firstname,
+				"nachname_old"               => $adUser->lastname,
+				"anrede_id_old"              => $adUser->anrede_id,
+				"titel_id_old"               => $adUser->titel_id,
+				"arbeitsort_id_old"          => $adUser->arbeitsort_id,
+				"unternehmenseinheit_id_old" => $adUser->unternehmenseinheit_id,
+				"abteilung_id_old"           => $adUser->abteilung_id,
+				"funktion_id_old"            => $adUser->funktion_id,
 			];
-			
+
+			$data = array_merge([
+				"vertragsbeginn" => today(),
+				"ad_user_id"     => $adUser->id,
+				"mailendung"     => $mailDomain,
+				"kommentar"      => "Dieser Antrag wurde automatisch erstellt.",
+				"status_mail"    => 1,
+				"status_kis"     => 1,
+			], $old);
+
 			if ($vorname !== null) 
 			{
 				$data["vorname"] = $vorname;
 			}
-			
+
 			if ($nachname !== null) 
 			{
 				$data["nachname"] = $nachname;
 			}
-			
+
 			Mutation::create($data);
-			
+
 			$this->stats["mutations_created"]++;
+
 		} 
 		catch (\Exception $e) 
 		{
-			Logger::db("sap", "error", "Fehler beim Erstellen der Mutation für '{$username}'", [
+			Logger::db("sap", "error", "Fehler beim Erstellen der Mutation von '{$username}'", [
 				"username" => $username,
 				"error" => $e->getMessage(),
 			]);

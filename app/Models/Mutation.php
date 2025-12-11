@@ -84,7 +84,6 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-10-21T10:10:00Z")
  * )
  */
-
 class Mutation extends Model
 {
     use HasFactory;
