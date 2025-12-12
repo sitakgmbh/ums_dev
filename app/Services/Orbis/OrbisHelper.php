@@ -30,34 +30,27 @@ class OrbisHelper
 	{
 		$username = strtoupper($username);
 		$today = date("Y-m-d");
-
-		// USER LADEN
 		$user = $this->getUserByUsername($username);
-		if (!$user || !isset($user["id"])) {
+		
+		if (!$user || !isset($user["id"])) 
+		{
 			throw new \RuntimeException("Benutzer nicht gefunden.", 404);
 		}
 
 		$userId = $user["id"];
-
-		// EMPLOYEE LADEN
 		$employee = $this->getEmployeeByUserId($userId, $today);
-		if (!$employee || !isset($employee["id"])) {
+		
+		if (!$employee || !isset($employee["id"])) 
+		{
 			throw new \RuntimeException("Mitarbeiter nicht gefunden.");
 		}
 
 		$employeeId = $employee["id"];
-
-		// EMPLOYEE DETAILS
 		$employeeData = $this->getEmployeeDetails($employee, $today);
-
-		// OE / Gruppen / Benutzer
 		$orgUnits  = $this->getEmployeeOrganizationalUnits($employeeId, $today);
 		$orgGroups = $this->getEmployeeOrganizationalUnitGroups($employeeId, $today);
 		$users     = $this->getUsersByEmployeeId($employeeId, $today);
-
-		// FACILITY
 		$facility = $employeeData["facilities"][0] ?? null;
-
 		$functionAssignment = $this->getEmployeeFunctionAssignment($employeeData["id"], $today);
 
 		return [
@@ -77,8 +70,6 @@ class OrbisHelper
 				"organizationalunits" => $orgUnits,
 				"organizationalunitgroups" => $orgGroups,
 				"users" => $users,
-
-				// NEU
 				"employeefunction" => [
 					"id" => $functionAssignment["employeefunction_id"] ?? null,
 					"assignment_id" => $functionAssignment["assignment_id"] ?? null
@@ -141,11 +132,11 @@ class OrbisHelper
 
 		$list = $response['employeeemployeefunctionassignment'] ?? [];
 
-		if (empty($list)) {
+		if (empty($list)) 
+		{
 			return null;
 		}
 
-		// Nur der erste gueltige Eintrag wird verwendet
 		$entry = $list[0];
 
 		return [
@@ -160,10 +151,12 @@ class OrbisHelper
         $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/facilityassignments?referencedate={$today}";
         $response = $this->client->send($url);
 
-        foreach ($response["employeefacilityassignment"] ?? [] as $entry) {
+        foreach ($response["employeefacilityassignment"] ?? [] as $entry) 
+		{
             $fid = $entry["facility"]["id"] ?? null;
 
-            if ($fid) {
+            if ($fid) 
+			{
                 $details = $this->client->send($this->client->getBaseUrl() . "/resources/external/facilities/{$fid}");
                 $result[] = [
                     "id" => $fid,
@@ -182,10 +175,12 @@ class OrbisHelper
         $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/organizationalunitassignments?referencedate={$today}";
         $response = $this->client->send($url);
 
-        foreach ($response["employeeorganizationalunitassignment"] ?? [] as $a) {
+        foreach ($response["employeeorganizationalunitassignment"] ?? [] as $a) 
+		{
             $unitId = $a["organizationalunit"]["id"] ?? null;
 
-            if ($unitId) {
+            if ($unitId) 
+			{
                 $detail = $this->client->send(
                     $this->client->getBaseUrl() . "/resources/external/organizationalunits/{$unitId}"
                 );
@@ -209,7 +204,8 @@ class OrbisHelper
         $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}/organizationalunitgroupassignments?referencedate={$today}";
         $response = $this->client->send($url);
 
-        foreach ($response["employeeorganizationalunitgroupassignment"] ?? [] as $a) {
+        foreach ($response["employeeorganizationalunitgroupassignment"] ?? [] as $a) 
+		{
             $id = $a["organizationalunitgroup"]["id"] ?? null;
             if (!$id) continue;
 
@@ -221,7 +217,8 @@ class OrbisHelper
             $shortname = $detail["shortname"] ?? null;
             $type = $detail["organizationalunitgrouptypeassignments"]["organizationalunitgrouptypeassignment"][0]["type"]["catalogcoding"]["code"] ?? null;
 
-            if ($name && $shortname && $type) {
+            if ($name && $shortname && $type) 
+			{
                 $result[] = [
                     "id" => $id,
                     "name" => $name,
@@ -281,7 +278,8 @@ class OrbisHelper
 
     public function getRank(?array $rank): ?array
     {
-        if (!isset($rank["id"])) {
+        if (!isset($rank["id"])) 
+		{
             return null;
         }
 
@@ -295,22 +293,23 @@ class OrbisHelper
         ];
     }
 
-public function getCatalogNameById(int $id): ?string
-{
-    $url = $this->client->getBaseUrl() . "/resources/external/catalogs/{$id}";
-    $data = $this->client->send($url);
+	public function getCatalogNameById(int $id): ?string
+	{
+		$url = $this->client->getBaseUrl() . "/resources/external/catalogs/{$id}";
+		$data = $this->client->send($url);
 
-    if (!is_array($data)) {
-        return null;
-    }
+		if (!is_array($data)) 
+		{
+			return null;
+		}
 
-    return $data["name"] ?? ($data["catalogcoding"]["code"] ?? null) ?? null;
-}
-
+		return $data["name"] ?? ($data["catalogcoding"]["code"] ?? null) ?? null;
+	}
 
     public function getCatalogTranslation(string $codesystem, string $code): array
     {
-        if (!$code) {
+        if (!$code) 
+		{
             return [];
         }
 
@@ -325,8 +324,10 @@ public function getCatalogNameById(int $id): ?string
             "longname" => null
         ];
 
-        foreach ($data["catalogtranslations"]["catalogtranslation"] ?? [] as $trans) {
-            if (in_array($trans["languageoftranslation"]["id"] ?? "", ["de", "de_CH"])) {
+        foreach ($data["catalogtranslations"]["catalogtranslation"] ?? [] as $trans) 
+		{
+            if (in_array($trans["languageoftranslation"]["id"] ?? "", ["de", "de_CH"])) 
+			{
                 $result["shortname"] = $trans["shortname"] ?? null;
                 $result["longname"] = $trans["longname"] ?? null;
                 $result["id_language"] = $trans["languageoftranslation"]["id"] ?? null;
@@ -346,10 +347,10 @@ public function getCatalogNameById(int $id): ?string
 			returnHeaders: true
 		);
 
-		// ID aus Location extrahieren
 		$headers = $result['headers'] ?? [];
 
-		if (!isset($headers['Location'][0])) {
+		if (!isset($headers['Location'][0])) 
+		{
 			Logger::error("Keine Location im Header erhalten");
 			return null;
 		}
@@ -375,7 +376,8 @@ public function getCatalogNameById(int $id): ?string
 
 		$headers = $result['headers'] ?? [];
 
-		if (!isset($headers['Location'][0])) {
+		if (!isset($headers['Location'][0])) 
+		{
 			Logger::error("Keine Location für User erhalten");
 			return null;
 		}
@@ -394,18 +396,21 @@ public function getCatalogNameById(int $id): ?string
         $prefix = $base;
         $counter = 0;
 
-        if (preg_match('/^(.*?)(\d+)$/', $base, $matches)) {
+        if (preg_match('/^(.*?)(\d+)$/', $base, $matches)) 
+		{
             $prefix = $matches[1];
             $counter = (int)$matches[2];
         }
 
-        while (true) {
+        while (true) 
+		{
             $testname = $counter === 0 ? $prefix : $prefix . $counter;
 
             $employeeExists = $this->employeeExists($testname);
             $userExists = $this->userExists($testname);
 
-            if (!$employeeExists && !$userExists) {
+            if (!$employeeExists && !$userExists) 
+			{
                 $log[] = "Benutzername '{$testname}' ist verfübar.";
                 return ["username" => $testname, "log" => $log];
             }
@@ -417,45 +422,54 @@ public function getCatalogNameById(int $id): ?string
 
 	public function validateInput(array $input): void
 	{
-		if (!isset($input['orgunits']) || !is_array($input['orgunits'])) {
+		if (!isset($input['orgunits']) || !is_array($input['orgunits'])) 
+		{
 			$input['orgunits'] = [];
 		}
 
-		if (!isset($input['orggroups']) || !is_array($input['orggroups'])) {
+		if (!isset($input['orggroups']) || !is_array($input['orggroups'])) 
+		{
 			$input['orggroups'] = [];
 		}
 
-		if (!isset($input['roles']) || !is_array($input['roles'])) {
+		if (!isset($input['roles']) || !is_array($input['roles'])) 
+		{
 			$input['roles'] = [];
 		}
 	}
 
 	private function cleanList($list): array
 	{
-		if (!is_array($list)) {
+		if (!is_array($list)) 
+		{
 			return [];
 		}
 
 		$clean = [];
 
-		foreach ($list as $item) {
-
+		foreach ($list as $item) 
+		{
 			// Livewire Snapshot Marker entfernen
-			if (is_array($item) && isset($item['s']) && $item['s'] === 'arr') {
+			if (is_array($item) && isset($item['s']) && $item['s'] === 'arr') 
+			{
 				continue;
 			}
 
 			// Nested Arrays flatten
-			if (is_array($item)) {
-				foreach ($item as $id) {
-					if (is_numeric($id)) {
+			if (is_array($item)) 
+			{
+				foreach ($item as $id) 
+				{
+					if (is_numeric($id)) 
+					{
 						$clean[] = (int)$id;
 					}
 				}
 			}
 
 			// Einzelwerte
-			elseif (is_numeric($item)) {
+			elseif (is_numeric($item)) 
+			{
 				$clean[] = (int)$item;
 			}
 		}
@@ -475,15 +489,11 @@ public function getCatalogNameById(int $id): ?string
 
 			if (empty($entry["id"])) continue;
 
-			// Volldatensatz holen
 			$detail = $this->client->send(
 				$this->client->getBaseUrl() . "/resources/external/employeeorganizationalunitassignments/{$entry["id"]}"
 			);
 
-			// Schließen vorbereiten
 			$payload = $this->closeAssignment($detail);
-
-			// PUT ohne id in URL
 			$this->putAssignment("employeeorganizationalunitassignments", (int)$entry["id"], $payload);
 		}
 	}
@@ -496,7 +506,8 @@ public function getCatalogNameById(int $id): ?string
 
 		$list = $this->client->send($url);
 
-		foreach ($list["employeeorganizationalunitgroupassignment"] ?? [] as $entry) {
+		foreach ($list["employeeorganizationalunitgroupassignment"] ?? [] as $entry) 
+		{
 
 			if (empty($entry["id"])) continue;
 
@@ -505,7 +516,6 @@ public function getCatalogNameById(int $id): ?string
 			);
 
 			$payload = $this->closeAssignment($detail);
-
 			$this->putAssignment("employeeorganizationalunitgroupassignments", (int)$entry["id"], $payload);
 		}
 	}
@@ -515,30 +525,24 @@ public function getCatalogNameById(int $id): ?string
 		$today = date("Y-m-d");
 		$yesterday = date("Y-m-d", strtotime("-1 day"));
 
-		// Rollenzuweisungen fuer diesen Benutzer
 		$url = $this->client->getBaseUrl()
 			. "/resources/external/users/{$userId}/roleassignments?referencedate={$today}";
 
 		$response = $this->client->send($url);
 
-		foreach ($response["userroleassignment"] ?? [] as $entry) {
+		foreach ($response["userroleassignment"] ?? [] as $entry) 
+		{
 
 			$id = $entry["id"] ?? null;
 			if (!$id) continue;
 
-			// Volldaten holen
 			$existing = $this->client->send(
 				$this->client->getBaseUrl() . "/resources/external/userroleassignments/{$id}"
 			);
 
-			// Links entfernen
 			$this->removeLinks($existing);
+			$from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01", "handling" => "inclusive"];
 
-			// From + Handling extrahieren
-			$from = $existing["validityperiod"]["from"] 
-				?? ["date" => "2000-01-01", "handling" => "inclusive"];
-
-			// Schliessen
 			$existing["validityperiod"] = [
 				"from" => $from,
 				"to" => [
@@ -549,7 +553,6 @@ public function getCatalogNameById(int $id): ?string
 
 			$existing["canceled"] = true;
 
-			// PUT (ohne ID in der URL)
 			$this->client->send(
 				$this->client->getBaseUrl() . "/resources/external/userroleassignments",
 				"PUT",
@@ -566,8 +569,10 @@ public function getCatalogNameById(int $id): ?string
 
 		$response = $this->client->send($url);
 
-		foreach ($response["employeeemployeefunctionassignment"] ?? [] as $a) {
-			if (!empty($a["id"])) {
+		foreach ($response["employeeemployeefunctionassignment"] ?? [] as $a) 
+		{
+			if (!empty($a["id"])) 
+			{
 				$this->deleteAssignment("employeeemployeefunctionassignments", (int)$a["id"]);
 			}
 		}
@@ -580,7 +585,8 @@ public function getCatalogNameById(int $id): ?string
 
 		$existing = $this->client->send($url);
 
-		if (!is_array($existing) || empty($existing["id"])) {
+		if (!is_array($existing) || empty($existing["id"])) 
+		{
 			return;
 		}
 
@@ -612,13 +618,9 @@ public function getCatalogNameById(int $id): ?string
 	private function closeAssignment(array $existing): array
 	{
 		$yesterday = date("Y-m-d", strtotime("-1 day"));
-
-		// Entferne alle "link"-Felder
 		$this->removeLinks($existing);
-
 		$from = $existing["validityperiod"]["from"] ?? ["date" => "2000-01-01"];
 
-		// Wichtig: "to", nicht "thru"
 		$existing["validityperiod"] = [
 			"from" => $from,
 			"to"   => ["date" => $yesterday]
@@ -632,14 +634,8 @@ public function getCatalogNameById(int $id): ?string
 	private function putAssignment(string $resource, int $id, array $payload): void
 	{
 		$url = $this->client->getBaseUrl() . "/resources/external/{$resource}";
-
-		// ORBIS erwartet PUT ohne ID in der URL
-		// ID nur im Body!
 		$payload["id"] = $id;
-
-		// Links entfernen
 		$this->removeLinks($payload);
-
 		$this->client->send($url, "PUT", $payload);
 	}
 
@@ -684,82 +680,76 @@ public function getCatalogNameById(int $id): ?string
 
 	private function removeLinks(array &$payload): void
 	{
-		foreach ($payload as $key => &$value) {
-			if ($key === 'link') {
+		foreach ($payload as $key => &$value) 
+		{
+			if ($key === 'link') 
+			{
 				unset($payload[$key]);
 				continue;
 			}
 
-			if (is_array($value)) {
+			if (is_array($value)) 
+			{
 				$this->removeLinks($value);
 			}
 		}
 	}
 
+	public function updateEmployeeState(int $employeeId, ?int $stateId): void
+	{
+		$url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}";
+		$employee = $this->client->send($url);
 
+		if (!is_array($employee) || empty($employee["id"])) 
+		{
+			Logger::error("Employee {$employeeId} nicht gefunden.");
+			return;
+		}
 
-public function updateEmployeeState(int $employeeId, ?int $stateId): void
-{
-    // Employee vollstaendig laden
-    $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}";
-    $employee = $this->client->send($url);
+		$this->removeLinks($employee);
 
-    if (!is_array($employee) || empty($employee["id"])) {
-        Logger::error("Employee {$employeeId} nicht gefunden.");
-        return;
-    }
+		if ($stateId) 
+		{
+			$employee["state"] = ["id" => (int)$stateId];
+		} 
+		else 
+		{
+			$employee["state"] = null;
+		}
 
-    // Links entfernen
-    $this->removeLinks($employee);
+		$this->client->send(
+			$this->client->getBaseUrl() . "/resources/external/employees",
+			"PUT",
+			$employee
+		);
+	}
 
-    // State setzen oder entfernen
-    if ($stateId) {
-        $employee["state"] = ["id" => (int)$stateId];
-    } else {
-        $employee["state"] = null;
-    }
+	public function updateEmployeeSigningLevel(int $employeeId, ?int $signingLevelId): void
+	{
+		$url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}";
+		$employee = $this->client->send($url);
 
-    // PUT ohne ID in URL
-    $this->client->send(
-        $this->client->getBaseUrl() . "/resources/external/employees",
-        "PUT",
-        $employee
-    );
-}
+		if (!is_array($employee) || empty($employee["id"])) 
+		{
+			Logger::error("Employee {$employeeId} nicht gefunden.");
+			return;
+		}
 
+		$this->removeLinks($employee);
 
-public function updateEmployeeSigningLevel(int $employeeId, ?int $signingLevelId): void
-{
-    $url = $this->client->getBaseUrl() . "/resources/external/employees/{$employeeId}";
-    $employee = $this->client->send($url);
+		if ($signingLevelId) 
+		{
+			$employee["signinglevel"] = ["id" => (int)$signingLevelId];
+		} 
+		else 
+		{
+			$employee["signinglevel"] = null;
+		}
 
-    if (!is_array($employee) || empty($employee["id"])) {
-        Logger::error("Employee {$employeeId} nicht gefunden.");
-        return;
-    }
-
-    // Links entfernen
-    $this->removeLinks($employee);
-
-    // Signierlevel setzen oder entfernen
-    if ($signingLevelId) {
-        $employee["signinglevel"] = ["id" => (int)$signingLevelId];
-    } else {
-        $employee["signinglevel"] = null;
-    }
-
-    // ORBIS PUT
-    $this->client->send(
-        $this->client->getBaseUrl() . "/resources/external/employees",
-        "PUT",
-        $employee
-    );
-}
-
-
-
-
-
-
-
+		$this->client->send(
+			$this->client->getBaseUrl() . "/resources/external/employees",
+			"PUT",
+			$employee
+		);
+	}
 }

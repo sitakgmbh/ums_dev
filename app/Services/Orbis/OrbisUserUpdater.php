@@ -23,12 +23,14 @@ class OrbisUserUpdater
 		$log = [];
 		$entry = Mutation::with(['adUser', 'vorlageBenutzer'])->find($id);
 		
-		if (!$entry) {
+		if (!$entry) 
+		{
 			$log[] = "Kein gültiger Antrag gefunden.";
 			return ["success" => false, "log" => $log];
 		}
 
-		if (!$entry->adUser) {
+		if (!$entry->adUser) 
+		{
 			$log[] = "AD-Benutzer nicht gefunden.";
 			return ["success" => false, "log" => $log];
 		}
@@ -56,47 +58,47 @@ class OrbisUserUpdater
 
         $employeeFunctionId = $input['employeeFunction'] ?? null;
 
-        if (!is_array($roles)) {
+        if (!is_array($roles)) 
+		{
             $roles = [];
         }
 
         $user = $this->helper->getUserByUsername($username);
 
-        if (!$user || !isset($user["id"])) {
+        if (!$user || !isset($user["id"])) 
+		{
             $log[] = "Benutzer '{$username}' nicht gefunden.";
             return ["success" => false, "log" => $log];
         }
-        $userId = $user["id"];
-
-        // Mitarbeiter suchen
+        
+		$userId = $user["id"];
         $employee = $this->helper->getEmployeeByUserId($userId, $today);
 
-
-        if (!$employee || !isset($employee["id"])) {
+        if (!$employee || !isset($employee["id"])) 
+		{
             $log[] = "Kein Mitarbeiter gefunden";
             return ["success" => false, "log" => $log];
         }
+		
         $employeeId = $employee["id"];
 
-        // Merge / Replace
-		if ($input['permissionMode'] === 'replace') {
+		if ($input['permissionMode'] === 'replace') 
+		{
 
 			$log[] = "Setze bestehende Zuweisungen von OEs, OE-Gruppen und Rollen auf ungültig";
 
 			$this->helper->disableAllEmployeeOrganizationalUnits($employeeId);
 			$this->helper->disableAllEmployeeOrganizationalUnitGroups($employeeId);
 			$this->helper->disableAllUserRoles($userId);
-
 		}
 
-        // ===============================
-        // ORGUNITS
-        // ===============================
         $oeLogs = [];
 
-        foreach ($orgUnits as $unit) {
+        foreach ($orgUnits as $unit) 
+		{
 
-            if (is_numeric($unit)) {
+            if (is_numeric($unit)) 
+			{
                 $unit = ['id' => (int)$unit];
             }
 
@@ -113,7 +115,8 @@ class OrbisUserUpdater
                 ]
             ];
 
-            if (!empty($unit["rank"])) {
+            if (!empty($unit["rank"])) 
+			{
                 $payload["rank"] = ["id" => (int)$unit["rank"]];
             }
 
@@ -124,18 +127,19 @@ class OrbisUserUpdater
             );
         }
 
-        if (!empty($oeLogs)) {
+        if (!empty($oeLogs)) 
+		{
             $log[] = "OE verarbeitet (" . implode(", ", $oeLogs) . ")";
-        } else {
+        } 
+		else 
+		{
             $log[] = "Keine OE übernommen";
         }
 
-        // ===============================
-        // OE-GROUPS
-        // ===============================
         $grpLogs = [];
 
-        foreach ($orgGroups as $idGroup) {
+        foreach ($orgGroups as $idGroup) 
+		{
 
             $item = collect($lookupGrp)->firstWhere('id', $idGroup);
             $name = $item['name'] ?? null;
@@ -155,24 +159,27 @@ class OrbisUserUpdater
             );
         }
 
-        if (!empty($grpLogs)) {
+        if (!empty($grpLogs)) 
+		{
             $log[] = "OE-Gruppen verarbeitet (" . implode(", ", $grpLogs) . ")";
-        } else {
+        } 
+		else 
+		{
             $log[] = "Keine OE-Gruppen übernommen";
         }
 
-        if (empty($orgUnits) && empty($orgGroups)) {
+        if (empty($orgUnits) && empty($orgGroups)) 
+		{
             $log[] = "ACHTUNG: Keine OE und keine OE-Gruppe zugewiesen – bitte manuell hinterlegen!";
         }
 
-        // ===============================
-        // Rollen
-        // ===============================			
-		if (!empty($roles)) {
+		if (!empty($roles)) 
+		{
 
             $roleLogs = [];
 
-            foreach ($roles as $roleId) {
+            foreach ($roles as $roleId) 
+			{
 
                 $item = collect($lookupRol)->firstWhere('id', $roleId);
                 $roleName = $item['name'] ?? null;
@@ -194,46 +201,24 @@ class OrbisUserUpdater
 
             $log[] = "Rollen verarbeitet (" . implode(", ", $roleLogs) . ")";
 
-        } else {
+        } 
+		else 
+		{
             $log[] = "ACHTUNG: Keine Rollen übernommen – bitte manuell hinterlegen!";
         }
 
+		$stateName = $employeeStateId ? $this->helper->getCatalogNameById((int)$employeeStateId) : "entfernt";
+		$this->helper->updateEmployeeState($employeeId, $employeeStateId);
+		$log[] = "Status (Funktion) aktualisiert";
 
+		$signName = $signingLevelId ? $this->helper->getCatalogNameById((int)$signingLevelId) : "entfernt";
+		$this->helper->updateEmployeeSigningLevel($employeeId, $signingLevelId);
+		$log[] = "Signierlevel aktualisiert";
 
-
-// ===============================
-// State aktualisieren
-// ===============================
-$stateName = $employeeStateId 
-    ? $this->helper->getCatalogNameById((int)$employeeStateId) 
-    : "entfernt";
-
-$this->helper->updateEmployeeState($employeeId, $employeeStateId);
-$log[] = "Status (Funktion) aktualisiert";
-
-
-// ===============================
-// Signing-Level aktualisieren
-// ===============================
-$signName = $signingLevelId
-    ? $this->helper->getCatalogNameById((int)$signingLevelId)
-    : "entfernt";
-
-$this->helper->updateEmployeeSigningLevel($employeeId, $signingLevelId);
-$log[] = "Signierlevel aktualisiert";
-
-
-
-		// ===============================
-		// Mitarbeiterfunktion
-		// ===============================
-
-		// immer zuerst alte Funktionen deaktivieren
 		$this->helper->disableAllEmployeeFunctions($employeeId);
 
-		if ($employeeFunctionId) {
-
-			// neue Funktion setzen
+		if ($employeeFunctionId) 
+		{
 			$this->client->send(
 				$this->client->getBaseUrl() . "/resources/external/employeeemployeefunctionassignments",
 				"POST",
@@ -248,19 +233,14 @@ $log[] = "Signierlevel aktualisiert";
 
 			$log[] = "Mitarbeiterfunktion aktualisiert";
 
-		} else {
-
-			// keine neue → nur alte loeschen
+		} 
+		else 
+		{
 			$log[] = "Mitarbeiterfunktion entfernt";
 		}
 
-
-
-		// ===============================
-		// Signierstufe (Signinglevel)
-		// ===============================
-		if ($signingLevelId) {
-
+		if ($signingLevelId) 
+		{
 			$this->client->send(
 				$this->client->getBaseUrl() . "/resources/external/employeeemployeesigninglevelassignments",
 				"POST",
@@ -276,8 +256,6 @@ $log[] = "Signierlevel aktualisiert";
 			$log[] = "Signierstatus aktualisiert";
 		}
 
-
         return ["success" => true, "log" => $log];
     }
-
 }

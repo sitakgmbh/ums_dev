@@ -41,14 +41,11 @@ class OrbisClient
 	{
 		$fullUrl = $url;
 
-		Logger::debug("ORBIS REQUEST: {$method} {$fullUrl}");
+		// Logger::debug("ORBIS REQUEST: {$method} {$fullUrl}");
 
 		if (!empty($body)) 
 		{
-			Logger::debug(
-				"ORBIS REQUEST BODY:\n" .
-				json_encode($body, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-			);
+			// Logger::debug("ORBIS REQUEST BODY:\n" . json_encode($body, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 		}
 
 		$response = Http::withHeaders([
@@ -59,8 +56,8 @@ class OrbisClient
 			->send($method, $fullUrl, ['json' => $body]);
 
 		$rawBody = $response->body();
-		Logger::debug("ORBIS RESPONSE (Status {$response->status()}): {$rawBody})");
-
+		
+		Logger::debug("ORBIS Antwort: (Status {$response->status()}): {$rawBody})");
 		// Logger::debug("ORBIS RESPONSE HEADERS:\n" . json_encode($response->headers(), JSON_PRETTY_PRINT));
 
 		$json = null;
@@ -71,26 +68,19 @@ class OrbisClient
 		} 
 		catch (\Throwable $e) 
 		{
-			Logger::error("ORBIS JSON PARSE ERROR: " . $e->getMessage());
-			Logger::error("PARSE RAW BODY:\n" . $rawBody);
+			Logger::debug("ORBIS JSON Parse Fehler: " . $e->getMessage());
+			Logger::debug("Body:\n" . $rawBody);
 			return null;
-		}
-
-		if (!is_array($json)) 
-		{
-			Logger::error("ORBIS JSON ist kein Array (Typ: " . gettype($json) . ")");
-			Logger::error("JSON CONTENT:\n" . json_encode($json));
 		}
 
 		if ($response->failed()) 
 		{
 
-			Logger::error("ORBIS FEHLER {$response->status()} bei {$method} {$fullUrl}");
+			Logger::debug("ORBIS Fehler {$response->status()} bei {$method} {$fullUrl}");
 
-			if (isset($json['errors']) || isset($json['Messages']) || isset($json['message'])) {
-				Logger::error(
-					"ORBIS FEHLERDETAILS:\n" .
-					json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+			if (isset($json['errors']) || isset($json['Messages']) || isset($json['message'])) 
+			{
+				Logger::debug("ORBIS Fehler:\n" . json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
 				);
 			}
 		}

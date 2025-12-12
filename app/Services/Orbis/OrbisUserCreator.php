@@ -87,7 +87,8 @@ class OrbisUserCreator
             "salutation"  => ["id" => $anredeId]
         ];
 
-        if ($titleId) {
+        if ($titleId) 
+		{
             $humanbeing["title"] = ["id" => $titleId];
         }
 
@@ -187,16 +188,15 @@ class OrbisUserCreator
 		// Organisationseinheiten
 		$oeLogs = [];
 
-		if (!empty($orgUnits)) {
-
-			foreach ($orgUnits as $unit) {
-
-				// Unit fixen (kann nur eine ID sein)
-				if (is_numeric($unit)) {
+		if (!empty($orgUnits)) 
+		{
+			foreach ($orgUnits as $unit) 
+			{
+				if (is_numeric($unit)) 
+				{
 					$unit = ['id' => (int)$unit];
 				}
 
-				// Name aus Lookup
 				$item = collect($lookupOe)->firstWhere('id', $unit['id']);
 				$unitName = $item['name'] ?? null;
 				$oeLogs[] = $unitName ?: $unit['id'];
@@ -207,7 +207,8 @@ class OrbisUserCreator
 					"validityperiod" => ["from" => ["date" => $today, "handling" => "inclusive"]]
 				];
 
-				if (!empty($unit["rank"])) {
+				if (!empty($unit["rank"])) 
+				{
 					$assignment["rank"] = ["id" => (int)$unit["rank"]];
 				}
 
@@ -218,29 +219,23 @@ class OrbisUserCreator
 				);
 			}
 
-
 			$log[] = "OE zugewiesen (" . implode(", ", $oeLogs) . ")";
-
-		} else {
+		} 
+		else 
+		{
 			$log[] = "Keine OE übernommen.";
 		}
-
-
-
 
 		// OE-Gruppen
 		$groupLogs = [];
 
-		if (!empty($orgGroups)) {
-
-			foreach ($orgGroups as $idGroup) {
-
+		if (!empty($orgGroups)) 
+		{
+			foreach ($orgGroups as $idGroup) 
+			{
 				$item = collect($lookupGrp)->firstWhere('id', $idGroup);
-
 				$groupName = $item['name'] ?? null;
-
 				$label = $groupName ?: $idGroup;
-
 				$groupLogs[] = $label;
 
 				$this->client->send(
@@ -255,24 +250,26 @@ class OrbisUserCreator
 			}
 
 			$log[] = "OE-Gruppen zugewiesen (" . implode(", ", $groupLogs) . ")";
-
-		} else {
+		} 
+		else 
+		{
 			$log[] = "Keine OE-Gruppen übernommen.";
 		}
 
 		$hasOe = !empty($orgUnits);
 		$hasGroup = !empty($orgGroups);
 
-		if (!$hasOe && !$hasGroup) {
+		if (!$hasOe && !$hasGroup) 
+		{
 			$log[] = "ACHTUNG: Keine OE und keine OE-Gruppe zugewiesen – bitte manuell hinterlegen!";
 		}
 
-        // OPTIONAL: Rollen
-		if (!empty($roles)) {
-
+		if (!empty($roles)) 
+		{
 			$roleLogs = [];
 
-			foreach ($roles as $roleId) {
+			foreach ($roles as $roleId) 
+			{
 
 				$item = collect($lookupRol)->firstWhere('id', $roleId);
 
@@ -294,11 +291,11 @@ class OrbisUserCreator
 			}
 
 			$log[] = "Rollen zugewiesen (" . implode(", ", $roleLogs) . ")";
-
-		} else {
+		} 
+		else 
+		{
 			$log[] = "ACHTUNG: Keine Rolle übernommen – bitte manuell hinterlegen!";
 		}
-
 
         return ["success" => true, "log" => $log];
     }
