@@ -15,7 +15,7 @@ class Ad extends BaseModal
     public string $email = "";
     public string $infoText = "";
     public bool $usernameReadonly = false;
-    public bool $adUserFound = false;
+    public bool $adUserExists = false;
 
     protected function openWith(array $payload): bool
     {
