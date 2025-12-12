@@ -70,7 +70,7 @@ class Create extends Component
 			$data = $this->form->toArray();
 			$data["antragsteller_id"] = auth()->user()?->adUser?->id;
 
-			if ($this->form->wiedereintritt) 
+			if ($this->form->wiedereintritt)
 			{
 				$data["benutzername"] = $this->form->benutzername;
 				$data["email"] = $this->form->email;
@@ -82,13 +82,27 @@ class Create extends Component
 			
 			$data["passwort"] = UserHelper::generatePassword();
 
-			if (empty($data["email"])) 
+			$mailendung = ltrim($data["mailendung"], "@");
+
+			if (!empty($this->form->email)) 
+			{
+				[$localPart, $currentDomain] = explode("@", $this->form->email, 2);
+
+				if (strtolower($currentDomain) !== strtolower($mailendung)) 
+				{
+					$data["email"] = $localPart . "@" . $mailendung;
+				} else 
+				{
+					$data["email"] = $this->form->email;
+				}
+			} 
+			else 
 			{
 				$data["email"] = UserHelper::generateEmail(
 					$data["vorname"],
 					$data["nachname"],
-					$data["mailendung"],
-					$username
+					$mailendung,
+					$data["benutzername"]
 				);
 			}
 
