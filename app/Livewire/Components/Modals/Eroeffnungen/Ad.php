@@ -5,6 +5,7 @@ namespace App\Livewire\Components\Modals\Eroeffnungen;
 use App\Livewire\Components\Modals\BaseModal;
 use App\Models\Eroeffnung;
 use App\Utils\UserHelper;
+use LdapRecord\Models\ActiveDirectory\User as LdapUser;
 
 class Ad extends BaseModal
 {
@@ -14,6 +15,7 @@ class Ad extends BaseModal
     public string $email = "";
     public string $infoText = "";
     public bool $usernameReadonly = false;
+    public bool $adUserFound = false;
 
     protected function openWith(array $payload): bool
     {
@@ -54,6 +56,8 @@ class Ad extends BaseModal
                 . "und können von den Informationen im Antrag abweichen. "
                 . "Du kannst beide Werte optional vor dem Erstellen des AD-Benutzers anpassen.";
         }
+
+		$this->adUserExists = LdapUser::query()->where("samaccountname", $this->username)->exists();
 
         $this->title      = "AD-Benutzer erstellen";
         $this->size       = "md";
