@@ -255,10 +255,9 @@ trait EroeffnungFormHooks
 	#[\Livewire\Attributes\On("wiedereintritt-selected")]
 	public function handleWiedereintrittSelected($payload = []): void
 	{
-		$this->form->wiedereintritt = true;
-		
 		if (!isset($payload["id"])) 
 		{
+			Logger::warning("Wiedereintritt ohne ID", ["payload" => $payload]);
 			return;
 		}
 
@@ -266,9 +265,12 @@ trait EroeffnungFormHooks
 
 		if (!$adUser) 
 		{
+			Logger::warning("Wiedereintritt AD-User nicht gefunden", ["id" => $payload["id"]]);
 			return;
 		}
-		
+
+		$this->form->wiedereintritt = true;
+		$this->form->aduser_id = $adUser->id;
 		$this->form->benutzername = $adUser->username;
 		$this->form->email = $adUser->email;
 	}

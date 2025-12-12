@@ -56,6 +56,7 @@ class EroeffnungForm extends Form
     public bool $neue_konstellation = false;
     public bool $filter_mitarbeiter = true;
     public bool $wiedereintritt = false;
+	public ?int $aduser_id = null;
 	public ?string $benutzername = null;
     public ?string $email = null;
 	public ?string $kommentar = null;
