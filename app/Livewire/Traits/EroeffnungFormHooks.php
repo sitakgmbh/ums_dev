@@ -256,6 +256,21 @@ trait EroeffnungFormHooks
 	public function handleWiedereintrittSelected($payload = []): void
 	{
 		$this->form->wiedereintritt = true;
+		
+		if (!isset($payload["id"])) 
+		{
+			return;
+		}
+
+		$adUser = AdUser::find($payload["id"]);
+
+		if (!$adUser) 
+		{
+			return;
+		}
+		
+		$this->form->benutzername = $adUser->username;
+		$this->form->email = $adUser->email;
 	}
 
 	#[\Livewire\Attributes\On("email-bearbeiten-selected")]

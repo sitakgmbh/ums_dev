@@ -68,19 +68,22 @@ class Create extends Component
 
 			$this->form->applyStatus();
 			$data = $this->form->toArray();
-
-			// AD-User des angemeldeten Benutzers
 			$data["antragsteller_id"] = auth()->user()?->adUser?->id;
 
-			$username = UserHelper::generateUsername($data["vorname"], $data["nachname"]);
-			$password = UserHelper::generatePassword();
+			if ($this->form->wiedereintritt) 
+			{
+				$data["benutzername"] = $this->form->benutzername;
+				$data["email"] = $this->form->email;
+			} 
+			else 
+			{
+				$data["benutzername"] = UserHelper::generateUsername($data["vorname"], $data["nachname"]);
+			}
+			
+			$data["passwort"] = UserHelper::generatePassword();
 
-			// Benutzername und Passwort immer generieren
-			$data["benutzername"] = $username;
-			$data["passwort"] = $password;
-
-			// Nur E-Mail generieren, wenn sie noch leer ist
-			if (empty($data["email"])) {
+			if (empty($data["email"])) 
+			{
 				$data["email"] = UserHelper::generateEmail(
 					$data["vorname"],
 					$data["nachname"],
