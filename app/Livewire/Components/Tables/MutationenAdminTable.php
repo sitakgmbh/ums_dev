@@ -270,12 +270,6 @@ class MutationenAdminTable extends BaseTable
                     "icon"  => "mdi mdi-square-edit-outline",
                     "title" => "Mutation bearbeiten",
                 ],
-                [
-                    "method"  => "openDeleteModal",
-                    "idParam" => "id",
-                    "icon"    => "mdi mdi-delete",
-                    "title"   => "Mutation löschen",
-                ],
             ],
         ];
     }

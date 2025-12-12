@@ -285,12 +285,6 @@ class EroeffnungenAdminTable extends BaseTable
                     "icon"  => "mdi mdi-square-edit-outline",
                     "title" => "Antrag bearbeiten",
                 ],
-                [
-                    "method"  => "openDeleteModal",
-                    "idParam" => "id",
-                    "icon"    => "mdi mdi-delete",
-                    "title"   => "Antrag löschen",
-                ],
             ],
         ];
     }

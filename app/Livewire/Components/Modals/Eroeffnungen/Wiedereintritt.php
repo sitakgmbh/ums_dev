@@ -4,7 +4,6 @@ namespace App\Livewire\Components\Modals\Eroeffnungen;
 
 use App\Livewire\Components\Modals\BaseModal;
 use App\Models\AdUser;
-use App\Utils\Logging\Logger;
 
 /**
  * Zeigt einen Hinweis an, dass bereits eine AD-Benutzer mit dem Vor- und Nachnamen existiert.
@@ -49,11 +48,10 @@ class Wiedereintritt extends BaseModal
                 ->toArray();
         }
 
-		if (!$adUser) 
+        if (empty($this->adusers)) 
 		{
-			Logger::warning("Eröffnung: AD-User für Wiedereintritt nicht gefunden", ["id" => $payload["id"]]);
-			return;
-		}
+            return false;
+        }
 
         $this->title = "Möglicher Wiedereintritt";
         $this->size = "lg";

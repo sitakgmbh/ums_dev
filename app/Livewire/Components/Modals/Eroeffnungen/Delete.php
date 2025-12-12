@@ -57,7 +57,7 @@ class Delete extends BaseModal
 
         $this->closeModal();
         $this->dispatch("notify", message: "{$name} wurde erfolgreich gelöscht.", type: "danger");
-        $this->dispatch("eroeffnung-deleted", id: $id);
+		$this->dispatch("redirect", route('eroeffnungen.index'));
     }
 
     public function render()

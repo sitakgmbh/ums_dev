@@ -8,5 +8,5 @@
 
 @section('footer')
     <button type="button" class="btn btn-secondary" wire:click="closeModal">Abbrechen</button>
-	<x-action-button action="confirm" class="btn-primary"> Speichern</x-action-button>
+	<x-action-button action="confirm" class="btn-primary">Archivieren</x-action-button>
 @endsection

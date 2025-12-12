@@ -57,7 +57,7 @@ class Delete extends BaseModal
 
         $this->closeModal();
         $this->dispatch("notify", message: "{$name} wurde erfolgreich gelöscht.", type: "danger");
-        $this->dispatch("austritt-deleted", id: $id);
+        $this->dispatch("redirect", route('admin.austritte.index'));
     }
 
     public function render()

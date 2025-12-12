@@ -194,12 +194,6 @@ class AustritteAdminTable extends BaseTable
                     "class" => "text-info",
                     "title" => "Austritt verarbeiten",
                 ],
-                [
-                    "method"  => "openDeleteModal",
-                    "idParam" => "id",
-                    "icon"    => "mdi mdi-delete",
-                    "title"   => "Austritt löschen",
-                ],
             ],
         ];
     }

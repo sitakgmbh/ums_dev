@@ -57,7 +57,7 @@ class Delete extends BaseModal
 
         $this->closeModal();
         $this->dispatch("notify", message: "Mutation {$id} ({$name}) wurde erfolgreich gelöscht.", type: "danger");
-        $this->dispatch("mutation-deleted", id: $id);
+        $this->dispatch("redirect", route('mutationen.index'));
     }
 
     public function render()
