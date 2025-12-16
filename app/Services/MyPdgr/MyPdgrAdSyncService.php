@@ -100,7 +100,7 @@ class MyPdgrAdSyncService
 
             if (!$MyPdgrEntry) 
 			{
-                Logger::warning("Kein MyPdgr-Eintrag für {$displayName} ({$username}) mit Personalnummer {$initials} gefunden");
+                // Logger::warning("Kein MyPdgr-Eintrag für {$displayName} ({$username}) mit Personalnummer {$initials} gefunden");
                 $this->stats["not_found"]++;
                 continue;
             }
