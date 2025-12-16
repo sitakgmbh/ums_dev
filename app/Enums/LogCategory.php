@@ -8,7 +8,7 @@ enum LogCategory: string
     case Database = "database";
     case Auth = "auth";
     case Api = "api";
-	case Email = "mail";
+	case Email = "email";
 	case Ad = "ad";
 	case Antraege = "antraege";
 	case Sap = "sap";

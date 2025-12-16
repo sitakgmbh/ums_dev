@@ -74,7 +74,7 @@ class SafeMail
             $mailer->send($mailable);
 
             Logger::db(
-                "mail",
+                "email",
                 "info",
                 "Versand {$mailClass} an " . implode(", ", $toList) . " durch {$username}",
                 $context + [
@@ -90,7 +90,7 @@ class SafeMail
             $context["error"] = $e->getMessage();
 
             Logger::db(
-                "mail",
+                "email",
                 "error",
                 "Fehler beim Mailversand ({$mailClass}) durch {$username}: {$e->getMessage()}",
                 $context + [

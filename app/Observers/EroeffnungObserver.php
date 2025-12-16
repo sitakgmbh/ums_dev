@@ -43,8 +43,11 @@ class EroeffnungObserver
 
         $to = $eroeffnung->antragsteller?->email;
 		$cc = $eroeffnung->bezugsperson->email;
-		
-		SafeMail::send(new Bestaetigung($eroeffnung), $to, $cc);
+
+		if (!empty($to)) 
+		{
+			SafeMail::send(new Bestaetigung($eroeffnung), $to, !empty($cc) ? $cc : []);
+		}
 
 		app(\App\Services\OtoboService::class)->createTicket($eroeffnung);
     }

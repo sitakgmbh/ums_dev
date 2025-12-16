@@ -34,7 +34,11 @@ class MutationObserver
         ]);
 		
 		$to = $mutation->antragsteller?->email;
-		SafeMail::send(new Bestaetigung($mutation), $to);
+		
+		if (!empty($to)) 
+		{
+			SafeMail::send(new Bestaetigung($mutation), $to);
+		}
 	
         app(OtoboService::class)->createTicket($mutation);
     }
