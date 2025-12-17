@@ -310,47 +310,71 @@ class SapAdSyncService
         }
     }
 
-    protected function syncManager($adUser, $row, $username, $personalnummer, $adUsersMap): void
-    {
-        $managerPersNr = ltrim(trim($row["d_leader"] ?? ""), "0");
-        
-        if (empty($managerPersNr)) 
+	protected function syncManager($adUser, $row, $username, $personalnummer, $adUsersMap): void
+	{
+		$rawManager = trim($row["d_leader"] ?? "");
+		$managerPersNr = ltrim($rawManager, "0");
+
+		$currentManagerDn = $adUser->getFirstAttribute("manager");
+
+		if ($managerPersNr === "") 
+		{
+			if (!empty($currentManagerDn)) 
+			{
+				try 
+				{
+					$adUser->setFirstAttribute("manager", null);
+					$adUser->save();
+
+					$this->changes[] = [
+						"attribute" => "manager",
+						"old" => $currentManagerDn,
+						"new" => null,
+					];
+				} 
+				catch (\Exception $e) 
+				{
+					Logger::db("sap", "error",
+						"Fehler beim Nullen des Managers von '{$username}'",
+						["username" => $username, "error" => $e->getMessage()]
+					);
+				}
+			}
+
+			return;
+		}
+
+		$managerUser = $adUsersMap[$managerPersNr] ?? null;
+		
+		if (!$managerUser) 
 		{
 			return;
 		}
 
-        $managerUser = $adUsersMap[$managerPersNr] ?? null;
+		$newManagerDn = $managerUser->getFirstAttribute("distinguishedname");
 
-        if (!$managerUser) 
+		if ($currentManagerDn !== $newManagerDn) 
 		{
-			return;
-		}
-
-        $currentManagerDn = $adUser->getFirstAttribute("manager");
-        $newManagerDn = $managerUser->getFirstAttribute("distinguishedname");
-
-        if ($currentManagerDn !== $newManagerDn) 
-        {
-            try 
+			try 
 			{
 				$adUser->setFirstAttribute("manager", $newManagerDn);
-                $adUser->save();
-                
-                $this->changes[] = [
-                    "attribute" => "manager",
-                    "old" => $currentManagerDn,
-                    "new" => $newManagerDn,
-                ];
-            } 
+				$adUser->save();
+
+				$this->changes[] = [
+					"attribute" => "manager",
+					"old" => $currentManagerDn,
+					"new" => $newManagerDn,
+				];
+			} 
 			catch (\Exception $e) 
 			{
-                Logger::db("sap", "error", "Fehler bei beim Aktualisieren des Attributs 'Manager' des Benutzers '{$username}'", [
-                    "username" => $username,
-                    "error" => $e->getMessage(),
-                ]);
-            }
-        }
-    }
+				Logger::db("sap", "error",
+					"Fehler beim Aktualisieren des Managers von '{$username}'",
+					["username" => $username, "error" => $e->getMessage()]
+				);
+			}
+		}
+	}
 
 	protected function createMutation(string $username, ?string $vorname, ?string $nachname): void
 	{
