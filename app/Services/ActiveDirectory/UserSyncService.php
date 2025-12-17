@@ -2,87 +2,20 @@
 
 namespace App\Services\ActiveDirectory;
 
-use App\Models\AdUser;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use LdapRecord\Models\ActiveDirectory\User as LdapUser;
+use App\Utils\Logging\Logger;
+use App\Models\AdUser;
 
 class UserSyncService
 {
-    private const AD_FIELDS = [
-        "guid",
-        "username",
-        "firstname",
-        "lastname",
-        "display_name",
-        "email",
-
-        "is_enabled",
-        "is_existing",
-        "password_never_expires",
-
-        "account_expiration_date",
-        "created",
-        "modified",
-        "last_bad_password_attempt",
-        "last_logon_date",
-        "password_last_set",
-
-        "logon_count",
-
-        "city",
-        "company",
-        "country",
-        "department",
-        "description",
-        "division",
-        "fax",
-        "home_directory",
-        "home_page",
-        "home_phone",
-        "initials",
-        "office",
-        "office_phone",
-        "postal_code",
-        "profile_path",
-        "state",
-        "street_address",
-        "title",
-        "manager_dn",
-        "profile_photo_base64",
-
-        "distinguished_name",
-        "user_principal_name",
-
-        "proxy_addresses",
-        "member_of",
-
-        "extensionattribute1",
-        "extensionattribute2",
-        "extensionattribute3",
-        "extensionattribute4",
-        "extensionattribute5",
-        "extensionattribute6",
-        "extensionattribute7",
-        "extensionattribute8",
-        "extensionattribute9",
-        "extensionattribute10",
-        "extensionattribute11",
-        "extensionattribute12",
-        "extensionattribute13",
-        "extensionattribute14",
-        "extensionattribute15",
-
-        "last_synced_at",
-    ];
-
     public function sync(): void
     {
         $seenSids = [];
-        $existingUsers = AdUser::all()->keyBy('sid');
 
         $ldapUsers = LdapUser::query()
-            ->in(config("ums.ldap.ad_users_to_sync"))
+			->in(config("ums.ldap.ad_users_to_sync"))
             ->select([
                 "objectsid",
                 "objectguid",
@@ -122,7 +55,7 @@ class UserSyncService
                 "proxyaddresses",
                 "memberof",
                 "manager",
-                "thumbnailphoto",
+				"thumbnailphoto",
                 "extensionattribute1",
                 "extensionattribute2",
                 "extensionattribute3",
@@ -155,6 +88,7 @@ class UserSyncService
             $seenSids[] = $sid;
 
             $data = [
+                "sid"                   => $sid,
                 "guid"                  => $guid,
                 "username"              => $username,
                 "firstname"             => $ldapUser->givenname[0] ?? null,
@@ -194,13 +128,13 @@ class UserSyncService
                 "street_address"        => $ldapUser->streetaddress[0] ?? null,
                 "title"                 => $ldapUser->title[0] ?? null,
                 "manager_dn"            => $ldapUser->manager[0] ?? null,
-                "profile_photo_base64"  => $this->getBase64Image($ldapUser),
+				"profile_photo_base64" => $this->getBase64Image($ldapUser),
 
                 "distinguished_name"    => $ldapUser->distinguishedname[0] ?? null,
                 "user_principal_name"   => $ldapUser->userprincipalname[0] ?? null,
 
                 "proxy_addresses"       => $ldapUser->proxyaddresses ? array_values($ldapUser->proxyaddresses) : [],
-                "member_of"             => $ldapUser->memberof ? array_map(fn ($dn) => preg_replace("/^CN=([^,]+).*/i", "$1", $dn), $ldapUser->memberof) : [],
+				"member_of" => $ldapUser->memberof ? array_map(fn($dn) => preg_replace("/^CN=([^,]+).*/i", "$1", $dn), $ldapUser->memberof) : [],
 
                 "extensionattribute1"   => $ldapUser->extensionattribute1[0] ?? null,
                 "extensionattribute2"   => $ldapUser->extensionattribute2[0] ?? null,
@@ -218,85 +152,86 @@ class UserSyncService
                 "extensionattribute14"  => $ldapUser->extensionattribute14[0] ?? null,
                 "extensionattribute15"  => $ldapUser->extensionattribute15[0] ?? null,
 
-                "last_synced_at"        => now(),
+                "last_synced_at"        => Carbon::now(),
             ];
 
-            $adData = Arr::only($data, self::AD_FIELDS);
-
-            if (!isset($existingUsers[$sid])) 
-			{
-                AdUser::create(array_merge(
-                    ['sid' => $sid],
-                    $adData
-                ));
-            } 
-			else 
-			{
-                $user = $existingUsers[$sid];
-                $user->fill($adData);
-
-                if ($user->isDirty()) 
-				{
-                    $user->save();
-                }
-            }
+            AdUser::updateOrCreate(
+                ["sid" => $sid],
+                $data
+            );
         }
 
-        AdUser::whereNotIn('sid', $seenSids)
-            ->where('is_existing', true)
-            ->update([
-                'is_existing'    => false,
-                'last_synced_at' => now(),
-            ]);
+		AdUser::whereNotIn("sid", $seenSids)
+			->where("is_existing", true)
+			->update([
+				"is_existing"    => false,
+				"last_synced_at" => Carbon::now(),
+			]);
+
+
+		Logger::Debug("Synchronisation Actice Directory abgeschlossen", [
+            "found"   => count($seenSids),
+            "missing" => AdUser::where("is_existing", false)->count(),
+		]);
     }
 
-    protected function toCarbon($value): ?Carbon
-    {
-        if (!$value) return null;
-        if ($value instanceof Carbon) return $value;
+	protected function toCarbon($value): ?Carbon
+	{
+		if (!$value) return null;
+		if ($value instanceof Carbon) return $value;
 
-        if (is_numeric($value)) 
+		// Unix Timestamp
+		if (is_numeric($value)) 
 		{
-            if ($value == 0 || $value == 9223372036854775807) 
+			// Sonderwerte für "nie"
+			if ($value == 0 || $value == 9223372036854775807) 
 			{
-                return null;
-            }
+				return null;
+			}
 
-            $unixTime = ($value / 10000000) - 11644473600;
+			$unixTime = ($value / 10000000) - 11644473600;
+			
+			if ($unixTime > 0) 
+			{
+				// return Carbon::createFromTimestampUTC($unixTime);
+				return Carbon::createFromTimestampUTC($unixTime)->toDateTimeString();
+			}
+			return null;
+		}
 
-            return $unixTime > 0 ? Carbon::createFromTimestampUTC($unixTime) : null;
-        }
-
-        try 
+		try 
 		{
-            return Carbon::parse($value);
-        } 
-		catch (\Exception) 
+			return Carbon::parse($value);
+		} 
+		catch (\Exception $e) 
 		{
-            return null;
-        }
-    }
+			return null;
+		}
+	}
 
     protected function isEnabled(LdapUser $ldapUser): bool
     {
         $uac = $ldapUser->useraccountcontrol[0] ?? null;
         if ($uac === null) return true;
-
-        return !(($uac & 0x2) === 0x2);
+        return !(($uac & 0x2) === 0x2); // 0x2 = disabled
     }
 
     protected function isPasswordNeverExpires(LdapUser $ldapUser): bool
     {
         $uac = $ldapUser->useraccountcontrol[0] ?? null;
         if ($uac === null) return false;
-
         return (($uac & 0x10000) === 0x10000);
     }
 
-    protected function getBase64Image(LdapUser $ldapUser): ?string
-    {
-        $photo = $ldapUser->thumbnailphoto[0] ?? null;
+	protected function getBase64Image(LdapUser $ldapUser): ?string
+	{
+		$photo = $ldapUser->thumbnailphoto[0] ?? null;
 
-        return $photo ? base64_encode($photo) : null;
-    }
+		if (!$photo) {
+			return null;
+		}
+
+		// thumbnailPhoto ist binär/string
+		return base64_encode($photo);
+	}
 }
