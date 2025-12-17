@@ -319,6 +319,12 @@ class SapAdSyncService
 
 		if ($managerPersNr === "") 
 		{
+			Logger::debug("SAP-AD-Sync: Benutzer '{$username}' hat keinen Manager (d_leader leer oder 000000)", [
+				"username" => $username,
+				"personalnummer" => $personalnummer,
+				"sap_d_leader" => $row["d_leader"] ?? null,
+			]);
+
 			if (!empty($currentManagerDn)) 
 			{
 				try 
