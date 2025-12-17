@@ -161,10 +161,12 @@ class UserSyncService
             );
         }
 
-        AdUser::whereNotIn("sid", $seenSids)->update([
-            "is_existing"    => false,
-            "last_synced_at" => Carbon::now(),
-        ]);
+		AdUser::whereNotIn("sid", $seenSids)
+			->where("is_existing", true)
+			->update([
+				"is_existing"    => false,
+				"last_synced_at" => Carbon::now(),
+			]);
 
 		Logger::Debug("Synchronisation Actice Directory abgeschlossen", [
             "found"   => count($seenSids),
