@@ -8,22 +8,14 @@ use Illuminate\Support\Facades\Auth;
 
 class AdUserObserver
 {
-    /**
-     * Felder, die bewusst NICHT geloggt werden,
-     * weil sie sich haeufig oder technisch bedingt aendern.
-     */
     private const IGNORED_FIELDS = [
-        // Timestamps
-        'created_at',
+        'modified',
+		'created_at',
         'updated_at',
         'last_synced_at',
-
-        // AD-Rauschen
         'logon_count',
         'last_logon_date',
         'last_bad_password_attempt',
-
-        // grosse / technische Felder
         'profile_photo_base64',
     ];
 
@@ -49,13 +41,12 @@ class AdUserObserver
 
     public function updated(AdUser $user): void
     {
-        // Nur tatsaechliche Aenderungen betrachten
         $changes = $this->filterIgnoredFields(
             $user->getChanges()
         );
 
-        // Keine relevanten Aenderungen → kein Log
-        if (empty($changes)) {
+        if (empty($changes)) 
+		{
             return;
         }
 

@@ -76,6 +76,7 @@ class UsersTable extends BaseTable
 	protected function applyFilters(\Illuminate\Database\Eloquent\Builder $query): void
 	{
 		$query->with("roles");
+		$query->select("users.*");
 
 		$query->addSelect([
 			"role" => \DB::table("model_has_roles")
@@ -84,8 +85,18 @@ class UsersTable extends BaseTable
 				->limit(1)
 				->select("roles.name"),
 		]);
-	}
 
+		if ($this->search) 
+		{
+			$search = strtolower($this->search);
+
+			$query->where(function ($q) use ($search) {
+				$q->whereRaw("LOWER(username) LIKE ?", ["%{$search}%"])
+				  ->orWhereRaw("LOWER(firstname) LIKE ?", ["%{$search}%"])
+				  ->orWhereRaw("LOWER(lastname) LIKE ?", ["%{$search}%"]);
+			});
+		}
+	}
 
     protected function getColumnButtons(): array
     {
