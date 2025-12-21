@@ -112,7 +112,7 @@ return [
 			"to" => [],
 			"cc" => [],
 		],
-		"info-hr" => [
+		"info-includes" => [
 			"to" => ["patrik@sitak.ch", "patrik@senti.bz"],
 		],
 	],

@@ -42,7 +42,7 @@ class InfoMail extends BaseModal
 
         $defaultRecipients = config("ums.eroeffnung.mail.info.to", []);
         $defaultCc = config("ums.eroeffnung.mail.info.cc", []);
-        $toHr = config("ums.eroeffnung.mail.info-hr.to", []);
+        $toHr = config("ums.eroeffnung.mail.info-includes.to", []);
 
 		if ($mail = $this->entry->bezugsperson->email ?? null) 
 		{
