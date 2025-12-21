@@ -113,7 +113,7 @@ return [
 			"cc" => [],
 		],
 		"info-hr" => [
-			"to" => ["patrik@sitak.ch"],
+			"to" => ["patrik@sitak.ch", "patrik@senti.bz"],
 		],
 	],
     "detailsSections" => [

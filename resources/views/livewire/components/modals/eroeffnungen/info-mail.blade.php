@@ -7,7 +7,7 @@
 
     @if($entry)
         @if($entry->status_info !== 2 && $entry->status_kis == 2)
-            <div class="alert alert-info mb-3">Es handelt sich um einen KIS-Benutzer, das HR erhält das PC-Login ebenfalls.</div>
+            <div class="alert alert-info mb-3">Es handelt sich um einen KIS-Benutzer, daher erhalten weitere Stellen das PC-Login ebenfalls.</div>
         @endif
 
         <div class="mb-3">
