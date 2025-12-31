@@ -41,9 +41,13 @@
 
                         <tr>
 							<td>
-								<a href="{{ url('/admin/ad-users/' . $user->id) }}">
-									{{ $user->display_name ?? '-' }}
-								</a>
+								<a href="{{ url('/admin/ad-users/' . $user->id) }}" class="text-decoration-none d-inline-block">{{ $user->display_name ?? '-' }}</a>
+
+								@if(!empty($user->title))
+									<div class="small text-muted">
+										{{ $user->title }}
+									</div>
+								@endif
 							</td>
                             <td>
                                 {{ $birthday ? $birthday->format('d.m.Y') : '-' }}
