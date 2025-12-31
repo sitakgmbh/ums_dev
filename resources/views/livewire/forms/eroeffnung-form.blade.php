@@ -77,10 +77,15 @@
 								<i class="mdi mdi-information-outline text-muted ms-1" data-bs-toggle="tooltip" title="Deaktiviere diese Option, wenn der gesuchte Mitarbeiter in einer anderen Abteilung arbeitet oder eine andere Funktion ausübt."></i>
                             </div>
                         </div>
-                        <div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
-                            <label for="vorlage_benutzer_id" class="form-label mb-0">PC Berechtigungen übernehmen von</label>
-                            <select id="vorlage_benutzer_id" class="form-control select2" @disabled($form->isReadonly)></select>
-                        </div>
+						<div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
+							<div class="d-flex align-items-center">
+								<label for="vorlage_benutzer_id" class="form-label mb-0">PC Berechtigungen übernehmen von</label>
+								<i class="mdi mdi-alert-circle-outline text-danger ms-1" data-bs-toggle="tooltip" title="Die Funktion des ausgewählten Mitarbeiters sollte mit der Funktion des neuen Mitarbeiters übereinstimmen."></i>
+							</div>
+							<select id="vorlage_benutzer_id" class="form-control select2" @disabled($form->isReadonly)></select>
+							<small class="text-danger">Bitte beachte den Hinweis!</small>
+						</div>
+
                         <div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
                             <label for="mailendung" class="form-label mb-0">E-Mail-Domain</label>
                             <select id="mailendung" class="form-control select2" @disabled($form->isReadonly)></select>

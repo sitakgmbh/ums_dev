@@ -124,11 +124,18 @@
 					<div class="row g-3">
 
 						<div class="col-md-6 d-flex flex-column gap-1" wire:ignore>
-							<label for="vorlage_benutzer_id" class="form-label mb-0">Berechtigungen übernehmen von</label>
+
+							<div class="d-flex align-items-center">
+								<label for="vorlage_benutzer_id" class="form-label mb-0">Berechtigungen übernehmen von</label>
+								<i class="mdi mdi-alert-circle-outline text-danger ms-1" data-bs-toggle="tooltip" title="Die Funktion des ausgewählten Mitarbeiters sollte mit der Funktion des zu mutierenden Mitarbeiters übereinstimmen."></i>
+							</div>
+
 							<select id="vorlage_benutzer_id" class="form-control select2"
 									@disabled(!$form->enable_vorlage || $form->isReadonly)></select>
 
 							<div class="d-flex flex-column gap-0">
+								
+								<small class="text-danger mb-1">Bitte beachte den Hinweis!</small>
 								<div class="form-check mb-0">
 									<input type="checkbox" id="enable_vorlage"
 										   wire:model="form.enable_vorlage"
