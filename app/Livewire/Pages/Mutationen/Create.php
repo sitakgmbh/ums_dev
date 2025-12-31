@@ -79,6 +79,9 @@ class Create extends Component
 				$data["ad_gruppen"] = $groups;
 			}
 
+			$data["status_pep"] = 1;
+			$data["status_kis"] = 1;
+
 			if (!empty($data["ad_user_id"])) 
 			{				
 				$adUser = AdUser::findOrFail($data["ad_user_id"]);

@@ -214,7 +214,8 @@ class MutationenAdminTable extends BaseTable
 
                 if ($row->status_ad)      $badges[] = $createBadge($row->status_ad, "mdi-account-cog", "Berechtigungen");
 				if ($row->status_mail)      $badges[] = $createBadge($row->status_ad, "mdi-email", "E-Mail");
-                if ($row->status_kis)     $badges[] = $createBadge($row->status_kis, "mdi-doctor", "KIS");
+                if ($row->status_pep)     $badges[] = $createBadge($row->status_pep, "mdi-clock", "PEP");
+				if ($row->status_kis)     $badges[] = $createBadge($row->status_kis, "mdi-doctor", "KIS");
                 if ($row->status_tel)     $badges[] = $createBadge($row->status_tel, "mdi-phone", "Telefonie");
                 if ($row->status_auftrag) $badges[] = $createBadge($row->status_auftrag, "mdi-clipboard-text", "Aufträge");
 				if ($row->status_info)     $badges[] = $createBadge($row->status_info, "mdi-information-variant", "Info-Mail");
