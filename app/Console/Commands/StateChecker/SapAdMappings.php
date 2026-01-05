@@ -81,6 +81,7 @@ class SapAdMappings extends Command
         }
 
 		$duplicateInitials = AdUser::select('initials', DB::raw('COUNT(*) as count'))
+			->where('is_existing', true)
 			->whereNotNull('initials')
 			->whereNotIn('initials', ['99999', '11111', '00000'])
 			->groupBy('initials')

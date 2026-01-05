@@ -4,6 +4,21 @@ Alle Änderungen an diesem Projekt werden in diesem Dokument festgehalten.
 
 ---
 
+## [1.1.2] – 31.12.2025
+
+#### Änderungen
+- Es kam immer wieder vor, dass bei Anträgen ein falscher Referenzbenutzer ausgewählt wurde. In den Formularen ***Eröffnung*** und ***Mutation*** wurde deshalb bei ***PC-Berechtigungen übernehmen von*** ein Hinweis eingebaut.
+
+## [1.1.1] – 14.11.2025
+
+#### Neuigkeiten
+- Der Abgleich SAP ↔ AD wird neu von UMS erledigt.
+
+## [1.1.0] – 01.11.2025
+
+#### Neuigkeiten
+- UMS wurde auf Laravel migriert. 
+
 ## [1.0.22] – 02.10.2025
 
 #### Änderungen
