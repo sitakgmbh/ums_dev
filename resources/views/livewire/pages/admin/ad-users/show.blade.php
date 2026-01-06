@@ -141,6 +141,9 @@
 						{{-- Accountinformationen --}}
 						<div class="tab-pane fade show active" id="account">
 							<dl class="row mb-0">
+								<dt class="col-sm-4">Benutzername</dt>
+								<dd class="col-sm-6">{{ $adUser->username ?? '-' }}</dd>
+
 								<dt class="col-sm-4">Letzte Anmeldung</dt>
 								<dd class="col-sm-6">{{ $adUser->last_logon_date?->format('d.m.Y H:i') ?? '-' }}</dd>
 
