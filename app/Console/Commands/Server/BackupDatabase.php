@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\System;
+namespace App\Console\Commands\Server;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -30,14 +30,43 @@ class BackupDatabase extends Command
         $now = time();
         $deletedFiles = [];
 
-        $dumpCommand = [
-            'mysqldump',
-            "-h{$host}",
-            "-P{$port}",
-            "-u{$username}",
-            "--password={$password}",
-            $database,
-        ];
+		// Pfad per "where" ermitteln
+		$which = new \Symfony\Component\Process\Process(['where', 'mysqldump']);
+		$which->run();
+
+		$dumpBinary = trim($which->getOutput());
+
+		if (!file_exists($dumpBinary)) 
+		{
+			$candidates = [
+				'D:\xampp\mysql\bin\mysqldump.exe',
+				'C:\xampp\mysql\bin\mysqldump.exe',
+				'C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe',
+			];
+
+			foreach ($candidates as $path) 
+			{
+				if (file_exists($path)) 
+				{
+					$dumpBinary = $path;
+					break;
+				}
+			}
+		}
+
+		if (!file_exists($dumpBinary)) 
+		{
+			throw new \RuntimeException("mysqldump wurde nicht gefunden.");
+		}
+
+		$dumpCommand = [
+			$dumpBinary,
+			"-h{$host}",
+			"-P{$port}",
+			"-u{$username}",
+			"--password={$password}",
+			$database,
+		];
 
         $this->info("Erstelle Backup: {$file}");
 
