@@ -41,7 +41,6 @@ class BackupDatabase extends Command
 			$candidates = [
 				'D:\xampp\mysql\bin\mysqldump.exe',
 				'C:\xampp\mysql\bin\mysqldump.exe',
-				'C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe',
 			];
 
 			foreach ($candidates as $path) 

@@ -17,6 +17,7 @@ class TaskScheduler extends Component
 		"check:sap-ad-mappings",
 		"check:sap-ad-excludes",
 		"check:employment-starts",
+		"db:backup",
         // "graph:test-connection",
         // "test:do",
         // "test:do-error",
