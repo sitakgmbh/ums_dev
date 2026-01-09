@@ -77,12 +77,6 @@ class SapSync extends Command
             return Command::FAILURE;
         }
 
-        if ($localCsvPath && file_exists($localCsvPath)) 
-		{
-            @unlink($localCsvPath);
-            $this->info("Temporäre CSV-Datei gelöscht.");
-        }
-
         $this->info("SAP-Sync erfolgreich abgeschlossen.");
         return Command::SUCCESS;
     }
@@ -119,7 +113,7 @@ class SapSync extends Command
 
         $this->info("Gefunden: {$latestCsv['name']} ({$timestamp})");
 
-        $localPath = storage_path("app/private/sap_import_{$timestamp}.csv");
+        $localPath = storage_path("app/private/sap_export/sap_import_{$timestamp}.csv");
 
         $this->info("Kopiere Datei...");
 
