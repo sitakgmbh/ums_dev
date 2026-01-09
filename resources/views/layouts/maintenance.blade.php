@@ -29,7 +29,7 @@
     @yield('content')
 
     <footer class="footer footer-alt text-center">
-        &copy; {{ date('Y') }} Sitak GmbH
+        &copy; {{ date('Y') }} PDGR ICT
     </footer>
 
     <script src="{{ asset('assets/js/vendor.min.js') }}"></script>

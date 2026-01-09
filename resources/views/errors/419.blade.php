@@ -16,7 +16,7 @@
 
                     <div class="card-body p-5">
                         <h1 class="display-3 text-danger">419</h1>
-                        <h2 class="fw-bold">Sicherheitsfehler</h2>
+                        <h2 class="fw-bold">Sitzung abgelaufen</h2>
                         <p class="text-muted mt-2">
                             Deine Sitzung ist abgelaufen oder ungültig.<br>
                             Bitte lade die Seite neu und versuche es erneut.
